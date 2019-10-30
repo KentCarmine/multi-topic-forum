@@ -17,7 +17,7 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserRole role;
 
-    // private List<Posts> posts; // TODO: fill in and hook up posts (1 User - many Posts)
+    // private List<Posts> posts; // TODO: Wire up (1 User - many Posts)
 
     // TODO: Upvote/Downvote tracking to prevent duplicate votes
 
