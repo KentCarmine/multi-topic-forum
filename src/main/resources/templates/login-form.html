@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Multi-Topic Forum Login</title>
+    </head>
+    <body>
+        <form th:action="@{/processLogin}" method="POST">
+            <div th:if="${param.error}">
+                <p style="color: red">Incorrect username or password</p>
+            </div>
+
+            <div th:if="${param.logout}">
+                <p style="color: greenyellow">You have been logged out</p>
+            </div>
+
+            <div>
+                Username: <input type="text" name="username" placeholder="username">
+            </div>
+            <div>
+                Password: <input type="password" name="password" placeholder="password">
+            </div>
+
+            <button type="submit">Login</button>
+        </form>
+    </body>
+</html>

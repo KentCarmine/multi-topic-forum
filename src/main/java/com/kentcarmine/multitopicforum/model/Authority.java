@@ -16,13 +16,14 @@ public class Authority {
     @NotNull
     private User user;
 
+    @NotNull
     @Enumerated(value = EnumType.STRING)
     private UserRole authority;
 
     public Authority() {
     }
 
-    public Authority(User user, UserRole authority) {
+    public Authority(@NotNull User user, @NotNull UserRole authority) {
         this.user = user;
         this.authority = authority;
     }

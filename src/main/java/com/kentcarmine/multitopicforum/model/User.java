@@ -21,6 +21,7 @@ public class User {
     @Email(message = "email must be a valid email address")
     private String email;
 
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Authority> authorities;
 
@@ -28,21 +29,30 @@ public class User {
 
     // TODO: Upvote/Downvote tracking to prevent duplicate votes
 
+    private boolean enabled;
+
     public User() {
     }
 
-    public User(String username, String password, String email, Set<Authority> authorities) {
+    public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
+                @Size(min = 8, message = "password must be at least {min} characters long") String password,
+                @Email(message = "email must be a valid email address") String email,
+                @NotEmpty(message = "user must have at least one role") Set<Authority> authorities) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.authorities = authorities;
+        this.enabled = true;
     }
 
-    public User(String username, String password, String email) {
+    public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
+                @Size(min = 8, message = "password must be at least {min} characters long") String password,
+                @Email(message = "email must be a valid email address") String email) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.authorities = new HashSet<>();
+        this.enabled = true;
     }
 
     public String getUsername() {
