@@ -7,7 +7,7 @@ import javax.persistence.Id;
 import java.time.LocalDate;
 import java.util.List;
 
-@Entity
+//@Entity // TODO: Re-add later
 public class TopicThread {
 
     @Id

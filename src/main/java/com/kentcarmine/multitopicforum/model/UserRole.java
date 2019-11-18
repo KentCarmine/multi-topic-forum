@@ -1,5 +1,5 @@
 package com.kentcarmine.multitopicforum.model;
 
 public enum UserRole {
-    USER, ADMINISTRATOR
+    USER, MODERATOR, ADMINISTRATOR, SUPER_ADMINISTRATOR
 }

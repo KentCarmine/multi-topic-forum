@@ -3,7 +3,7 @@ package com.kentcarmine.multitopicforum.model;
 import javax.persistence.*;
 import java.time.LocalDate;
 
-@Entity
+//@Entity // TODO: Re-add later
 public class Post {
 
     @Id

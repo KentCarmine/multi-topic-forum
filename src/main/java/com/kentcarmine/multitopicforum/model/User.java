@@ -1,50 +1,52 @@
 package com.kentcarmine.multitopicforum.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@Table(name="users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Min(value = 4, message = "Username must be at least {value} characters long")
+    private String username;
 
-    private String name;
+    @Min(value = 8, message = "password must be at least {value} characters long")
+    private String password;
+
+    @Email(message = "email must be a valid email address")
     private String email;
 
-    // TODO: add password handling
-
-    @Enumerated(value = EnumType.STRING)
-    private UserRole role;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Authority> authorities;
 
     // private List<Posts> posts; // TODO: Wire up (1 User - many Posts)
 
     // TODO: Upvote/Downvote tracking to prevent duplicate votes
 
-    public User(String name, String email) {
-        this(name, email, UserRole.USER);
-    }
-
-    public User(String name, String email, UserRole role) {
-        this.name = name;
+    public User(String username, String password, String email, Set<Authority> authorities) {
+        this.username = username;
+        this.password = password;
         this.email = email;
-        this.role = role;
+        this.authorities = authorities;
     }
 
-    public Long getId() {
-        return id;
+    public String getUsername() {
+        return username;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getName() {
-        return name;
+    public String getPassword() {
+        return password;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getEmail() {
@@ -55,21 +57,21 @@ public class User {
         this.email = email;
     }
 
-    public UserRole getRole() {
-        return role;
+    public Set<Authority> getAuthorities() {
+        return authorities;
     }
 
-    public void setRole(UserRole role) {
-        this.role = role;
+    public void setAuthorities(Set<Authority> authorities) {
+        this.authorities = authorities;
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
-                ", role=" + role +
+                ", authorities=" + authorities +
                 '}';
     }
 }
