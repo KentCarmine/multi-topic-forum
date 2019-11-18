@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name="authorities")
@@ -12,10 +13,14 @@ public class Authority {
 
     @ManyToOne
     @JoinColumn(name="username")
+    @NotNull
     private User user;
 
     @Enumerated(value = EnumType.STRING)
     private UserRole authority;
+
+    public Authority() {
+    }
 
     public Authority(User user, UserRole authority) {
         this.user = user;
