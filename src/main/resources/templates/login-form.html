@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
-        <title>Multi-Topic Forum Login</title>
+        <title>Multi-Topic Forum | Login</title>
     </head>
     <body>
         <form th:action="@{/processLogin}" method="POST">
@@ -12,6 +12,10 @@
 
             <div th:if="${param.logout}">
                 <p style="color: greenyellow">You have been logged out</p>
+            </div>
+
+            <div th:if="${param.registrationSuccess}">
+                <p style="color: greenyellow">You successfully registered an account</p>
             </div>
 
             <div>

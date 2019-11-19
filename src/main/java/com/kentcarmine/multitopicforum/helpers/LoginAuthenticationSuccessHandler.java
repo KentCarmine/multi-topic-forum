@@ -20,7 +20,7 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
     private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res, Authentication auth) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res, Authentication auth) throws IOException {
         String loggedInUserName = auth.getName();
         String url = "/users/" + loggedInUserName;
         redirectStrategy.sendRedirect(req, res, url);

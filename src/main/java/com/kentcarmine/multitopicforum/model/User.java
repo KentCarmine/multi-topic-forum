@@ -32,6 +32,8 @@ public class User {
     private boolean enabled;
 
     public User() {
+        this.authorities = new HashSet<>();
+        this.enabled = true;
     }
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
@@ -85,6 +87,14 @@ public class User {
 
     public void setAuthorities(Set<Authority> authorities) {
         this.authorities = authorities;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void addAuthority(UserRole newRole) {
