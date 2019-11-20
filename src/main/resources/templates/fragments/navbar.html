@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+    <head>
+        <meta charset="UTF-8">
+        <title>Navbar</title>
+    </head>
+    <body>
+        <div th:fragment="navbar">
+            <span>
+                <a th:href="@{/}" href="#">Home</a>
+            </span>
+            <span sec:authorize="isAuthenticated()" th:if="${#request.requestURI != '/users/' + #authentication.getName()}">
+                <a th:href="@{'/users/'+${#authentication.getName()}}" href="#">User home</a>
+            </span>
+            <span sec:authorize="isAnonymous()">
+                <a href="#" th:href="@{/login}">Login</a>
+            </span>
+            <span sec:authorize="isAuthenticated()">
+                <a href="#" th:href="@{/logout}">Logout</a>
+            </span>
+            <span sec:authorize="isAnonymous()">
+                <a href="#" th:href="@{/registerUser}">Register</a>
+            </span>
+        </div>
+    </body>
+</html>

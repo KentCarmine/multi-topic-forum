@@ -5,6 +5,7 @@
         <title th:text="'Multi-Topic Forum |' + ${user.username} + '\'s Page'">PLACEHOLDER Page</title>
     </head>
     <body>
+        <div th:replace="fragments/navbar.html :: navbar"></div>
         <h2 th:text="${user.username} + '\'s Page'"></h2>
         <p>PLACEHOLDER</p>
     </body>

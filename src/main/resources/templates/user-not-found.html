@@ -5,6 +5,7 @@
         <title>404: User Not Found</title>
     </head>
     <body>
+        <div th:replace="fragments/navbar.html :: navbar"></div>
         <h3 th:text="${message}" style="color: red">User was not found</h3>
     </body>
 </html>

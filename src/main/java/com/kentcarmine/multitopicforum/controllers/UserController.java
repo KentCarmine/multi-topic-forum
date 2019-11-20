@@ -69,11 +69,11 @@ public class UserController {
         updateRegistrationBindingResult(user, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            System.out.println("###ERRORS###");
-            bindingResult.getAllErrors().forEach(objectError -> {
-                System.out.println(objectError.toString());
-            });
-            System.out.println("###END-ERRORS###");
+//            System.out.println("###ERRORS###");
+//            bindingResult.getAllErrors().forEach(objectError -> {
+//                System.out.println(objectError.toString());
+//            });
+//            System.out.println("###END-ERRORS###");
 
             return new ModelAndView("user-registration-form", "user", user);
         } else {

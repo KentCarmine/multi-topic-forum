@@ -2,9 +2,7 @@ package com.kentcarmine.multitopicforum.dtos;
 
 import com.kentcarmine.multitopicforum.annotations.PasswordMatches;
 import com.kentcarmine.multitopicforum.annotations.ValidEmail;
-import org.springframework.stereotype.Component;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 
 
