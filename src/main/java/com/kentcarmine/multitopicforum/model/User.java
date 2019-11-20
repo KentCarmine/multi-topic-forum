@@ -11,7 +11,6 @@ import java.util.Set;
 @Table(name="users")
 public class User {
 
-    // TODO: Ensure unique
     @Id
     @Size(min = 4, message = "Username must be at least {min} characters long")
     private String username;
@@ -19,10 +18,9 @@ public class User {
     @Size(min = 8, message = "password must be at least {min} characters long")
     private String password;
 
-    // TODO: Ensure unique
+    @Column(name = "email", unique = true)
     @ValidEmail(message = "email must be a valid email address")
     private String email;
-
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Authority> authorities;
@@ -40,7 +38,7 @@ public class User {
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
                 @Size(min = 8, message = "password must be at least {min} characters long") String password,
-                @Email(message = "email must be a valid email address") String email,
+                @ValidEmail(message = "email must be a valid email address") String email,
                 @NotEmpty(message = "user must have at least one role") Set<Authority> authorities) {
         this.username = username;
         this.password = password;
@@ -51,7 +49,7 @@ public class User {
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
                 @Size(min = 8, message = "password must be at least {min} characters long") String password,
-                @Email(message = "email must be a valid email address") String email) {
+                @ValidEmail(message = "email must be a valid email address") String email) {
         this.username = username;
         this.password = password;
         this.email = email;
