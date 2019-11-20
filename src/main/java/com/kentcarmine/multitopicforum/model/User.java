@@ -1,5 +1,7 @@
 package com.kentcarmine.multitopicforum.model;
 
+import com.kentcarmine.multitopicforum.annotations.ValidEmail;
+
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.util.HashSet;
@@ -18,7 +20,7 @@ public class User {
     private String password;
 
     // TODO: Ensure unique
-    @Email(message = "email must be a valid email address")
+    @ValidEmail(message = "email must be a valid email address")
     private String email;
 
 

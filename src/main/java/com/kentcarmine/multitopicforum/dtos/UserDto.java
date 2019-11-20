@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.dtos;
 
 import com.kentcarmine.multitopicforum.annotations.PasswordMatches;
+import com.kentcarmine.multitopicforum.annotations.ValidEmail;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.Email;
@@ -13,7 +14,7 @@ public class UserDto {
     @Size(min = 4, message = "Username must be at least {min} characters long")
     private String username;
 
-    @Email(message = "email must be a valid email address")
+    @ValidEmail(message = "email must be a valid email address")
     private String email;
 
     @Size(min = 8, message = "password must be at least {min} characters long")
