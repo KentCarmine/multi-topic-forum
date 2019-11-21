@@ -15,6 +15,11 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     }
 
     public UserDetails getPrincipal() {
+        Authentication auth = getAuthentication();
+        if (auth == null) {
+            return null;
+        }
+
         return (UserDetails)getAuthentication().getPrincipal();
     }
 

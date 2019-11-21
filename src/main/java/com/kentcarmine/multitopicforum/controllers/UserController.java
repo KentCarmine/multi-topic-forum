@@ -29,8 +29,11 @@ public class UserController {
     public String showLoginForm() {
         User loggedInUser = userService.getLoggedInUser();
         if (loggedInUser != null) {
+            System.out.println("### REDIRECT ###");
             return "redirect:/users/" + loggedInUser.getUsername();
         }
+
+        System.out.println("### NO_REDIRECT ###");
 
         return "login-form";
     }
@@ -74,8 +77,10 @@ public class UserController {
 //                System.out.println(objectError.toString());
 //            });
 //            System.out.println("###END-ERRORS###");
-
-            return new ModelAndView("user-registration-form", "user", user);
+            ModelAndView mv = new ModelAndView("user-registration-form", "user", user);
+            mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+//            return new ModelAndView("user-registration-form", "user", user);
+            return mv;
         } else {
             userService.createUserByUserDto(user);
             return new ModelAndView("redirect:/login?registrationSuccess");

@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.model.User;
 
+
 public interface UserService {
     String getLoggedInUserName();
 
@@ -19,6 +20,8 @@ public interface UserService {
     boolean emailExists(String email);
 
     boolean usernameExists(String username);
+
+    boolean isUserLoggedIn();
 
 //    void printAuth();
 }

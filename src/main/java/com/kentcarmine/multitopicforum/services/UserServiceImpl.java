@@ -33,7 +33,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String getLoggedInUserName() {
-        return authenticationFacade.getAuthentication().getName();
+//        System.out.println("#####");
+//        System.out.println(authenticationFacade);
+//        System.out.println(authenticationFacade.getAuthentication());
+//        System.out.println(authenticationFacade.getAuthentication().getName());
+//        System.out.println(authenticationFacade.getAuthentication().getName());
+//        System.out.println("#####");
+        if (isUserLoggedIn()) {
+            return authenticationFacade.getAuthentication().getName();
+        } else {
+            return null;
+        }
+    }
+
+    public boolean isUserLoggedIn() {
+        if (authenticationFacade.getAuthentication() == null) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -43,6 +61,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(String name) {
+        if (name == null) {
+            return null;
+        }
+
         Optional<User> userOpt = userRepository.findById(name);
 
         if (userOpt.isPresent()) {
