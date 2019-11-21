@@ -1,5 +1,7 @@
 package com.kentcarmine.multitopicforum.config;
 
+import com.kentcarmine.multitopicforum.helpers.AlreadyLoggedInAccessDeniedHandler;
+import com.kentcarmine.multitopicforum.helpers.AlreadyLoggedInFailureHandler;
 import com.kentcarmine.multitopicforum.helpers.LoginAuthenticationSuccessHandler;
 import com.kentcarmine.multitopicforum.services.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,17 +10,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -39,22 +44,48 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationProvider(authProvider());
     }
 
+//    @Override
+//    protected void configure(HttpSecurity httpSecurity) throws Exception {
+//        httpSecurity.authorizeRequests()
+//                .antMatchers("/h2-console**").permitAll() // TODO: For debug only
+//                .antMatchers("/login").permitAll()
+//                .antMatchers("/registerUser").permitAll()
+//                .antMatchers("/processUserRegistration").permitAll()
+//                .antMatchers("/").permitAll()
+//                .and()
+//                .formLogin()
+//                .loginPage("/login")
+//                .loginProcessingUrl("/processLogin")
+//                .successHandler(loginHandler)
+//                .permitAll()
+//                .and()
+//                .logout().permitAll()
+//                .and().csrf().disable().headers().frameOptions().disable(); // TODO: For debug only
+//    }
+
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeRequests()
                 .antMatchers("/h2-console**").permitAll() // TODO: For debug only
-                .antMatchers("/login").permitAll()
-                .antMatchers("/registerUser").permitAll()
-                .antMatchers("/processUserRegistration").permitAll()
+                .antMatchers("/login").anonymous()
+                .antMatchers("/registerUser").anonymous()
+                .antMatchers("/processUserRegistration").anonymous()
                 .antMatchers("/").permitAll()
                 .and()
                 .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/processLogin")
                 .successHandler(loginHandler)
-                .permitAll()
+                .permitAll(false)
                 .and()
                 .logout().permitAll()
+                .and().exceptionHandling()
+                .defaultAccessDeniedHandlerFor(new AlreadyLoggedInAccessDeniedHandler(),
+                        new AntPathRequestMatcher("/login"))
+                .defaultAccessDeniedHandlerFor(new AlreadyLoggedInAccessDeniedHandler(),
+                        new AntPathRequestMatcher("/registerUser"))
+                .defaultAccessDeniedHandlerFor(new AlreadyLoggedInAccessDeniedHandler(),
+                        new AntPathRequestMatcher("/processUserRegistration"))
                 .and().csrf().disable().headers().frameOptions().disable(); // TODO: For debug only
     }
 
@@ -71,5 +102,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
-
 }

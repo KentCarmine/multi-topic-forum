@@ -7,12 +7,16 @@ import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @Controller
@@ -25,22 +29,22 @@ public class UserController {
         this.userService = userService;
     }
 
+//    @PreAuthorize("!isAuthenticated()")
     @GetMapping("/login")
     public String showLoginForm() {
-        User loggedInUser = userService.getLoggedInUser();
-        if (loggedInUser != null) {
-            System.out.println("### REDIRECT ###");
-            return "redirect:/users/" + loggedInUser.getUsername();
-        }
-
-        System.out.println("### NO_REDIRECT ###");
+//        User loggedInUser = userService.getLoggedInUser();
+//        if (loggedInUser != null) {
+//            System.out.println("### REDIRECT ###");
+//            return "redirect:/users/" + loggedInUser.getUsername();
+//        }
+//
+//        System.out.println("### NO_REDIRECT ###");
 
         return "login-form";
     }
 
     @GetMapping("/users/{username}")
     public String showUserPage(Model model, @PathVariable String username) {
-
         if (userService.usernameExists(username)) {
             User user = userService.getUser(username);
             model.addAttribute("user", user);
@@ -50,24 +54,26 @@ public class UserController {
         }
     }
 
+//    @PreAuthorize("!isAuthenticated()")
     @GetMapping("/registerUser")
     public String showUserRegistrationForm(Model model) {
-        User loggedInUser = userService.getLoggedInUser();
-        if (loggedInUser != null) {
-            return "redirect:/users/" + loggedInUser.getUsername();
-        }
+//        User loggedInUser = userService.getLoggedInUser();
+//        if (loggedInUser != null) {
+//            return "redirect:/users/" + loggedInUser.getUsername();
+//        }
 
         UserDto user = new UserDto();
         model.addAttribute("user", user);
         return "user-registration-form";
     }
 
+//    @PreAuthorize("!isAuthenticated()")
     @PostMapping("/processUserRegistration")
     public ModelAndView processUserRegistration(@Valid @ModelAttribute("user") UserDto user, BindingResult bindingResult) {
-        User loggedInUser = userService.getLoggedInUser();
-        if (loggedInUser != null) {
-            return new ModelAndView("redirect:/users/" + loggedInUser.getUsername());
-        }
+//        User loggedInUser = userService.getLoggedInUser();
+//        if (loggedInUser != null) {
+//            return new ModelAndView("redirect:/users/" + loggedInUser.getUsername());
+//        }
 
         updateRegistrationBindingResult(user, bindingResult);
 
@@ -107,4 +113,20 @@ public class UserController {
         model.addAttribute("message", ex.getMessage());
         return "user-not-found";
     }
+
+//    @ExceptionHandler(AccessDeniedException.class)
+//    public String handleUnauthorized(AccessDeniedException ex, HttpServletRequest req, HttpServletResponse res){
+////        System.out.println("### START ###");
+////        System.out.println("### REQUEST ###");
+////        System.out.println(req.toString());
+////        System.out.println("### RESPONSE ###");
+////        System.out.println(res.toString());
+////        System.out.println("### EXCEPTION ###");
+////        System.out.println(ex.toString());
+////        System.out.println("### END ###");
+//        String loggedInUsername = req.getUserPrincipal().getName();
+//        System.out.println("### User: " + loggedInUsername);
+//
+//        return "redirect:/users/" + loggedInUsername;
+//    }
 }

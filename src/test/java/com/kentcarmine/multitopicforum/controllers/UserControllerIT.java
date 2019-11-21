@@ -24,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -37,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -77,10 +79,14 @@ class UserControllerIT {
     @Autowired
     Bootstrap bootstrap;
 
+    @Autowired
+    private WebApplicationContext context;
+
     @BeforeEach
     void setUp() throws Exception {
-        bootstrap.run();
+//        bootstrap.run();
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+//        mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
 
     /**
@@ -97,7 +103,7 @@ class UserControllerIT {
     /**
      * When showing login form, if user is logged in, redirect to that user's home page instead of showing login form
      */
-    @WithUserDetails(value=EXISTING_USER_NAME)
+    @WithUserDetails(EXISTING_USER_NAME)
     @Test
     void showLoginForm_LoggedIn() throws Exception {
         mockMvc.perform(get("/login"))
