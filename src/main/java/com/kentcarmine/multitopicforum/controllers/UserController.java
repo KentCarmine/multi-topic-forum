@@ -1,7 +1,6 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.UserDto;
-import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.UserService;
@@ -19,6 +18,7 @@ import javax.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+
 
     @Autowired
     public UserController(UserService userService) {
@@ -40,7 +40,6 @@ public class UserController {
 
     @GetMapping("/users/{username}")
     public String showUserPage(Model model, @PathVariable String username) {
-
         if (userService.usernameExists(username)) {
             User user = userService.getUser(username);
             model.addAttribute("user", user);

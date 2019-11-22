@@ -7,56 +7,31 @@ import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
-import com.kentcarmine.multitopicforum.helpers.AuthenticationFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final AuthenticationFacade authenticationFacade;
     private final UserRepository userRepository;
     private final UserDtoToUserConverter userDtoToUserConverter;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationService authenticationService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, AuthenticationFacade authenticationFacade, UserDtoToUserConverter userDtoToUserConverter, PasswordEncoder passwordEncoder) {
-        this.authenticationFacade = authenticationFacade;
+    public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
+                           UserDtoToUserConverter userDtoToUserConverter, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userDtoToUserConverter = userDtoToUserConverter;
         this.passwordEncoder = passwordEncoder;
-    }
-
-    @Override
-    public String getLoggedInUserName() {
-//        System.out.println("#####");
-//        System.out.println(authenticationFacade);
-//        System.out.println(authenticationFacade.getAuthentication());
-//        System.out.println(authenticationFacade.getAuthentication().getName());
-//        System.out.println(authenticationFacade.getAuthentication().getName());
-//        System.out.println("#####");
-        if (isUserLoggedIn()) {
-            return authenticationFacade.getAuthentication().getName();
-        } else {
-            return null;
-        }
-    }
-
-    public boolean isUserLoggedIn() {
-        if (authenticationFacade.getAuthentication() == null) {
-            return false;
-        }
-
-        return true;
+        this.authenticationService = authenticationService;
     }
 
     @Override
     public User getLoggedInUser() {
-        return getUser(getLoggedInUserName());
+        return getUser(authenticationService.getLoggedInUserName());
     }
 
     @Override
@@ -65,13 +40,14 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        Optional<User> userOpt = userRepository.findById(name);
-
-        if (userOpt.isPresent()) {
-            return userOpt.get();
-        } else {
-            return null;
-        }
+//        Optional<User> userOpt = userRepository.findById(name);
+//
+//        if (userOpt.isPresent()) {
+//            return userOpt.get();
+//        } else {
+//            return null;
+//        }
+        return userRepository.findByUsername(name);
     }
 
     @Override
@@ -107,10 +83,4 @@ public class UserServiceImpl implements UserService {
     public boolean usernameExists(String username) {
         return userRepository.findById(username).isPresent();
     }
-
-
-
-    //    public void printAuth() {
-//        authenticationFacade.printAuthorities();
-//    }
 }

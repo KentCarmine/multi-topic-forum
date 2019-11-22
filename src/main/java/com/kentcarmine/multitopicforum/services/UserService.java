@@ -7,7 +7,6 @@ import com.kentcarmine.multitopicforum.model.User;
 
 
 public interface UserService {
-    String getLoggedInUserName();
 
     User getLoggedInUser();
 
@@ -20,8 +19,4 @@ public interface UserService {
     boolean emailExists(String email);
 
     boolean usernameExists(String username);
-
-    boolean isUserLoggedIn();
-
-//    void printAuth();
 }

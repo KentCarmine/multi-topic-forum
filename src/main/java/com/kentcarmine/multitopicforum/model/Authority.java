@@ -54,9 +54,14 @@ public class Authority {
 
     @Override
     public String toString() {
+        String username = null;
+        if (user != null) {
+            username = user.getUsername();
+        }
+
         return "Authority{" +
                 "id=" + id +
-                ", user=" + user +
+                ", user=" + username +
                 ", authority=" + authority +
                 '}';
     }
