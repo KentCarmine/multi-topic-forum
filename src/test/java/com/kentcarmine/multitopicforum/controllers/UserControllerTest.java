@@ -2,16 +2,25 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
+import com.kentcarmine.multitopicforum.model.VerificationToken;
 import com.kentcarmine.multitopicforum.services.UserService;
+import org.assertj.core.data.TemporalUnitOffset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.MessageSource;
 import org.springframework.test.context.ActiveProfiles;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+
+import java.sql.Date;
+import java.time.Instant;
+import java.time.temporal.TemporalAmount;
+import java.time.temporal.TemporalUnit;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -32,13 +41,19 @@ class UserControllerTest {
     @Mock
     UserService userService;
 
+    @Mock
+    ApplicationEventPublisher applicationEventPublisher;
+
+    @Mock
+    MessageSource messageSource;
+
     User testUser;
 
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        userController = new UserController(userService);
+        userController = new UserController(userService, applicationEventPublisher, messageSource);
 
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
 
@@ -103,5 +118,53 @@ class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(view().name("user-not-found"))
                 .andExpect(model().attributeExists("message"));
+    }
+
+    @Test
+    void confirmRegistration_invalidToken() throws Exception {
+        when(userService.getVerificationToken(anyString())).thenReturn(null);
+
+        mockMvc.perform(get("/registrationConfirm?token=123"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("registration-confirmation-error"));
+    }
+
+    @Test
+    void confirmRegistration_expiredToken() throws Exception {
+        VerificationToken invalidToken = new VerificationToken("123", testUser);
+        invalidToken.setExpiryDate(Date.from(Instant.EPOCH));
+
+        when(userService.getVerificationToken(anyString())).thenReturn(invalidToken);
+
+        mockMvc.perform(get("/registrationConfirm?token=123"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("registration-confirmation-error"));
+    }
+
+    @Test
+    void confirmRegistration_validToken() throws Exception {
+        final long DAY = 60 * 60 * 24;
+        VerificationToken validToken = new VerificationToken("123", testUser);
+        validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
+
+        when(userService.getVerificationToken(anyString())).thenReturn(validToken);
+
+        mockMvc.perform(get("/registrationConfirm?token=123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login"));
+    }
+
+    @Test
+    void confirmRegistration_userAlreadyRegistered() throws Exception {
+        final long DAY = 60 * 60 * 24;
+        testUser.setEnabled(true);
+        VerificationToken validToken = new VerificationToken("123", testUser);
+        validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
+
+        when(userService.getVerificationToken(anyString())).thenReturn(validToken);
+
+        mockMvc.perform(get("/registrationConfirm?token=123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login"));
     }
 }

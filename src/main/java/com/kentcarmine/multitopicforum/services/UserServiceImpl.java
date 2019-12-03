@@ -6,7 +6,9 @@ import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
+import com.kentcarmine.multitopicforum.model.VerificationToken;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
+import com.kentcarmine.multitopicforum.repositories.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,14 +21,17 @@ public class UserServiceImpl implements UserService {
     private final UserDtoToUserConverter userDtoToUserConverter;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationService authenticationService;
+    private final VerificationTokenRepository verificationTokenRepository;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
-                           UserDtoToUserConverter userDtoToUserConverter, PasswordEncoder passwordEncoder) {
+                           UserDtoToUserConverter userDtoToUserConverter, PasswordEncoder passwordEncoder,
+                           VerificationTokenRepository verificationTokenRepository) {
         this.userRepository = userRepository;
         this.userDtoToUserConverter = userDtoToUserConverter;
         this.passwordEncoder = passwordEncoder;
         this.authenticationService = authenticationService;
+        this.verificationTokenRepository = verificationTokenRepository;
     }
 
     @Override
@@ -40,13 +45,6 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-//        Optional<User> userOpt = userRepository.findById(name);
-//
-//        if (userOpt.isPresent()) {
-//            return userOpt.get();
-//        } else {
-//            return null;
-//        }
         return userRepository.findByUsername(name);
     }
 
@@ -82,5 +80,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean usernameExists(String username) {
         return userRepository.findByUsername(username) != null;
+    }
+
+    @Override
+    public User getUserByVerificationToken(String verificationToken) {
+        User user = verificationTokenRepository.findByToken(verificationToken).getUser();
+        return user;
+    }
+
+    @Override
+    public VerificationToken getVerificationToken(String token) {
+        return verificationTokenRepository.findByToken(token);
+    }
+
+    @Override
+    public void saveRegisteredUser(User user) {
+        userRepository.save(user);
+    }
+
+    @Override
+    public void createVerificationToken(User user, String token) {
+        VerificationToken myToken = new VerificationToken(token, user);
+        verificationTokenRepository.save(myToken);
     }
 }

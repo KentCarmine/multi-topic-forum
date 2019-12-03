@@ -10,6 +10,10 @@
                 <p style="color: red">Incorrect username or password</p>
             </div>
 
+            <div th:if="${param.regError}">
+                <p sytle="color: red" th:text="${session[SPRING_SECURITY_LAST_EXCEPTION]}"></p>
+            </div>
+
             <div th:if="${param.logout}">
                 <p style="color: greenyellow">You have been logged out</p>
             </div>

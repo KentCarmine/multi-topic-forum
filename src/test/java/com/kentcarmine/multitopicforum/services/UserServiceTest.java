@@ -8,6 +8,7 @@ import com.kentcarmine.multitopicforum.helpers.AuthenticationFacade;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
+import com.kentcarmine.multitopicforum.repositories.VerificationTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,9 @@ class UserServiceTest {
     UserRepository userRepository;
 
     @Mock
+    VerificationTokenRepository verificationTokenRepository;
+
+    @Mock
     PasswordEncoder passwordEncoder;
 
     private UserDtoToUserConverter userDtoToUserConverter;
@@ -53,7 +57,8 @@ class UserServiceTest {
         MockitoAnnotations.initMocks(this);
         userDtoToUserConverter = new UserDtoToUserConverter();
         userService =
-                new UserServiceImpl(userRepository, authenticationService, userDtoToUserConverter, passwordEncoder);
+                new UserServiceImpl(userRepository, authenticationService, userDtoToUserConverter, passwordEncoder,
+                        verificationTokenRepository);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -227,5 +232,12 @@ class UserServiceTest {
         assertTrue(userService.usernameExists(testUser.getUsername()));
 
         verify(userRepository, times(1)).findByUsername(anyString());
+    }
+
+    @Test
+    void createVerificationToken() {
+        userService.createVerificationToken(testUser, "123");
+
+        verify(verificationTokenRepository, times(1)).save(any());
     }
 }

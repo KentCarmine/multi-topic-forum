@@ -1,13 +1,14 @@
 package com.kentcarmine.multitopicforum.config;
 
-import com.kentcarmine.multitopicforum.helpers.LoginAuthenticationSuccessHandler;
+import com.kentcarmine.multitopicforum.handlers.LoginAuthenticationSuccessHandler;
 import com.kentcarmine.multitopicforum.services.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,8 +16,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import javax.sql.DataSource;
+import java.util.Properties;
 
 @Configuration
 @PropertySource("classpath:security.properties")
@@ -34,6 +38,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${remember-me-key}")
     private String rememberMeKey;
+
+    @Value("${spring.mail.host}")
+    private String mailHost;
+
+    @Value("${spring.mail.port}")
+    private int mailPort;
+
+    @Value("${spring.mail.username}")
+    private String mailUserName;
+
+    @Value("${spring.mail.password}")
+    private String mailPassword;
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -77,6 +94,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
+    }
+
+    @Bean
+    public JavaMailSender javaMailSender() {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+
+        mailSender.setHost(mailHost);
+        mailSender.setPort(mailPort);
+
+        mailSender.setUsername(mailUserName);
+        mailSender.setPassword(mailPassword);
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.debug", "true");
+
+        return mailSender;
+    }
+
+    @Bean
+    public LocaleResolver localeResolver() {
+        return new SessionLocaleResolver();
     }
 
 }

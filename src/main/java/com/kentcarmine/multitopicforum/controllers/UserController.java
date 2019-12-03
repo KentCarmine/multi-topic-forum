@@ -1,28 +1,38 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.UserDto;
+import com.kentcarmine.multitopicforum.events.OnRegistrationCompleteEvent;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.model.User;
+import com.kentcarmine.multitopicforum.model.VerificationToken;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
+import java.util.Calendar;
+import java.util.Locale;
 
 @Controller
 public class UserController {
 
     private final UserService userService;
-
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final MessageSource messageSource;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher, MessageSource messageSource) {
         this.userService = userService;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.messageSource = messageSource;
     }
 
     @GetMapping("/login")
@@ -62,7 +72,7 @@ public class UserController {
     }
 
     @PostMapping("/processUserRegistration")
-    public ModelAndView processUserRegistration(@Valid @ModelAttribute("user") UserDto user, BindingResult bindingResult) {
+    public ModelAndView processUserRegistration(@Valid @ModelAttribute("user") UserDto user, BindingResult bindingResult, WebRequest request) {
         User loggedInUser = userService.getLoggedInUser();
         if (loggedInUser != null) {
             return new ModelAndView("redirect:/users/" + loggedInUser.getUsername());
@@ -81,9 +91,56 @@ public class UserController {
 //            return new ModelAndView("user-registration-form", "user", user);
             return mv;
         } else {
-            userService.createUserByUserDto(user);
+            User registeredUser = userService.createUserByUserDto(user);
+            try {
+                String appUrl = request.getContextPath();
+                applicationEventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request.getLocale(), appUrl));
+            } catch (Exception ex) {
+                System.out.println("### Error occurred completing registration ###");
+                ex.printStackTrace();
+                return new ModelAndView("registration-email-error");
+            }
+
             return new ModelAndView("redirect:/login?registrationSuccess");
         }
+    }
+
+    @GetMapping("/registrationConfirm")
+    public ModelAndView confirmRegistration(WebRequest request,/* Model model,*/ @RequestParam("token") String token) {
+        Locale locale = request.getLocale();
+        VerificationToken verificationToken = userService.getVerificationToken(token);
+
+        ModelAndView mv;
+
+        if (verificationToken == null) {
+            String message = messageSource.getMessage("auth.message.invalidToken", null, locale);
+//            System.out.println("in invalid token redirect");
+
+            mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
+            mv.getModel().put("message", message);
+            return mv;
+        }
+
+        User user = verificationToken.getUser();
+        Calendar calendar = Calendar.getInstance();
+        if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0 && user != null && !user.isEnabled()) {
+            String messageValue = messageSource.getMessage("auth.message.expired", null, locale);
+//            System.out.println("in expired redirect");
+
+            mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
+            mv.getModel().put("message", messageValue);
+            return mv;
+        } else if (user != null && user.isEnabled()) {
+//            System.out.println("in login redirect");
+            mv = new ModelAndView("redirect:/login");
+            return mv;
+        }
+//        System.out.println("in registration and login redirect");
+
+        user.setEnabled(true);
+        userService.saveRegisteredUser(user);
+        mv = new ModelAndView("redirect:/login");
+        return mv;
     }
 
     private BindingResult updateRegistrationBindingResult(UserDto userDto, BindingResult bindingResult) {

@@ -1,4 +1,4 @@
-package com.kentcarmine.multitopicforum.helpers;
+package com.kentcarmine.multitopicforum.handlers;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;

@@ -33,7 +33,7 @@ public class User {
 
     public User() {
         this.authorities = new HashSet<>();
-        this.enabled = true;
+        this.enabled = false;
     }
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
@@ -44,7 +44,7 @@ public class User {
         this.password = password;
         this.email = email;
         this.authorities = authorities;
-        this.enabled = true;
+        this.enabled = false;
     }
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
@@ -54,7 +54,7 @@ public class User {
         this.password = password;
         this.email = email;
         this.authorities = new HashSet<>();
-        this.enabled = true;
+        this.enabled = false;
     }
 
     public String getUsername() {
