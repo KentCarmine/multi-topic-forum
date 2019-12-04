@@ -133,7 +133,7 @@ class UserControllerIT {
                 .param("password", password)
                 .param("confirmPassword", password))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/login?registrationSuccess"));
+                .andExpect(view().name("redirect:/login?regEmailSent"));
     }
 
     /**

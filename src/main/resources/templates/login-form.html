@@ -5,6 +5,7 @@
         <title>Multi-Topic Forum | Login</title>
     </head>
     <body>
+    <div th:replace="fragments/navbar.html :: navbar"></div>
         <form th:action="@{/processLogin}" method="POST">
             <div th:if="${param.error}">
                 <p style="color: red">Incorrect username or password</p>
@@ -16,6 +17,10 @@
 
             <div th:if="${param.logout}">
                 <p style="color: greenyellow">You have been logged out</p>
+            </div>
+
+            <div th:if="${param.regEmailSent}">
+                <p style="color: greenyellow">Please check your email to complete your registration</p>
             </div>
 
             <div th:if="${param.registrationSuccess}">

@@ -8,6 +8,7 @@ import java.util.Date;
 @Entity
 public class VerificationToken {
     private static final int EXPIRATION = 24 * 60; // 24 hrs
+//    private static final int EXPIRATION = 1; // For testing only
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,14 +22,6 @@ public class VerificationToken {
 
     private Date expiryDate;
 
-    private Date calculateExpiryDate(int expiryMins) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Timestamp(calendar.getTime().getTime()));
-        calendar.add(Calendar.MINUTE, expiryMins);
-
-        return new Date(calendar.getTime().getTime());
-    }
-
     public VerificationToken() {
 
     }
@@ -36,7 +29,7 @@ public class VerificationToken {
     public VerificationToken(String token, User user) {
         this.token = token;
         this.user = user;
-        expiryDate = calculateExpiryDate(EXPIRATION);
+        this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
     public Long getId() {
@@ -71,6 +64,11 @@ public class VerificationToken {
         this.expiryDate = expiryDate;
     }
 
+    public void updateToken(String newToken) {
+        this.token = newToken;
+        this.expiryDate = calculateExpiryDate(EXPIRATION);
+    }
+
     @Override
     public String toString() {
         return "VerificationToken{" +
@@ -79,5 +77,13 @@ public class VerificationToken {
                 ", user=" + user +
                 ", expiryDate=" + expiryDate +
                 '}';
+    }
+
+    private Date calculateExpiryDate(int expiryMins) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Timestamp(calendar.getTime().getTime()));
+        calendar.add(Calendar.MINUTE, expiryMins);
+
+        return new Date(calendar.getTime().getTime());
     }
 }

@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -102,5 +104,13 @@ public class UserServiceImpl implements UserService {
     public void createVerificationToken(User user, String token) {
         VerificationToken myToken = new VerificationToken(token, user);
         verificationTokenRepository.save(myToken);
+    }
+
+    @Override
+    public VerificationToken generateNewVerificationToken(String existingToken) {
+        VerificationToken token = verificationTokenRepository.findByToken(existingToken);
+        token.updateToken(UUID.randomUUID().toString());
+        token = verificationTokenRepository.save(token);
+        return token;
     }
 }

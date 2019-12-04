@@ -19,7 +19,9 @@ public interface UserService {
 
     User getUserByVerificationToken(String token);
 
-    VerificationToken getVerificationToken(String VerificationToken);
+    VerificationToken getVerificationToken(String verificationToken);
+
+    VerificationToken generateNewVerificationToken(String existingToken);
 
     void saveRegisteredUser(User user);
 

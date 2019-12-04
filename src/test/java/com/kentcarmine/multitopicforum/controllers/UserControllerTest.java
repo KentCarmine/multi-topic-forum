@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
@@ -11,12 +12,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 
+import javax.mail.internet.MimeMessage;
 import java.sql.Date;
 import java.time.Instant;
 import java.time.temporal.TemporalAmount;
@@ -29,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ActiveProfiles("test")
 class UserControllerTest {
-
+    private static final long DAY = 60 * 60 * 24;
     private static final String TEST_USERNAME = "TestUser";
     private static final String TEST_USER_PASSWORD = "testPassword";
     private static final String TEST_USER_EMAIL = "testuser@test.com";
@@ -47,15 +50,18 @@ class UserControllerTest {
     @Mock
     MessageSource messageSource;
 
+    @Mock
+    JavaMailSender mailSender;
+
     User testUser;
 
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        userController = new UserController(userService, applicationEventPublisher, messageSource);
+        userController = new UserController(userService, applicationEventPublisher, messageSource, mailSender);
 
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(userController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -151,12 +157,11 @@ class UserControllerTest {
 
         mockMvc.perform(get("/registrationConfirm?token=123"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/login"));
+                .andExpect(view().name("redirect:/login?registrationSuccess"));
     }
 
     @Test
     void confirmRegistration_userAlreadyRegistered() throws Exception {
-        final long DAY = 60 * 60 * 24;
         testUser.setEnabled(true);
         VerificationToken validToken = new VerificationToken("123", testUser);
         validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
@@ -167,4 +172,39 @@ class UserControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/login"));
     }
+
+    @Test
+    void resendRegistrationEmail_validToken() throws Exception {
+        VerificationToken validToken = new VerificationToken("123", testUser);
+        validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
+        when(userService.generateNewVerificationToken(anyString())).thenReturn(validToken);
+        when(userService.getUserByVerificationToken(anyString())).thenReturn(testUser);
+
+        mockMvc.perform(get("/resendRegistrationEmail?token=123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login?regEmailSent"));
+    }
+
+    @Test
+    void resendRegistrationEmail_invalidToken() throws Exception {
+        when(userService.generateNewVerificationToken(anyString())).thenReturn(null);
+
+        mockMvc.perform(get("/resendRegistrationEmail?token=123"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(view().name("general-error-page"));
+    }
+
+    @Test
+    void resendRegistrationEmail_userAlreadyEnabled() throws Exception {
+        testUser.setEnabled(true);
+        VerificationToken validToken = new VerificationToken("123", testUser);
+        validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
+        when(userService.generateNewVerificationToken(anyString())).thenReturn(validToken);
+        when(userService.getUserByVerificationToken(anyString())).thenReturn(testUser);
+
+        mockMvc.perform(get("/resendRegistrationEmail?token=123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login"));
+    }
+
 }

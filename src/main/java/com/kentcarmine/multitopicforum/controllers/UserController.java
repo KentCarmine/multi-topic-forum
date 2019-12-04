@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.Locale;
@@ -27,12 +30,14 @@ public class UserController {
     private final UserService userService;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final MessageSource messageSource;
+    private final JavaMailSender mailSender;
 
     @Autowired
-    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher, MessageSource messageSource) {
+    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher, MessageSource messageSource, JavaMailSender mailSender) {
         this.userService = userService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.messageSource = messageSource;
+        this.mailSender = mailSender;
     }
 
     @GetMapping("/login")
@@ -101,7 +106,7 @@ public class UserController {
                 return new ModelAndView("registration-email-error");
             }
 
-            return new ModelAndView("redirect:/login?registrationSuccess");
+            return new ModelAndView("redirect:/login?regEmailSent");
         }
     }
 
@@ -114,7 +119,6 @@ public class UserController {
 
         if (verificationToken == null) {
             String message = messageSource.getMessage("auth.message.invalidToken", null, locale);
-//            System.out.println("in invalid token redirect");
 
             mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
             mv.getModel().put("message", message);
@@ -125,22 +129,50 @@ public class UserController {
         Calendar calendar = Calendar.getInstance();
         if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0 && user != null && !user.isEnabled()) {
             String messageValue = messageSource.getMessage("auth.message.expired", null, locale);
-//            System.out.println("in expired redirect");
 
             mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
             mv.getModel().put("message", messageValue);
+            mv.getModel().put("expired", true);
+            mv.getModel().put("token", token);
             return mv;
         } else if (user != null && user.isEnabled()) {
-//            System.out.println("in login redirect");
             mv = new ModelAndView("redirect:/login");
             return mv;
         }
-//        System.out.println("in registration and login redirect");
 
         user.setEnabled(true);
         userService.saveRegisteredUser(user);
-        mv = new ModelAndView("redirect:/login");
+        mv = new ModelAndView("redirect:/login?registrationSuccess");
         return mv;
+    }
+
+    @GetMapping("/resendRegistrationEmail")
+    public String resendRegistrationEmail(HttpServletRequest request, @RequestParam("token") String existingToken) {
+        VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
+
+        User user = userService.getUserByVerificationToken(newToken.getToken());
+
+        if (user.isEnabled()) {
+            return "redirect:/login";
+        }
+
+        String url = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+        SimpleMailMessage email = constructResendVerificationTokenEmail(url, request.getLocale(), newToken, user);
+        mailSender.send(email);
+
+        return "redirect:/login?regEmailSent";
+    }
+
+    private SimpleMailMessage constructResendVerificationTokenEmail(String contextPath, Locale locale,
+                                                                    VerificationToken newToken, User user) {
+        String confirmationUrl = contextPath + "/registrationConfirm?token=" + newToken.getToken();
+        String message = messageSource.getMessage("message.resendToken", null, locale);
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setSubject("Multi-Topic Forum Registration Confirmation : Re-sent");
+        email.setText(message + "\n" + confirmationUrl);
+        email.setTo(user.getEmail());
+
+        return email;
     }
 
     private BindingResult updateRegistrationBindingResult(UserDto userDto, BindingResult bindingResult) {
