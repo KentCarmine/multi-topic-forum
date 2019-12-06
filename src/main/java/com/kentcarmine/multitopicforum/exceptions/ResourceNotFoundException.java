@@ -1,5 +1,8 @@
 package com.kentcarmine.multitopicforum.exceptions;
 
+/**
+ * Exception thrown when attempting to access a resource that does not exist.
+ */
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException() {
         super();

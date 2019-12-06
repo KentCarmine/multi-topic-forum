@@ -5,8 +5,12 @@ import com.kentcarmine.multitopicforum.model.User;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+/**
+ * Converter object that converts UserDto objects to User objects
+ */
 @Component
 public class UserDtoToUserConverter implements Converter<UserDto, User> {
+
     @Override
     public User convert(UserDto userDto) {
         User user = new User();

@@ -7,6 +7,10 @@ import com.kentcarmine.multitopicforum.dtos.UserDto;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+/**
+ * Validator that processes @PasswordMatches annotations, ensuring that the annotated object has matching values in
+ * its password and confirmPassword fields.
+ */
 public class PasswordMatchValidator implements ConstraintValidator<PasswordMatches, Object> {
 
     @Override

@@ -5,6 +5,9 @@ import org.springframework.context.ApplicationEvent;
 
 import java.util.Locale;
 
+/**
+ * Event fired when a user enters the information to register an account.
+ */
 public class OnRegistrationCompleteEvent extends ApplicationEvent {
     private String appUrl;
     private Locale locale;

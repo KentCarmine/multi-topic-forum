@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+/**
+ * Listener that processes OnRegistrationCompleteEvents. Creates a verification token and emails a link to the user
+ * so that they can complete their registration
+ */
 @Component
 public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {
 
@@ -33,6 +37,11 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         this.confirmRegistration(onRegistrationCompleteEvent);
     }
 
+    /**
+     * Sends an email to the user containing information from the received event
+     *
+     * @param event the event to get information from
+     */
     private void confirmRegistration(OnRegistrationCompleteEvent event) {
         User user = event.getUser();
         String token = UUID.randomUUID().toString();
@@ -46,7 +55,7 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         SimpleMailMessage email = new SimpleMailMessage();
         email.setTo(recipientEmail);
         email.setSubject(subject);
-        email.setText(message + "\n\n" + "http://localhost:8080" + confirmationUrl);
+        email.setText(message + "\n" + "http://localhost:8080" + confirmationUrl);
         javaMailSender.send(email);
     }
 

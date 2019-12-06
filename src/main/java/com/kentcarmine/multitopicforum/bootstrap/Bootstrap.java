@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 
+/**
+ * Adds data to database for testing.
+ */
 @Component
 @Profile({"dev", "test"})
 public class Bootstrap implements CommandLineRunner {

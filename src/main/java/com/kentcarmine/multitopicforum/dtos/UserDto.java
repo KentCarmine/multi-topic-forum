@@ -6,6 +6,9 @@ import com.kentcarmine.multitopicforum.annotations.ValidEmail;
 import javax.validation.constraints.Size;
 
 
+/**
+ * Represents a User object received from a form.
+ */
 @PasswordMatches
 public class UserDto implements PasswordDto {
 

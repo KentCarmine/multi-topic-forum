@@ -1,5 +1,8 @@
 package com.kentcarmine.multitopicforum.exceptions;
 
+/**
+ * Exception thrown when attempting to access a User that does not exist.
+ */
 public class UserNotFoundException extends ResourceNotFoundException {
     public UserNotFoundException() {
         super();

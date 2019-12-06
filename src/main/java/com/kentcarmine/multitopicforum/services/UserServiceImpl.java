@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Calendar;
 import java.util.UUID;
 
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -48,11 +49,22 @@ public class UserServiceImpl implements UserService {
         this.authorityRepository = authorityRepository;
     }
 
+    /**
+     * Gets the currently logged in user
+     *
+     * @return the currently logged in user. Can be ANONYMOUS
+     */
     @Override
     public User getLoggedInUser() {
         return getUser(authenticationService.getLoggedInUserName());
     }
 
+    /**
+     * Get a User by username
+     *
+     * @param name the name of the user to get
+     * @return the user with the given username, or null if no such user exists
+     */
     @Override
     public User getUser(String name) {
         if (name == null) {
@@ -62,6 +74,12 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(name);
     }
 
+    /**
+     * Get a User by email
+     *
+     * @param email the email of the user to get
+     * @return the user with the given email, or null if no such user exists
+     */
     @Override
     public User getUserByEmail(String email) {
         if (email == null) {
@@ -71,11 +89,27 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email);
     }
 
+    /**
+     * Creates and saves a new User object from a given UserDto
+     *
+     * @param userDto the UserDto to convert and save
+     * @return the created User object
+     * @throws DuplicateEmailException if a user already exists with the given email
+     * @throws DuplicateUsernameException if a user already exists with the given username
+     */
     @Override
     public User createUserByUserDto(UserDto userDto) throws DuplicateEmailException, DuplicateUsernameException {
         return createUser(userDtoToUserConverter.convert(userDto));
     }
 
+    /**
+     * Saves the given user to persistent storage.
+     *
+     * @param user the user to save
+     * @return the created User object
+     * @throws DuplicateEmailException if a user already exists with the given email
+     * @throws DuplicateUsernameException if a user already exists with the given username
+     */
     @Transactional
     @Override
     public User createUser(User user) throws DuplicateEmailException, DuplicateUsernameException {
@@ -94,39 +128,79 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    /**
+     * Check if any user with the given email exists in persistent storage.
+     *
+     * @param email the email to check for
+     * @return true if a user with the given email exists, false otherwise
+     */
     @Override
     public boolean emailExists(String email) {
         User user = userRepository.findByEmail(email);
         return user != null;
     }
 
+    /**
+     * Check if any user with the given username exists in persistent storage.
+     *
+     * @param username the username to check for
+     * @return true if a user with the given username exists, false otherwise
+     */
     @Override
     public boolean usernameExists(String username) {
         return userRepository.findByUsername(username) != null;
     }
 
+    /**
+     * Get the user with the given verification token string
+     *
+     * @param verificationToken the verification token string to get the User for
+     * @return the user with the given verification token, or null if no such user exists
+     */
     @Override
     public User getUserByVerificationToken(String verificationToken) {
         User user = verificationTokenRepository.findByToken(verificationToken).getUser();
         return user;
     }
 
+    /**
+     * Get the VerificationToken from persistent storage that has the given token string
+     *
+     * @param token the token string to get the VerificationToken for
+     * @return the VerificationToken with the given token string, or null if no such VerificationToken exists
+     */
     @Override
     public VerificationToken getVerificationToken(String token) {
         return verificationTokenRepository.findByToken(token);
     }
 
+    /**
+     * Saves a registered user to persistent storage
+     * @param user the user to save
+     */
     @Override
     public void saveRegisteredUser(User user) {
         userRepository.save(user);
     }
 
+    /**
+     * Creates and saves a VerificationToken with the given token string that is associated with the given User
+     *
+     * @param user the user to associate the token with
+     * @param token the token string to use
+     */
     @Override
     public void createVerificationToken(User user, String token) {
         VerificationToken myToken = new VerificationToken(token, user);
         verificationTokenRepository.save(myToken);
     }
 
+    /**
+     * Updates an existing VerificationToken with the given existingToken string to use a new token string, and saves
+     * that VerificationToken
+     * @param existingToken the existing token string to find the VerificationToken for
+     * @return the updated VerificationToken
+     */
     @Override
     public VerificationToken generateNewVerificationToken(String existingToken) {
         VerificationToken token = verificationTokenRepository.findByToken(existingToken);
@@ -135,6 +209,13 @@ public class UserServiceImpl implements UserService {
         return token;
     }
 
+    /**
+     * Creates and saves a PasswordResetToken associated with the given User. Also deletes all other PasswordResetTokens
+     * associated with that user
+     *
+     * @param user the user to associate the PasswordResetToken with
+     * @return a PasswordResetToken associated with the given User
+     */
     @Transactional
     @Override
     public PasswordResetToken createPasswordResetTokenForUser(User user) {
@@ -147,28 +228,31 @@ public class UserServiceImpl implements UserService {
         return prToken;
     }
 
+    /**
+     * Confirms that the given User is associated with a PasswordResetToken with the given token string. Also updates
+     * the given User's authority, allowing them to change their password.
+     *
+     * @param user the user to validate
+     * @param token the token string to find a PasswordResetToken for
+     * @return true if the User has the authority to reset their password, false otherwise
+     */
     @Override
     public boolean validatePasswordResetToken(User user, String token) {
         if (user == null || !user.isEnabled()) {
-//            System.out.println("### in validatePasswordResetToken invalid user case");
             return false;
         }
 
         // Invalid username or token
         PasswordResetToken prToken = passwordResetTokenRepository.findByToken(token);
         if (prToken == null || !prToken.getUser().getUsername().equals(user.getUsername())) {
-//            System.out.println("### in validatePasswordResetToken invalid token case");
             return false;
         }
 
         // Expired token
         Calendar calendar = Calendar.getInstance();
         if (prToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0) {
-            System.out.println("### in validatePasswordResetToken expired token case");
             return false;
         }
-
-//        System.out.println("### in validatePasswordResetToken valid token case");
 
         // Valid username and token
         addAuthorityToUser(user, UserRole.CHANGE_PASSWORD_PRIVILEGE);
@@ -176,6 +260,12 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
+    /**
+     * Updates the given user's password to newPassword and revokes the now-unneeded password change authority.
+     *
+     * @param user the user to update
+     * @param newPassword the new password for that user
+     */
     @Transactional
     @Override
     public void changeUserPassword(User user, String newPassword) {
@@ -186,11 +276,16 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    /**
+     * Helper method that adds a given userRole to a given user and then saves that user.
+     *
+     * @param user the user to add the role to.
+     * @param userRole the role to add to the user
+     */
     private void addAuthorityToUser(User user, UserRole userRole) {
         if (!user.hasAuthority(userRole)) {
             user.addAuthority(userRole);
             userRepository.save(user);
         }
     }
-
 }

@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * When a user successfully logs in, redirect them to their home page.
+ * Handler that allows a user who successfully logs in to automatically redirect  to their home page.
  */
 @Component
 public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessHandler {

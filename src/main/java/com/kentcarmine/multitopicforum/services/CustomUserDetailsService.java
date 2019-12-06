@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Implementation of UserDetailsService.
+ */
 @Service
 @Transactional
 public class CustomUserDetailsService implements UserDetailsService {
@@ -42,9 +45,14 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getUsername(), user.getPassword(), user.isEnabled(), accountNonExpired, credentialsNonExpired,
                 accountNonLocked, getAuthorities(user.getAuthorities())
         );
-
     }
 
+    /**
+     * Converts a Set of Authorities into a List of GrantedAuthorites
+     *
+     * @param roles Set of Authorities to convert
+     * @return the equivalent List of GratnedAuthorities
+     */
     private static List<GrantedAuthority> getAuthorities(Set<Authority> roles) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (Authority role: roles) {

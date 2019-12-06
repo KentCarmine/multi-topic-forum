@@ -338,6 +338,8 @@ class UserControllerTest {
         String password = "testPassword";
         String confirmPassword = "testPassword";
 
+        testUser.addAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE);
+
         when(userService.getUser(anyString())).thenReturn(testUser);
         when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
 

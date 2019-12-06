@@ -5,6 +5,10 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Entity representing an account registration verificaiton token associated with a user account. Used when creating a
+ * user account. Can expire.
+ */
 @Entity
 public class VerificationToken {
     private static final int EXPIRATION = 24 * 60; // 24 hrs

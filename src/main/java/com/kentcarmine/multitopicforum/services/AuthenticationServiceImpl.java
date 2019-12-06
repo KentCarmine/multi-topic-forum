@@ -4,6 +4,9 @@ import com.kentcarmine.multitopicforum.helpers.AuthenticationFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service that provies information about the currently authenticated user.
+ */
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
 
@@ -16,12 +19,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public String getLoggedInUserName() {
-//        System.out.println("#####");
-//        System.out.println(authenticationFacade);
-//        System.out.println(authenticationFacade.getAuthentication());
-//        System.out.println(authenticationFacade.getAuthentication().getName());
-//        System.out.println(authenticationFacade.getAuthentication().getName());
-//        System.out.println("#####");
         if (isUserLoggedIn()) {
             return authenticationFacade.getAuthentication().getName();
         } else {

@@ -5,6 +5,9 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Entity representing a password reset token associated with a user account. Can expire.
+ */
 @Entity
 public class PasswordResetToken {
     private static final int EXPIRATION = 24 * 60; // 24 hrs

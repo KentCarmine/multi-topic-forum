@@ -4,6 +4,10 @@ import com.kentcarmine.multitopicforum.annotations.PasswordMatches;
 
 import javax.validation.constraints.Size;
 
+/**
+ * Represents a password and password confirmation field recieved from a form. Also includes information about the user
+ * and a password reset token.
+ */
 @PasswordMatches
 public class UserPasswordDto implements PasswordDto {
 

@@ -16,10 +16,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,8 +27,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.UUID;
 
+/**
+ * Controller for handling all user-related tasks (ie. login/logout, registration, password reset, etc)
+ */
 @Controller
 public class UserController {
 
@@ -49,20 +47,22 @@ public class UserController {
         this.mailSender = mailSender;
     }
 
+    /**
+     * Display login form if no one is logged in, otherwise navigate to currently logged in user's page
+     */
     @GetMapping("/login")
     public String showLoginForm() {
-//        SecurityContextHolder.getContext().getAuthentication().getAuthorities().forEach((a) -> {System.out.println(a.toString());}); // TODO: For testing only
         User loggedInUser = userService.getLoggedInUser();
         if (loggedInUser != null) {
-//            System.out.println("### REDIRECT ###");
             return "redirect:/users/" + loggedInUser.getUsername();
         }
-
-//        System.out.println("### NO_REDIRECT ###");
 
         return "login-form";
     }
 
+    /**
+     * Show the profile page of the user with the given name, or throw a UserNotFoundException if no such user exists
+     */
     @GetMapping("/users/{username}")
     public String showUserPage(Model model, @PathVariable String username) {
         if (userService.usernameExists(username)) {
@@ -74,6 +74,9 @@ public class UserController {
         }
     }
 
+    /**
+     * Display the form to allow a user to register. If a user is logged in, instead go to that user's profile page
+     */
     @GetMapping("/registerUser")
     public String showUserRegistrationForm(Model model) {
         User loggedInUser = userService.getLoggedInUser();
@@ -86,6 +89,10 @@ public class UserController {
         return "user-registration-form";
     }
 
+    /**
+     * Handle processing when a user submits a registration form, either creating the user and sending them an email to
+     * complete registration if the input is valid, or informing them of errors in their input if the input is not valid
+     */
     @PostMapping("/processUserRegistration")
     public ModelAndView processUserRegistration(@Valid @ModelAttribute("user") UserDto user, BindingResult bindingResult, WebRequest request) {
         User loggedInUser = userService.getLoggedInUser();
@@ -96,14 +103,8 @@ public class UserController {
         updateRegistrationBindingResult(user, bindingResult);
 
         if (bindingResult.hasErrors()) {
-//            System.out.println("###ERRORS###");
-//            bindingResult.getAllErrors().forEach(objectError -> {
-//                System.out.println(objectError.toString());
-//            });
-//            System.out.println("###END-ERRORS###");
             ModelAndView mv = new ModelAndView("user-registration-form", "user", user);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-//            return new ModelAndView("user-registration-form", "user", user);
             return mv;
         } else {
             User registeredUser = userService.createUserByUserDto(user);
@@ -120,6 +121,11 @@ public class UserController {
         }
     }
 
+    /**
+     * Handle finalizing registration of a user when they click the link in their registration confirmation email.
+     * Creates the account and enables the user if the verification token is valid, otherwise displays an error to
+     * the user.
+     */
     @GetMapping("/registrationConfirm")
     public ModelAndView confirmRegistration(WebRequest request, @RequestParam("token") String token) {
         Locale locale = request.getLocale();
@@ -156,6 +162,10 @@ public class UserController {
         return mv;
     }
 
+    /**
+     * Resends the registration email to the user upon request (ie. if the previous registration token is expired).
+     * If the user already exsists and is enabled, sends them to the login page.
+     */
     @GetMapping("/resendRegistrationEmail")
     public String resendRegistrationEmail(HttpServletRequest request, @RequestParam("token") String existingToken) {
         VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
@@ -172,19 +182,27 @@ public class UserController {
         return "redirect:/login?regEmailSent";
     }
 
+    /**
+     * Displays a form where the user can enter their email to reset the password on the associated account
+     */
     @GetMapping("/resetPassword")
     public String showResetPasswordStarterForm(Model model) {
         model.addAttribute("user_email", new UserEmailDto());
         return "reset-password-starter-form";
     }
 
+    /**
+     * Handles processing of the password reset form submission. If there are no errors, sends the email to the user
+     * to allow them to reset their password. If the email is valid and belongs to an enabled user, sends that user
+     * a password reset email. If the email is validly formed but not associated with an enabled user, do not send
+     * an email and simply redirect them to the home page without any errors (for security purposes).
+     */
     @PostMapping("/processResetPasswordStarterForm")
     public ModelAndView processResetPasswordStarterForm(@Valid @ModelAttribute("user_email") UserEmailDto userEmailDto,
                                                         BindingResult bindingResult, HttpServletRequest request) {
         ModelAndView mv;
 
         if (bindingResult.hasErrors()) {
-//            System.out.println("errors found");
             mv = new ModelAndView("reset-password-starter-form", "user_email", userEmailDto);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
             return mv;
@@ -193,8 +211,6 @@ public class UserController {
         User user = userService.getUserByEmail(userEmailDto.getEmail());
 
         if (user != null && user.isEnabled()) {
-//            System.out.println("user found");
-
             PasswordResetToken resetToken = userService.createPasswordResetTokenForUser(user);
             mailSender.send(constructPasswordResetEmail(getAppUrl(request), request.getLocale(), resetToken, user));
         }
@@ -203,18 +219,18 @@ public class UserController {
         return mv;
     }
 
+    /**
+     * Displays the form for users to enter a new password after a password reset request email link is clicked.
+     * If the user and token are valid, it displays the form, otherwise, it displays an error and redirects to /login.
+     */
     @GetMapping("/changePassword")
     public String showChangePasswordForm(Model model, @RequestParam("username") String username,
                                          @RequestParam("token") String token) {
         User user = userService.getUser(username);
         boolean isValidResetToken = userService.validatePasswordResetToken(user, token);
-//        System.out.println("### User has change password auth: " + user.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
         if (user == null || !user.isEnabled() || !isValidResetToken) {
-//            System.out.println("### User null:" + user == null);
             if (user != null) {
-//                System.out.println("### User enabled:" + user.isEnabled());
             }
-//            System.out.println("### Valid token: " + isValidResetToken);
             return "redirect:/login?passwordResetError";
         }
 
@@ -223,6 +239,11 @@ public class UserController {
         return "change-password-form";
     }
 
+    /**
+     * Handles processing the password change when the password change form is submitted. If there are input errors or
+     * and invalid user or token, display those errors. Otherwise, resets the user's password and redirects to /login
+     * and inform the user of the success of the password reset.
+     */
     @PostMapping("/processChangePassword")
     public ModelAndView processChangePasswordForm(@Valid UserPasswordDto userPasswordDto, BindingResult bindingResult) {
         ModelAndView mv;
@@ -233,13 +254,10 @@ public class UserController {
             return mv;
         }
 
-//        System.out.println("### In /processChangePassword, username = " + userPasswordDto.getUsername());
-//        System.out.println("### In /processChangePassword, token = " + userPasswordDto.getToken());
         User user = userService.getUser(userPasswordDto.getUsername());
         boolean isValidResetToken = userService.validatePasswordResetToken(user, userPasswordDto.getToken());
 
-        if (!isValidResetToken) {
-//            System.out.println("### In /processChangePassword, invalid token case");
+        if (!isValidResetToken || !user.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE)) {
             mv = new ModelAndView("redirect:/login?passwordResetError");
             return mv;
         }
@@ -250,10 +268,39 @@ public class UserController {
         return mv;
     }
 
+    /**
+     * Handler method that handles displaying an error page when a UserNotFoundException occurs.
+     *
+     * @param model the model to add a message to
+     * @param ex the exception to handle
+     * @return the name of the error page to display
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleUserNotFound(Model model, UserNotFoundException ex) {
+        model.addAttribute("message", ex.getMessage());
+        return "user-not-found";
+    }
+
+    /**
+     * Helper method that creates the app's url with current context path
+     *
+     * @param request the request to get the URL from
+     * @return the app's url including current context path
+     */
     private String getAppUrl(HttpServletRequest request) {
         return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
     }
 
+    /**
+     * Helper method that creates an email to send to a user including a link to allow them to reset their password.
+     *
+     * @param appUrl the url to click on
+     * @param locale the locale
+     * @param token the token to send
+     * @param user the user to whom the token belongs
+     * @return the password reset email
+     */
     private SimpleMailMessage constructPasswordResetEmail(String appUrl, Locale locale, PasswordResetToken token, User user) {
         String resetUrl = appUrl + "/changePassword?username=" + user.getUsername() + "&token=" + token.getToken();
         String message = messageSource.getMessage("message.resetPasswordLinkPrompt", null, locale) + "\n" + resetUrl;
@@ -262,6 +309,16 @@ public class UserController {
         return constructEmail(subject, message, user);
     }
 
+    /**
+     * Helper method that creates an email to send to a user including a link with an updated registration verification
+     * token.
+     *
+     * @param appUrl the url to click on
+     * @param locale the locale
+     * @param newToken the token to send
+     * @param user the user attempting to register
+     * @return the account registration verification email
+     */
     private SimpleMailMessage constructResendVerificationTokenEmail(String appUrl, Locale locale,
                                                                     VerificationToken newToken, User user) {
         String confirmationUrl = appUrl + "/registrationConfirm?token=" + newToken.getToken();
@@ -271,6 +328,14 @@ public class UserController {
         return constructEmail(subject, message , user);
     }
 
+    /**
+     * Helper method taht constructs an email
+     *
+     * @param subject the subject of the email
+     * @param body the body of the email
+     * @param user the user to send the email to
+     * @return the constructed emil with the given subject, body, and email address of the recipient
+     */
     private SimpleMailMessage constructEmail(String subject, String body, User user) {
         SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject(subject);
@@ -279,6 +344,13 @@ public class UserController {
         return email;
     }
 
+    /**
+     * Helper method that updates the BindingResult with errors indicating if the username or email is already in use
+     *
+     * @param userDto the userDto to check for duplicate information
+     * @param bindingResult the binding result to update
+     * @return the updated binding result
+     */
     private BindingResult updateRegistrationBindingResult(UserDto userDto, BindingResult bindingResult) {
         if (userService.usernameExists(userDto.getUsername())) {
             bindingResult.rejectValue("username", "message.regError",
@@ -291,12 +363,5 @@ public class UserController {
         }
 
         return bindingResult;
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleUserNotFound(Model model, UserNotFoundException ex) {
-        model.addAttribute("message", ex.getMessage());
-        return "user-not-found";
     }
 }

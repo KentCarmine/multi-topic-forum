@@ -3,6 +3,9 @@ package com.kentcarmine.multitopicforum.controllers;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+/**
+ * Controller that handles displaying the homepage
+ */
 @Controller
 public class HomeController {
 

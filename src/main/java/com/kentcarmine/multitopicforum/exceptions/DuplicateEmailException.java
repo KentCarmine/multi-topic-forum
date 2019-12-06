@@ -1,5 +1,8 @@
 package com.kentcarmine.multitopicforum.exceptions;
 
+/**
+ * Exception thrown when attempting to save a User object with an email that already exists.
+ */
 public class DuplicateEmailException extends RuntimeException {
     public DuplicateEmailException() {
         super();

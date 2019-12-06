@@ -22,6 +22,9 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import javax.sql.DataSource;
 import java.util.Properties;
 
+/**
+ * Handles security and security-related configuration.
+ */
 @Configuration
 @PropertySource("classpath:security.properties")
 @EnableWebSecurity
@@ -76,7 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler(loginHandler)
                 .permitAll()
                 .and()
-                .logout().invalidateHttpSession(true).deleteCookies("JSESSIONID").permitAll()
+                .logout().invalidateHttpSession(true).deleteCookies("JSESSIONID").permitAll() // Clear session on logout
                 .and()
                 .rememberMe().key(rememberMeKey)
                 .and().csrf().disable().headers().frameOptions().disable(); // TODO: For debug only

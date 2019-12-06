@@ -7,6 +7,9 @@ import javax.validation.constraints.*;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Entity representing a user
+ */
 @Entity
 @Table(name="users")
 public class User {

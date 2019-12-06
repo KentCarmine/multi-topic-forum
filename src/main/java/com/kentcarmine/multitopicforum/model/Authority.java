@@ -3,6 +3,9 @@ package com.kentcarmine.multitopicforum.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+/**
+ * Entity representing user Authorities
+ */
 @Entity
 @Table(name="authorities")
 public class Authority {
