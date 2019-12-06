@@ -37,4 +37,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         return true;
     }
+
+    @Override
+    public void debugPrintAuthorities() {
+        System.out.println("### Authorities");
+        authenticationFacade.getAuthentication().getAuthorities().forEach((a) -> a.getAuthority());
+        System.out.println("### End Authorities");
+    }
 }

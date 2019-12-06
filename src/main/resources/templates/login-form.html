@@ -5,14 +5,14 @@
         <title>Multi-Topic Forum | Login</title>
     </head>
     <body>
-    <div th:replace="fragments/navbar.html :: navbar"></div>
+        <div th:replace="fragments/navbar.html :: navbar"></div>
         <form th:action="@{/processLogin}" method="POST">
             <div th:if="${param.error}">
                 <p style="color: red">Incorrect username or password</p>
             </div>
 
             <div th:if="${param.regError}">
-                <p sytle="color: red" th:text="${session[SPRING_SECURITY_LAST_EXCEPTION]}"></p>
+                <p style="color: red" th:text="${session[SPRING_SECURITY_LAST_EXCEPTION]}"></p>
             </div>
 
             <div th:if="${param.logout}">
@@ -27,11 +27,22 @@
                 <p style="color: greenyellow">You successfully registered an account</p>
             </div>
 
+            <div th:if="${param.passwordResetError}">
+                <p style="color: red">Error when attempting to reset password</p>
+            </div>
+
+            <div th:if="${param.passwordUpdateSuccess}">
+                <p style="color: greenyellow">You password has been successfully updated</p>
+            </div>
+
             <div>
                 Username: <input type="text" name="username" placeholder="username">
             </div>
             <div>
                 Password: <input type="password" name="password" placeholder="password">
+            </div>
+            <div>
+                <a href="#" th:href="@{/resetPassword}">Reset password</a>
             </div>
             <div>
                 Remember me: <input type="checkbox" name="remember-me">

@@ -5,4 +5,6 @@ public interface AuthenticationService {
     String getLoggedInUserName();
 
     boolean isUserLoggedIn();
+
+    void debugPrintAuthorities();
 }

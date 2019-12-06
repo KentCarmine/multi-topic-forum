@@ -1,6 +1,8 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.dtos.UserEmailDto;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
+import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
@@ -12,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
+import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -24,10 +27,12 @@ import java.sql.Date;
 import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
+import java.util.regex.Matcher;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("test")
@@ -206,5 +211,224 @@ class UserControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/login"));
     }
+
+    @Test
+    void showResetPasswordStarterForm() throws Exception {
+        mockMvc.perform(get("/resetPassword"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("reset-password-starter-form"))
+                .andExpect(model().attributeExists("user_email"));
+    }
+
+    @Test
+    void processResetPasswordStarterForm_isMalformedEmail() throws Exception {
+        mockMvc.perform(post("/processResetPasswordStarterForm")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("email", "fake@fakeemail"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("reset-password-starter-form"))
+                .andExpect(model().hasErrors());
+    }
+
+    @Test
+    void processResetPasswordStarterForm_isNonexistentEmail() throws Exception {
+        when(userService.getUserByEmail(anyString())).thenReturn(null);
+
+        mockMvc.perform(post("/processResetPasswordStarterForm")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("email", "fake@fakeemail.com"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/"));
+
+        verify(userService, times(0)).createPasswordResetTokenForUser(any());
+        verify(mailSender, times(0)).send(any(MimeMessage.class));
+    }
+
+    @Test
+    void processResetPasswordStarterForm_isDisabledUser() throws Exception {
+        testUser.setEnabled(false);
+        when(userService.getUserByEmail(anyString())).thenReturn(testUser);
+        when(userService.createPasswordResetTokenForUser(any())).thenReturn(new PasswordResetToken());
+
+        mockMvc.perform(post("/processResetPasswordStarterForm")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("email", testUser.getEmail()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/"));
+
+        verify(userService, times(0)).createPasswordResetTokenForUser(any());
+        verify(mailSender, times(0)).send(any(MimeMessage.class));
+    }
+
+    @Test
+    void processResetPasswordStarterForm_validInput() throws Exception {
+        testUser.setEnabled(true);
+        when(userService.getUserByEmail(anyString())).thenReturn(testUser);
+        when(userService.createPasswordResetTokenForUser(any())).thenReturn(new PasswordResetToken());
+
+        mockMvc.perform(post("/processResetPasswordStarterForm")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("email", testUser.getEmail()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/"));
+
+        verify(userService, times(1)).createPasswordResetTokenForUser(any());
+    }
+
+    @Test
+    void showChangePasswordForm_validInput() throws Exception {
+        testUser.setEnabled(true);
+        String url = "/changePassword?username=" + testUser.getUsername() + "&token=123";
+
+        when(userService.getUser(anyString())).thenReturn(testUser);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+
+        mockMvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(view().name("change-password-form"))
+                .andExpect(model().attributeExists("userPasswordDto"));
+    }
+
+    @Test
+    void showChangePasswordForm_noSuchUser() throws Exception {
+        testUser.setEnabled(true);
+        String url = "/changePassword?username=madeupuser&token=123";
+
+        when(userService.getUser(anyString())).thenReturn(null);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+
+        mockMvc.perform(get(url))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login?passwordResetError"))
+                .andExpect(model().attributeDoesNotExist("userPasswordDto"));
+    }
+
+    @Test
+    void showChangePasswordForm_disabledUser() throws Exception {
+        testUser.setEnabled(false);
+        String url = "/changePassword?username=" + testUser.getUsername() + "&token=123";
+
+        when(userService.getUser(anyString())).thenReturn(testUser);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+
+        mockMvc.perform(get(url))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login?passwordResetError"))
+                .andExpect(model().attributeDoesNotExist("userPasswordDto"));
+    }
+
+    @Test
+    void showChangePasswordForm_invalidToken() throws Exception {
+        testUser.setEnabled(true);
+        String url = "/changePassword?username=" + testUser.getUsername() + "&token=123";
+
+        when(userService.getUser(anyString())).thenReturn(testUser);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(false);
+
+        mockMvc.perform(get(url))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login?passwordResetError"))
+                .andExpect(model().attributeDoesNotExist("userPasswordDto"));
+    }
+
+    @Test
+    void processChangePasswordForm_validInput() throws Exception {
+        String username = testUser.getUsername();
+        String token = "123";
+        String password = "testPassword";
+        String confirmPassword = "testPassword";
+
+        when(userService.getUser(anyString())).thenReturn(testUser);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+
+        mockMvc.perform(post("/processChangePassword")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", username)
+                .param("token", token)
+                .param("password", password)
+                .param("confirmPassword", confirmPassword))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login?passwordUpdateSuccess"));
+
+        verify(userService, times(1)).changeUserPassword(any(), anyString());
+    }
+
+    @Test
+    void processChangePasswordForm_mismatchedPasswords() throws Exception {
+        String username = testUser.getUsername();
+        String token = "123";
+        String password = "testPassword";
+        String confirmPassword = "testPassword2";
+
+        when(userService.getUser(anyString())).thenReturn(testUser);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+
+        mockMvc.perform(post("/processChangePassword")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", username)
+                .param("token", token)
+                .param("password", password)
+                .param("confirmPassword", confirmPassword))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("change-password-form"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).changeUserPassword(any(), anyString());
+    }
+
+    @Test
+    void processChangePasswordForm_shortPasswords() throws Exception {
+        String username = testUser.getUsername();
+        String token = "123";
+        String password = "a";
+        String confirmPassword = "a";
+
+        when(userService.getUser(anyString())).thenReturn(testUser);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+
+        mockMvc.perform(post("/processChangePassword")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", username)
+                .param("token", token)
+                .param("password", password)
+                .param("confirmPassword", confirmPassword))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("change-password-form"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).changeUserPassword(any(), anyString());
+    }
+
+    @Test
+    void processChangePasswordForm_invalidToken() throws Exception {
+        String username = testUser.getUsername();
+        String token = "123";
+        String password = "testPassword";
+        String confirmPassword = "testPassword";
+
+        when(userService.getUser(anyString())).thenReturn(testUser);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(false);
+
+        mockMvc.perform(post("/processChangePassword")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", username)
+                .param("token", token)
+                .param("password", password)
+                .param("confirmPassword", confirmPassword))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login?passwordResetError"));
+
+        verify(userService, times(0)).changeUserPassword(any(), anyString());
+    }
+
+
+
+
+
+
+
+
+
+
 
 }

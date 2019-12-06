@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.services;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
+import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
 
@@ -13,6 +14,8 @@ public interface UserService {
 
     User getUser(String name);
 
+    User getUserByEmail(String email);
+
     User createUserByUserDto(UserDto userDto) throws DuplicateEmailException, DuplicateUsernameException;
 
     User createUser(User user) throws DuplicateEmailException, DuplicateUsernameException;
@@ -22,6 +25,12 @@ public interface UserService {
     VerificationToken getVerificationToken(String verificationToken);
 
     VerificationToken generateNewVerificationToken(String existingToken);
+
+    PasswordResetToken createPasswordResetTokenForUser(User user);
+
+    boolean validatePasswordResetToken(User user, String token);
+
+    void changeUserPassword(User user, String newPassword);
 
     void saveRegisteredUser(User user);
 

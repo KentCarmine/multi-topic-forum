@@ -107,6 +107,16 @@ public class User {
         }
     }
 
+    public void removeAuthority(UserRole roleToRemove) {
+        System.out.println("### Auth size before: " + authorities.size());
+        this.authorities.removeIf((a) -> a.getAuthority().equals(roleToRemove));
+        System.out.println("### Auth size after: " + authorities.size());
+    }
+
+    public boolean hasAuthority(UserRole role) {
+        return this.authorities.stream().anyMatch((a) -> a.getAuthority().equals(role));
+    }
+
     @Override
     public String toString() {
         return "User{" +

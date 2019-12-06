@@ -1,9 +1,13 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.UserDto;
+import com.kentcarmine.multitopicforum.dtos.UserEmailDto;
+import com.kentcarmine.multitopicforum.dtos.UserPasswordDto;
 import com.kentcarmine.multitopicforum.events.OnRegistrationCompleteEvent;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
+import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
+import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +16,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -23,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.UUID;
 
 @Controller
 public class UserController {
@@ -42,13 +51,14 @@ public class UserController {
 
     @GetMapping("/login")
     public String showLoginForm() {
+//        SecurityContextHolder.getContext().getAuthentication().getAuthorities().forEach((a) -> {System.out.println(a.toString());}); // TODO: For testing only
         User loggedInUser = userService.getLoggedInUser();
         if (loggedInUser != null) {
-            System.out.println("### REDIRECT ###");
+//            System.out.println("### REDIRECT ###");
             return "redirect:/users/" + loggedInUser.getUsername();
         }
 
-        System.out.println("### NO_REDIRECT ###");
+//        System.out.println("### NO_REDIRECT ###");
 
         return "login-form";
     }
@@ -111,7 +121,7 @@ public class UserController {
     }
 
     @GetMapping("/registrationConfirm")
-    public ModelAndView confirmRegistration(WebRequest request,/* Model model,*/ @RequestParam("token") String token) {
+    public ModelAndView confirmRegistration(WebRequest request, @RequestParam("token") String token) {
         Locale locale = request.getLocale();
         VerificationToken verificationToken = userService.getVerificationToken(token);
 
@@ -156,22 +166,116 @@ public class UserController {
             return "redirect:/login";
         }
 
-        String url = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
-        SimpleMailMessage email = constructResendVerificationTokenEmail(url, request.getLocale(), newToken, user);
+        SimpleMailMessage email = constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, user);
         mailSender.send(email);
 
         return "redirect:/login?regEmailSent";
     }
 
-    private SimpleMailMessage constructResendVerificationTokenEmail(String contextPath, Locale locale,
-                                                                    VerificationToken newToken, User user) {
-        String confirmationUrl = contextPath + "/registrationConfirm?token=" + newToken.getToken();
-        String message = messageSource.getMessage("message.resendToken", null, locale);
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setSubject("Multi-Topic Forum Registration Confirmation : Re-sent");
-        email.setText(message + "\n" + confirmationUrl);
-        email.setTo(user.getEmail());
+    @GetMapping("/resetPassword")
+    public String showResetPasswordStarterForm(Model model) {
+        model.addAttribute("user_email", new UserEmailDto());
+        return "reset-password-starter-form";
+    }
 
+    @PostMapping("/processResetPasswordStarterForm")
+    public ModelAndView processResetPasswordStarterForm(@Valid @ModelAttribute("user_email") UserEmailDto userEmailDto,
+                                                        BindingResult bindingResult, HttpServletRequest request) {
+        ModelAndView mv;
+
+        if (bindingResult.hasErrors()) {
+//            System.out.println("errors found");
+            mv = new ModelAndView("reset-password-starter-form", "user_email", userEmailDto);
+            mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+            return mv;
+        }
+
+        User user = userService.getUserByEmail(userEmailDto.getEmail());
+
+        if (user != null && user.isEnabled()) {
+//            System.out.println("user found");
+
+            PasswordResetToken resetToken = userService.createPasswordResetTokenForUser(user);
+            mailSender.send(constructPasswordResetEmail(getAppUrl(request), request.getLocale(), resetToken, user));
+        }
+
+        mv = new ModelAndView("redirect:/");
+        return mv;
+    }
+
+    @GetMapping("/changePassword")
+    public String showChangePasswordForm(Model model, @RequestParam("username") String username,
+                                         @RequestParam("token") String token) {
+        User user = userService.getUser(username);
+        boolean isValidResetToken = userService.validatePasswordResetToken(user, token);
+//        System.out.println("### User has change password auth: " + user.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
+        if (user == null || !user.isEnabled() || !isValidResetToken) {
+//            System.out.println("### User null:" + user == null);
+            if (user != null) {
+//                System.out.println("### User enabled:" + user.isEnabled());
+            }
+//            System.out.println("### Valid token: " + isValidResetToken);
+            return "redirect:/login?passwordResetError";
+        }
+
+        UserPasswordDto userPasswordDto = new UserPasswordDto();
+        model.addAttribute("userPasswordDto", userPasswordDto);
+        return "change-password-form";
+    }
+
+    @PostMapping("/processChangePassword")
+    public ModelAndView processChangePasswordForm(@Valid UserPasswordDto userPasswordDto, BindingResult bindingResult) {
+        ModelAndView mv;
+
+        if (bindingResult.hasErrors()) {
+            mv = new ModelAndView("change-password-form", "userPasswordDto", userPasswordDto);
+            mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+            return mv;
+        }
+
+//        System.out.println("### In /processChangePassword, username = " + userPasswordDto.getUsername());
+//        System.out.println("### In /processChangePassword, token = " + userPasswordDto.getToken());
+        User user = userService.getUser(userPasswordDto.getUsername());
+        boolean isValidResetToken = userService.validatePasswordResetToken(user, userPasswordDto.getToken());
+
+        if (!isValidResetToken) {
+//            System.out.println("### In /processChangePassword, invalid token case");
+            mv = new ModelAndView("redirect:/login?passwordResetError");
+            return mv;
+        }
+
+        userService.changeUserPassword(user, userPasswordDto.getPassword());
+
+        mv = new ModelAndView("redirect:/login?passwordUpdateSuccess");
+        return mv;
+    }
+
+    private String getAppUrl(HttpServletRequest request) {
+        return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+    }
+
+    private SimpleMailMessage constructPasswordResetEmail(String appUrl, Locale locale, PasswordResetToken token, User user) {
+        String resetUrl = appUrl + "/changePassword?username=" + user.getUsername() + "&token=" + token.getToken();
+        String message = messageSource.getMessage("message.resetPasswordLinkPrompt", null, locale) + "\n" + resetUrl;
+        String subject = "Multi-Topic Forum Password Reset";
+
+        return constructEmail(subject, message, user);
+    }
+
+    private SimpleMailMessage constructResendVerificationTokenEmail(String appUrl, Locale locale,
+                                                                    VerificationToken newToken, User user) {
+        String confirmationUrl = appUrl + "/registrationConfirm?token=" + newToken.getToken();
+        String message = messageSource.getMessage("message.resendToken", null, locale) + "\n" + confirmationUrl;
+        String subject = "Multi-Topic Forum Registration Confirmation : Re-sent";
+
+        return constructEmail(subject, message , user);
+    }
+
+    private SimpleMailMessage constructEmail(String subject, String body, User user) {
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setSubject(subject);
+        email.setText(body);
+        email.setTo(user.getEmail());
         return email;
     }
 

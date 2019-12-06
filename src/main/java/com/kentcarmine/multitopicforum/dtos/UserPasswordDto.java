@@ -1,39 +1,20 @@
 package com.kentcarmine.multitopicforum.dtos;
 
 import com.kentcarmine.multitopicforum.annotations.PasswordMatches;
-import com.kentcarmine.multitopicforum.annotations.ValidEmail;
 
 import javax.validation.constraints.Size;
 
-
 @PasswordMatches
-public class UserDto implements PasswordDto {
-
-    @Size(min = 4, message = "Username must be at least {min} characters long")
-    private String username;
-
-    @ValidEmail(message = "email must be a valid email address")
-    private String email;
+public class UserPasswordDto implements PasswordDto {
 
     @Size(min = 8, message = "password must be at least {min} characters long")
     private String password;
+
     private String confirmPassword;
 
-    public String getUsername() {
-        return username;
-    }
+    private String username;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    private String token;
 
     @Override
     public String getPassword() {
@@ -53,5 +34,21 @@ public class UserDto implements PasswordDto {
     @Override
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
