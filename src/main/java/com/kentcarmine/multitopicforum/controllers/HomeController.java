@@ -13,4 +13,9 @@ public class HomeController {
     public String getHomePage() {
         return "home";
     }
+
+    @GetMapping("/forbidden")
+    public String getAccessDeniedPage() {
+        return "access-denied-page";
+    }
 }

@@ -1,33 +1,24 @@
-package com.kentcarmine.multitopicforum.model;
+package com.kentcarmine.multitopicforum.dtos;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 /**
- * Entity that models a topic forum. That is: a forum for discussion about a specific topic (ie. cars, tabletop gaming,
- * etc).
+ * DTO for TopicForum objects. Used to create TopicForums
  */
-@Entity
-public class TopicForum {
+public class TopicForumDto {
 
-    @Id
     @Size(min=4, message="forum name must be at least {min} characters long")
     private String name;
 
     @Size(min = 1, max = 500, message = "Description must be between {min} and {max} characters long")
     @NotBlank(message = "description must not be blank")
-    @Lob
     private String description;
 
-//    private List<TopicThread> threads; // TODO: Wire up (1 TopicForum - many TopicThreads)
-
-    public TopicForum() {
+    public TopicForumDto() {
     }
 
-    public TopicForum(@Size(min=4, message="forum name must be at least {min} characters long") String name, String description) {
+    public TopicForumDto(@Size(min = 4, message = "forum name must be at least {min} characters long") String name, @NotBlank String description) {
         this.name = name;
         this.description = description;
     }
@@ -36,7 +27,7 @@ public class TopicForum {
         return name;
     }
 
-    public void setName(@Size(min=4, message="forum name must be at least {min} characters long") String name) {
+    public void setName(@Size(min = 4, message = "forum name must be at least {min} characters long") String name) {
         this.name = name;
     }
 
@@ -44,14 +35,14 @@ public class TopicForum {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(@NotBlank String description) {
         this.description = description;
     }
 
     @Override
     public String toString() {
-        return "TopicForum{" +
-                ", name='" + name + '\'' +
+        return "TopicForumDto{" +
+                "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }

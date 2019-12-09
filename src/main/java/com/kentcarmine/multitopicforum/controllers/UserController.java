@@ -16,6 +16,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -66,6 +68,7 @@ public class UserController {
     @GetMapping("/users/{username}")
     public String showUserPage(Model model, @PathVariable String username) {
         if (userService.usernameExists(username)) {
+//            SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().forEach((a) -> System.out.println(((GrantedAuthority) a).toString()));
             User user = userService.getUser(username);
             model.addAttribute("user", user);
             return "user-page";

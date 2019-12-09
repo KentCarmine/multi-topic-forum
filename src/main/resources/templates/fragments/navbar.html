@@ -23,6 +23,9 @@
             <span sec:authorize="isAnonymous()">
                 <a href="#" th:href="@{/registerUser}">Register</a>
             </span>
+            <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
+                <a href="#", th:href="@{/administration}">Administration</a>
+            </span>
         </div>
     </body>
 </html>

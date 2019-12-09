@@ -11,6 +11,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -28,6 +29,7 @@ import java.util.Properties;
 @Configuration
 @PropertySource("classpath:security.properties")
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -71,6 +73,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/login").permitAll()
                 .antMatchers("/registerUser").permitAll()
                 .antMatchers("/processUserRegistration").permitAll()
+                .antMatchers("/administration").hasAnyAuthority("MODERATOR", "ADMINISTRATOR", "SUPER_ADMINISTRATOR")
+                .antMatchers("/createNewForum", "/processNewForumCreation").hasAnyAuthority("ADMINISTRATOR", "SUPER_ADMINISTRATOR")
+                .antMatchers("/forum/**").permitAll()
                 .antMatchers("/").permitAll()
                 .and()
                 .formLogin()
@@ -82,6 +87,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout().invalidateHttpSession(true).deleteCookies("JSESSIONID").permitAll() // Clear session on logout
                 .and()
                 .rememberMe().key(rememberMeKey)
+                .and()
+                .exceptionHandling().accessDeniedPage("/forbidden")
                 .and().csrf().disable().headers().frameOptions().disable(); // TODO: For debug only
     }
 

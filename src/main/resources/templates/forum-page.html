@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="${forum.getName()}">Forum Page</title>
+    </head>
+    <body>
+        <div th:replace="fragments/navbar.html :: navbar"></div>
+        <h2 th:text="${forum.getName()}">Forum Name</h2>
+        <div>
+            <p th:text="${forum.getDescription()}">Description goes here</p>
+        </div>
+
+        <div>
+            <p> ...PLACEHOLDER...</p>
+        </div>
+    </body>
+</html>
