@@ -1,7 +1,9 @@
 package com.kentcarmine.multitopicforum.bootstrap;
 
+import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
+import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -17,16 +19,28 @@ import org.springframework.stereotype.Component;
 public class Bootstrap implements CommandLineRunner {
 
     private UserRepository userRepository;
+    private TopicForumRepository topicForumRepository;
 
     @Autowired
-    public Bootstrap(UserRepository userRepository) {
+    public Bootstrap(UserRepository userRepository, TopicForumRepository topicForumRepository) {
         this.userRepository = userRepository;
+        this.topicForumRepository = topicForumRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
         userRepository.deleteAll();
+        topicForumRepository.deleteAll();
         createUsers();
+        createTopicForums();
+    }
+
+    private void createTopicForums() {
+        TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing.");
+        topicForumRepository.save(testForum1);
+
+        TopicForum testForum2 = new TopicForum("TestForum2", "Second forum for testing!");
+        topicForumRepository.save(testForum2);
     }
 
     private void createUsers() {

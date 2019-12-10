@@ -4,7 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Controller that handles displaying the homepage
+ * Controller that handles displaying the homepage and other base pages
  */
 @Controller
 public class HomeController {

@@ -28,12 +28,19 @@ public class ForumController {
         this.forumService = forumService;
     }
 
+    /**
+     * Show page with form for creating a new TopicForum. Only accessible to admin and superadmin
+     */
     @GetMapping("/createNewForum")
     public String showCreateNewForumPage(Model model) {
         model.addAttribute("topicForumDto", new TopicForumDto());
         return "create-new-forum-page";
     }
 
+    /**
+     * Process form for creating a new TopicForum. Only accessible to admin and superadmin. If input is valid, creates
+     * the specified forum, otherwise displays errors to user.
+     */
     @PostMapping("/processNewForumCreation")
     public ModelAndView processNewForumCreation(@Valid TopicForumDto topicForumDto, BindingResult bindingResult) {
         ModelAndView mv;
@@ -59,6 +66,9 @@ public class ForumController {
         return mv;
     }
 
+    /**
+     * Show the root page of the given forum, if it exists, or an error page, if it doesnt.
+     */
     @GetMapping("/forum/{name}")
     public String showForum(Model model, @PathVariable String name) {
         TopicForum forum = forumService.getForumByName(name);
@@ -71,6 +81,9 @@ public class ForumController {
         return "forum-page";
     }
 
+    /**
+     * Exception handler that shows an error page when a forum with a given name is not found.
+     */
     @ExceptionHandler(ForumNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleForumNotFound(Model model, ForumNotFoundException ex) {
@@ -78,6 +91,13 @@ public class ForumController {
         return "forum-not-found";
     }
 
+    /**
+     * Helper method that adds error data to bindingResult if the topicForumDto describes a forum with a name that
+     * already exists
+     * @param topicForumDto the TopicForumDto to check for duplicate name
+     * @param bindingResult the binding result to update
+     * @return the updated binding result
+     */
     private BindingResult updateForumCreationBindingResult(TopicForumDto topicForumDto, BindingResult bindingResult) {
         if (forumService.isForumWithNameExists(topicForumDto.getName())) {
             bindingResult.rejectValue("name", "message.forum.creation.duplicateName", "A topic forum with the name " + topicForumDto.getName()
