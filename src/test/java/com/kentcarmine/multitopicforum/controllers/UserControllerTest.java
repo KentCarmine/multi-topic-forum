@@ -356,6 +356,29 @@ class UserControllerTest {
     }
 
     @Test
+    void processChangePasswordForm_invalidCharactersInUsername() throws Exception {
+        String username = "invalid/user name";
+        String token = "123";
+        String password = "testPassword";
+        String confirmPassword = "testPassword2";
+
+        when(userService.getUser(anyString())).thenReturn(testUser);
+        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+
+        mockMvc.perform(post("/processChangePassword")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", username)
+                .param("token", token)
+                .param("password", password)
+                .param("confirmPassword", confirmPassword))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("change-password-form"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).changeUserPassword(any(), anyString());
+    }
+
+    @Test
     void processChangePasswordForm_mismatchedPasswords() throws Exception {
         String username = testUser.getUsername();
         String token = "123";
@@ -422,15 +445,4 @@ class UserControllerTest {
 
         verify(userService, times(0)).changeUserPassword(any(), anyString());
     }
-
-
-
-
-
-
-
-
-
-
-
 }

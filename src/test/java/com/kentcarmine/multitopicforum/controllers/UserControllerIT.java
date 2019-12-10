@@ -125,6 +125,25 @@ class UserControllerIT {
     }
 
     /**
+     * When posting to register a user with an invalid username while not logged in, redisplay the registration form
+     * with errors
+     */
+    @WithAnonymousUser
+    @Test
+    void processUserRegistration_invalidCharactersInUsername() throws Exception {
+        String password = "newPassword";
+        mockMvc.perform(post("/processUserRegistration")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", "invalid user*name")
+                .param("email", NON_EXISTING_USER_EMAIL)
+                .param("password", password)
+                .param("confirmPassword", password))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("user-registration-form"))
+                .andExpect(model().hasErrors());
+    }
+
+    /**
      * When posting to register a user with a duplicate username while not logged in, redisplay the registration form
      * with errors
      */

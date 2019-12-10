@@ -94,6 +94,31 @@ class ForumControllerTest {
     }
 
     @Test
+    void processNewForumCreation_invalidCharactersInName() throws Exception {
+        when(forumService.createForumByDto(any())).thenReturn(testTopicForum);
+
+        mockMvc.perform(post("/processNewForumCreation")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", "^-an_] invalid{%name")
+                .param("description", TEST_TOPIC_FORUM_DESC))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("create-new-forum-page"));
+    }
+
+    @Test
+    void processNewForumCreation_duplicateName() throws Exception {
+        when(forumService.createForumByDto(any())).thenReturn(testTopicForum);
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+
+        mockMvc.perform(post("/processNewForumCreation")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", TEST_TOPIC_FORUM_NAME)
+                .param("description", TEST_TOPIC_FORUM_DESC))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("create-new-forum-page"));
+    }
+
+    @Test
     void processNewForumCreation_shortDescription() throws Exception {
         when(forumService.createForumByDto(any())).thenReturn(testTopicForum);
 
@@ -113,19 +138,6 @@ class ForumControllerTest {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("name", TEST_TOPIC_FORUM_NAME)
                 .param("description", "   "))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(view().name("create-new-forum-page"));
-    }
-
-    @Test
-    void processNewForumCreation_duplicateName() throws Exception {
-        when(forumService.createForumByDto(any())).thenReturn(testTopicForum);
-        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-
-        mockMvc.perform(post("/processNewForumCreation")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("name", TEST_TOPIC_FORUM_NAME)
-                .param("description", TEST_TOPIC_FORUM_DESC))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(view().name("create-new-forum-page"));
     }

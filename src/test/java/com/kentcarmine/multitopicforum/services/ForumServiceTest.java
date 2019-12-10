@@ -114,7 +114,7 @@ class ForumServiceTest {
         TopicForum result = forumService.createForum(testTopicForum);
 
         assertEquals(testTopicForum, result);
-        
+
         verify(topicForumRepository, times(1)).save(any());
     }
 }

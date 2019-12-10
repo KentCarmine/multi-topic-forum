@@ -1,5 +1,7 @@
 package com.kentcarmine.multitopicforum.dtos;
 
+import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -10,6 +12,7 @@ public class TopicForumDto {
 
     @NotBlank(message = "name must not be blank")
     @Size(min=4, message="forum name must be at least {min} characters long")
+    @ValidCharacters(message = "name must consist only of letters, numbers, - and _ characters")
     private String name;
 
     @NotBlank(message = "description must not be blank")
@@ -19,7 +22,14 @@ public class TopicForumDto {
     public TopicForumDto() {
     }
 
-    public TopicForumDto(@Size(min = 4, message = "forum name must be at least {min} characters long") String name, @NotBlank String description) {
+    public TopicForumDto(
+            @NotBlank(message = "name must not be blank")
+            @Size(min = 4, message = "forum name must be at least {min} characters long")
+            @ValidCharacters(message = "name must consist only of letters, numbers, - and _ characters")
+                    String name,
+            @NotBlank
+            @Size(min = 1, max = 500, message = "Description must be between {min} and {max} characters long")
+                    String description) {
         this.name = name;
         this.description = description;
     }
@@ -28,7 +38,10 @@ public class TopicForumDto {
         return name;
     }
 
-    public void setName(@Size(min = 4, message = "forum name must be at least {min} characters long") String name) {
+    public void setName(@NotBlank(message = "name must not be blank")
+                        @Size(min = 4, message = "forum name must be at least {min} characters long")
+                        @ValidCharacters(message = "name must consist only of letters, numbers, - and _ characters")
+                                String name) {
         this.name = name;
     }
 
@@ -36,7 +49,10 @@ public class TopicForumDto {
         return description;
     }
 
-    public void setDescription(@NotBlank String description) {
+    public void setDescription(@NotBlank
+                               @Size(min = 1, max = 500,
+                                       message = "Description must be between {min} and {max} characters long")
+                                       String description) {
         this.description = description;
     }
 

@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.model;
 
+import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
 import com.kentcarmine.multitopicforum.annotations.ValidEmail;
 
 import javax.persistence.*;
@@ -16,6 +17,7 @@ public class User {
 
     @Id
     @Size(min = 4, message = "Username must be at least {min} characters long")
+    @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters")
     private String username;
 
     @Size(min = 8, message = "password must be at least {min} characters long")
@@ -39,7 +41,8 @@ public class User {
         this.enabled = false;
     }
 
-    public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
+    public User(@Size(min = 4, message = "Username must be at least {min} characters long")
+                @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters") String username,
                 @Size(min = 8, message = "password must be at least {min} characters long") String password,
                 @ValidEmail(message = "email must be a valid email address") String email,
                 @NotEmpty(message = "user must have at least one role") Set<Authority> authorities) {
@@ -50,7 +53,8 @@ public class User {
         this.enabled = false;
     }
 
-    public User(@Size(min = 4, message = "Username must be at least {min} characters long") String username,
+    public User(@Size(min = 4, message = "Username must be at least {min} characters long")
+                @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters") String username,
                 @Size(min = 8, message = "password must be at least {min} characters long") String password,
                 @ValidEmail(message = "email must be a valid email address") String email) {
         this.username = username;

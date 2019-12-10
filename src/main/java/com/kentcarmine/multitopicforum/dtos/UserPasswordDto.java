@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.dtos;
 
 import com.kentcarmine.multitopicforum.annotations.PasswordMatches;
+import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
 
 import javax.validation.constraints.Size;
 
@@ -16,6 +17,7 @@ public class UserPasswordDto implements PasswordDto {
 
     private String confirmPassword;
 
+    @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters")
     private String username;
 
     private String token;

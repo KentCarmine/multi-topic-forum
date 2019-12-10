@@ -1,5 +1,7 @@
 package com.kentcarmine.multitopicforum.model;
 
+import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Lob;
@@ -16,6 +18,7 @@ public class TopicForum {
     @Id
     @NotBlank(message = "name must not be blank")
     @Size(min=4, message="forum name must be at least {min} characters long")
+    @ValidCharacters(message = "name must consist only of letters, numbers, - and _ characters")
     private String name;
 
     @Lob
