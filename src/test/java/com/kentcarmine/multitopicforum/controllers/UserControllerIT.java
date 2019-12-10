@@ -35,18 +35,6 @@ class UserControllerIT {
 //    @Autowired
     private MockMvc mockMvc;
 
-//    @MockBean
-////    UserService userService;
-////
-////    @MockBean
-////    DataSource dataSource;
-////
-////    @MockBean
-////    CustomUserDetailsService userDetailsService;
-////
-////    @MockBean
-////    LoginAuthenticationSuccessHandler loginAuthenticationSuccessHandler;
-
     @Autowired
     UserController controller;
 

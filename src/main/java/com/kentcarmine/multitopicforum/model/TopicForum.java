@@ -14,12 +14,13 @@ import javax.validation.constraints.Size;
 public class TopicForum {
 
     @Id
+    @NotBlank(message = "name must not be blank")
     @Size(min=4, message="forum name must be at least {min} characters long")
     private String name;
 
-    @Size(min = 1, max = 500, message = "Description must be between {min} and {max} characters long")
-    @NotBlank(message = "description must not be blank")
     @Lob
+    @NotBlank(message = "description must not be blank")
+    @Size(min = 1, max = 500, message = "Description must be between {min} and {max} characters long")
     private String description;
 
 //    private List<TopicThread> threads; // TODO: Wire up (1 TopicForum - many TopicThreads)
