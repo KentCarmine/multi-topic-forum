@@ -4,7 +4,9 @@ import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConve
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.model.TopicForum;
+import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
+import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -27,6 +29,12 @@ class ForumServiceTest {
     TopicForumRepository topicForumRepository;
 
     @Mock
+    PostRepository postRepository;
+
+    @Mock
+    TopicThreadRepository topicThreadRepository;
+
+    @Mock
     TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
 
     private TopicForum testTopicForum;
@@ -35,7 +43,7 @@ class ForumServiceTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        forumService = new ForumServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter);
+        forumService = new ForumServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter, topicThreadRepository, postRepository);
 
         testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
     }

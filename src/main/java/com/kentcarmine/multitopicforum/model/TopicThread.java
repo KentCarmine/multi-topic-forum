@@ -1,30 +1,53 @@
 package com.kentcarmine.multitopicforum.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-//@Entity // TODO: Re-add later
+@Entity
 public class TopicThread {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "title must not be blank")
+    @Size(min=4, message="thread title must be at least {min} characters long")
+    @ValidCharacters(message = "thread title must consist only of letters, numbers, - and _ characters")
     private String title;
 
-    private LocalDate postedAt; // TODO: Configure time zone defaults
+    @ManyToOne
+    @JoinColumn(name = "forumName")
+    @NotNull
+    private TopicForum forum;
 
-//    private List<Post> posts; // TODO: Wire up (1 TopicThread - many Posts)
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Post> posts;
 
-//    private TopicForum forum; // TODO: Wire up (many TopicThread - 1 TopicForum) (not sure if needed, check)
+    // TODO: Add methods to get creation date and creating user of thread (by getting those values from first post)
 
-    public TopicThread(String title, LocalDate postedAt) {
+    public TopicThread() {
+        this.posts = new ArrayList<>();
+    }
+
+    public TopicThread(String title, TopicForum forum) {
         this.title = title;
-        this.postedAt = postedAt;
+        this.forum = forum;
+        this.posts = new ArrayList<>();
+    }
+
+    public TopicThread(String title, TopicForum forum, Post firstPost) {
+        this.title = title;
+        this.forum = forum;
+        this.posts = new ArrayList<>();
+        this.posts.add(firstPost);
     }
 
     public Long getId() {
@@ -43,12 +66,16 @@ public class TopicThread {
         this.title = title;
     }
 
-    public LocalDate getPostedAt() {
-        return postedAt;
+    public List<Post> getPosts() {
+        return posts; // TODO: Sort before returning?
     }
 
-    public void setPostedAt(LocalDate postedAt) {
-        this.postedAt = postedAt;
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    public TopicForum getForum() {
+        return forum;
     }
 
     @Override
@@ -56,7 +83,7 @@ public class TopicThread {
         return "TopicThread{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
-                ", postedAt=" + postedAt +
+                ", posts=" + posts +
                 '}';
     }
 }

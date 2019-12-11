@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.controllers;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.services.ForumService;
+import com.kentcarmine.multitopicforum.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -34,6 +35,9 @@ class ForumControllerTest {
     ForumService forumService;
 
     @Mock
+    UserService userService;
+
+    @Mock
     MessageSource messageSource;
 
     TopicForum testTopicForum;
@@ -42,7 +46,7 @@ class ForumControllerTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        forumController = new ForumController(forumService);
+        forumController = new ForumController(forumService, userService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(forumController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
 

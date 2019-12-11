@@ -6,6 +6,7 @@ import com.kentcarmine.multitopicforum.annotations.ValidEmail;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,7 +31,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Authority> authorities;
 
-    // private List<Posts> posts; // TODO: Wire up (1 User - many Posts)
+    @OneToMany(mappedBy = "user")
+     private List<Post> posts;
 
     // TODO: Upvote/Downvote tracking to prevent duplicate votes
 

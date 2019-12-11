@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
         <title th:text="${forum.getName()}">Forum Page</title>
@@ -9,6 +10,10 @@
         <h2 th:text="${forum.getName()}">Forum Name</h2>
         <div>
             <p th:text="${forum.getDescription()}">Description goes here</p>
+        </div>
+
+        <div sec:authorize="isAuthenticated()">
+            <a href="#" th:href="@{'/forum/' + ${forum.getName()} + '/createThread'}">Create Thread</a>
         </div>
 
         <div>
