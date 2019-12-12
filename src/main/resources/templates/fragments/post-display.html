@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Post</title>
+    </head>
+    <body>
+        <div th:fragment="post-fragment (post)"> <!--TODO: Add upvote/downvote display and arg-->
+            <div>
+                <span th:text="${post.getUser().getUsername()}">Poster</span>
+                <span> | </span>
+                <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
+            </div>
+            <div th:text="${post.getContent()}">
+                Content
+            </div>
+        </div>
+
+    </body>
+</html>

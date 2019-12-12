@@ -12,7 +12,6 @@ public class TopicThreadCreationDto {
 
     @NotBlank(message = "title must not be blank")
     @Size(min=4, message="thread title must be at least {min} characters long")
-    @ValidCharacters(message = "thread title must consist only of letters, numbers, - and _ characters")
     private String title;
 
     @NotBlank(message = "Post content must not be blank")

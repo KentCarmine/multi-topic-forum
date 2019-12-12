@@ -1,14 +1,21 @@
 package com.kentcarmine.multitopicforum.bootstrap;
 
-import com.kentcarmine.multitopicforum.model.TopicForum;
-import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.model.UserRole;
+import com.kentcarmine.multitopicforum.model.*;
+import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
+import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
+import java.sql.Date;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 
 /**
@@ -20,17 +27,23 @@ public class Bootstrap implements CommandLineRunner {
 
     private UserRepository userRepository;
     private TopicForumRepository topicForumRepository;
+    private TopicThreadRepository topicThreadRepository;
+    private PostRepository postRepository;
 
     @Autowired
-    public Bootstrap(UserRepository userRepository, TopicForumRepository topicForumRepository) {
+    public Bootstrap(UserRepository userRepository, TopicForumRepository topicForumRepository, TopicThreadRepository topicThreadRepository, PostRepository postRepository) {
         this.userRepository = userRepository;
         this.topicForumRepository = topicForumRepository;
+        this.topicThreadRepository = topicThreadRepository;
+        this.postRepository = postRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        userRepository.deleteAll();
         topicForumRepository.deleteAll();
+        topicThreadRepository.deleteAll();
+        postRepository.deleteAll();
+        userRepository.deleteAll();
         createUsers();
         createTopicForums();
     }
@@ -41,6 +54,25 @@ public class Bootstrap implements CommandLineRunner {
 
         TopicForum testForum2 = new TopicForum("TestForum2", "Second forum for testing!");
         topicForumRepository.save(testForum2);
+
+        TopicThread forum2Thread1 = new TopicThread("Thread1", testForum2);
+        topicThreadRepository.save(forum2Thread1);
+
+        Post post1 = new Post("Test content 1", Date.from(Instant.now()));
+        post1.setUser(userRepository.findByUsername("admin"));
+        post1.setThread(forum2Thread1);
+        post1 = postRepository.save(post1);
+
+        Post post2 = new Post("Test content 2", Date.from(Instant.now().plusSeconds(10)));
+        post2.setUser(userRepository.findByUsername("user"));
+        post2.setThread(forum2Thread1);
+        post2 = postRepository.save(post2);
+
+        SortedSet<Post> postList = new TreeSet<>();
+        postList.add(post1);
+        postList.add(post2);
+        forum2Thread1.setPosts(postList);
+        forum2Thread1 = topicThreadRepository.save(forum2Thread1);
     }
 
     private void createUsers() {

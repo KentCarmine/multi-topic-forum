@@ -1,15 +1,12 @@
 package com.kentcarmine.multitopicforum.model;
 
-import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
+import org.hibernate.annotations.SortNatural;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 public class TopicThread {
@@ -20,7 +17,6 @@ public class TopicThread {
 
     @NotBlank(message = "title must not be blank")
     @Size(min=4, message="thread title must be at least {min} characters long")
-    @ValidCharacters(message = "thread title must consist only of letters, numbers, - and _ characters")
     private String title;
 
     @ManyToOne
@@ -28,26 +24,20 @@ public class TopicThread {
     @NotNull
     private TopicForum forum;
 
+    @SortNatural
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Post> posts;
+    private SortedSet<Post> posts;
 
     // TODO: Add methods to get creation date and creating user of thread (by getting those values from first post)
 
     public TopicThread() {
-        this.posts = new ArrayList<>();
+        this.posts = new TreeSet<>();
     }
 
     public TopicThread(String title, TopicForum forum) {
         this.title = title;
         this.forum = forum;
-        this.posts = new ArrayList<>();
-    }
-
-    public TopicThread(String title, TopicForum forum, Post firstPost) {
-        this.title = title;
-        this.forum = forum;
-        this.posts = new ArrayList<>();
-        this.posts.add(firstPost);
+        this.posts = new TreeSet<>();
     }
 
     public Long getId() {
@@ -66,11 +56,11 @@ public class TopicThread {
         this.title = title;
     }
 
-    public List<Post> getPosts() {
-        return posts; // TODO: Sort before returning?
+    public SortedSet<Post> getPosts() {
+        return posts;
     }
 
-    public void setPosts(List<Post> posts) {
+    public void setPosts(SortedSet<Post> posts) {
         this.posts = posts;
     }
 

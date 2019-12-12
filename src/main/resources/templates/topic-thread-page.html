@@ -11,17 +11,7 @@
         <h2 th:text="${threadTitle}">Thread Title</h2>
 
         <div>
-            <!--TODO: Replace below with list of posts-->
-            <!--TODO: START For Debug only-->
-            <div>
-                <span th:text="${firstPost.getUser().username}">Poster</span>
-                <span> | </span>
-                <span th:text="${firstPost.getPostedAt().toString()}">Timestamp</span>
-            </div>
-            <div th:text="${firstPost.content}">
-                Content
-            </div>
-            <!--TODO: END For Debug only-->
+            <div th:each="post : ${posts}" th:include="fragments/post-display.html :: post-fragment (${post})"></div>
         </div>
 
         <div sec:authorize="isAuthenticated()">

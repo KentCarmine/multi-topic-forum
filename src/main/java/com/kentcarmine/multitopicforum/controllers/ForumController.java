@@ -4,6 +4,7 @@ import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
+import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
@@ -139,7 +140,7 @@ public class ForumController {
 
         model.addAttribute("forumName", forumName);
         model.addAttribute("threadTitle", thread.getTitle());
-        model.addAttribute("firstPost", thread.getPosts().get(0)); // TODO: Update with post list
+        model.addAttribute("posts", thread.getPosts());
         return "topic-thread-page";
     }
 

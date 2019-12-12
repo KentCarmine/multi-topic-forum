@@ -73,7 +73,9 @@ public class ForumServiceImpl implements ForumService {
         TopicThread topicThread = new TopicThread(topicThreadCreationDto.getTitle(), owningForum);
         topicThread = topicThreadRepository.save(topicThread);
 
-        Post post = new Post(topicThreadCreationDto.getFirstPostContent(), topicThread, creatingUser, getCurrentDate());
+        Post post = new Post(topicThreadCreationDto.getFirstPostContent(), getCurrentDate());
+        post.setThread(topicThread);
+        post.setUser(creatingUser);
         post = postRepository.save(post);
 
         return topicThread;
