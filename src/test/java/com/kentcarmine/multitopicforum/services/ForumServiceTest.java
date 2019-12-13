@@ -197,7 +197,10 @@ class ForumServiceTest {
         assertNull(result);
     }
 
-
+    @Test
+    void addNewPostToThread() throws Exception {
+        // TODO
+    }
 
 
 }

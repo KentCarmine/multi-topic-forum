@@ -292,6 +292,7 @@ class ForumControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("topic-thread-page"))
                 .andExpect(model().attributeExists("forumName"))
+                .andExpect(model().attributeExists("threadId"))
                 .andExpect(model().attributeExists("threadTitle"))
                 .andExpect(model().attributeExists("posts"));
     }
@@ -319,4 +320,26 @@ class ForumControllerTest {
                 .andExpect(view().name("thread-not-found"))
                 .andExpect(model().attributeExists("message"));
     }
+
+    @Test
+    void addPostToThread_validInput() throws Exception {
+        // TODO:
+    }
+
+    @Test
+    void addPostToThread_blankContent() throws Exception {
+        // TODO:
+    }
+
+    @Test
+    void addPostToThread_noSuchForum() throws Exception {
+        // TODO:
+    }
+
+    @Test
+    void addPostToThread_noSuchThreadOnGivenForum() throws Exception {
+        // TODO:
+    }
+
+
 }

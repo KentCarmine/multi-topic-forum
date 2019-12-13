@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
@@ -18,6 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
@@ -49,7 +51,7 @@ public class ForumController {
      * the specified forum, otherwise displays errors to user.
      */
     @PostMapping("/processNewForumCreation")
-    public ModelAndView processNewForumCreation(@Valid TopicForumDto topicForumDto, BindingResult bindingResult) {
+    public ModelAndView processNewForumCreation(@Valid @ModelAttribute TopicForumDto topicForumDto, BindingResult bindingResult) {
         ModelAndView mv;
 
         bindingResult = updateForumCreationBindingResult(topicForumDto, bindingResult);
@@ -94,7 +96,7 @@ public class ForumController {
      * Handle processing of a form submission to create a new topic thread
      */
     @PostMapping("/forum/{name}/processCreateThread")
-    public ModelAndView processCreateThread(@Valid TopicThreadCreationDto topicThreadCreationDto, BindingResult bindingResult, @PathVariable String name) {
+    public ModelAndView processCreateThread(@Valid @ModelAttribute TopicThreadCreationDto topicThreadCreationDto, BindingResult bindingResult, @PathVariable String name) {
         ModelAndView mv;
 
         if (!forumService.isForumWithNameExists(name)) {
@@ -132,8 +134,48 @@ public class ForumController {
 
         model.addAttribute("forumName", forumName);
         model.addAttribute("threadTitle", thread.getTitle());
+        model.addAttribute("threadId", threadId);
         model.addAttribute("posts", thread.getPosts());
+
+        if (userService.getLoggedInUser() != null) {
+            model.addAttribute("postCreationDto", new PostCreationDto());
+        }
+
         return "topic-thread-page";
+    }
+
+    /**
+     * Handle form submission for adding a new post to the current thread
+     */
+    @PostMapping("/forum/{forumName}/show/{threadId}/createPost")
+    public ModelAndView addPostToThread(@Valid @ModelAttribute PostCreationDto postCreationDto, BindingResult bindingResult, @PathVariable String forumName,
+                                        @PathVariable Long threadId) {
+        ModelAndView mv;
+
+        if (!forumService.isForumWithNameExists(forumName)) {
+            throw new ForumNotFoundException("Forum " + forumName + " does not exist");
+        }
+
+        TopicThread thread = forumService.getThreadByForumNameAndId(forumName, threadId);
+
+        if (thread == null) {
+            throw new TopicThreadNotFoundException("Thread was not found");
+        }
+
+        if (bindingResult.hasErrors()) {
+            mv = new ModelAndView("topic-thread-page", "postCreationDto", postCreationDto);
+            mv.addObject("forumName", forumName);
+            mv.addObject("threadTitle", thread.getTitle());
+            mv.addObject("threadId", threadId);
+            mv.addObject("posts", thread.getPosts());
+            mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+            return mv;
+        }
+
+        forumService.addNewPostToThread(postCreationDto, userService.getLoggedInUser(), thread);
+
+        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId);
+        return mv;
     }
 
     /**

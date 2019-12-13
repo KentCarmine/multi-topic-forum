@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
+import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
@@ -90,6 +91,15 @@ public class ForumServiceImpl implements ForumService {
         } else {
             return null;
         }
+    }
+
+    @Transactional
+    @Override
+    public Post addNewPostToThread(PostCreationDto postCreationDto, User creatingUser, TopicThread thread) {
+        Post post = new Post(postCreationDto.getContent(), getCurrentDate());
+        post.setUser(creatingUser);
+        post.setThread(thread);
+        return postRepository.save(post);
     }
 
     private TopicThread getThreadById(Long id) {

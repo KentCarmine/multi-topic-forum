@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Date;
@@ -17,6 +18,7 @@ public class Post implements Comparable<Post> {
     @NotNull
     private TopicThread thread;
 
+    @NotBlank(message = "Post content must not be blank")
     @Lob
     private String content;
 
