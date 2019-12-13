@@ -52,21 +52,13 @@ public class ForumController {
     public ModelAndView processNewForumCreation(@Valid TopicForumDto topicForumDto, BindingResult bindingResult) {
         ModelAndView mv;
 
-//        System.out.println("### Obj: " + topicForumDto.toString());
-
         bindingResult = updateForumCreationBindingResult(topicForumDto, bindingResult);
 
         if (bindingResult.hasErrors()) {
-//            System.out.println("### processNewForumCreation() has Errors");
-//            for (ObjectError e : bindingResult.getAllErrors()) {
-//                System.out.println(e.toString());
-//            }
             mv = new ModelAndView("create-new-forum-page", "topicForumDto", topicForumDto);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
             return mv;
         }
-
-//        System.out.println("### After errors block");
 
         TopicForum createdForum = forumService.createForumByDto(topicForumDto);
         mv = new ModelAndView("redirect:/forum/" + createdForum.getName());

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -84,7 +85,7 @@ public class ForumServiceImpl implements ForumService {
     @Override
     public TopicThread getThreadByForumNameAndId(String forumName, Long threadId) {
         TopicThread thread = getThreadById(threadId);
-        if (!isForumWithNameExists(forumName) || thread == null || thread.getForum().getName().equals(forumName)) {
+        if (isForumWithNameExists(forumName) && thread != null && thread.getForum().getName().equals(forumName)) {
             return thread;
         } else {
             return null;

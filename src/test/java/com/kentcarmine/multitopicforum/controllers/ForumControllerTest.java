@@ -1,7 +1,7 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
-import com.kentcarmine.multitopicforum.model.TopicForum;
+import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,9 +14,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.sql.Date;
+import java.time.Instant;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,6 +45,8 @@ class ForumControllerTest {
     MessageSource messageSource;
 
     TopicForum testTopicForum;
+    User testUser;
+    TopicThread testTopicForumThread;
 
     @BeforeEach
     void setUp() {
@@ -51,6 +57,20 @@ class ForumControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(forumController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
 
         testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
+        testUser = new User("testUser", "testPassword", "test@testemail.com");
+        testUser.addAuthority(UserRole.USER);
+        testTopicForumThread = new TopicThread("Test Thread Title", testTopicForum);
+        SortedSet<Post> posts = new TreeSet<>();
+        Post post = new Post("Test Post Title", Date.from(Instant.now()));
+        post.setThread(testTopicForumThread);
+        post.setUser(testUser);
+        Post post2 = new Post("Test Post Title 2", java.util.Date.from(Instant.now().plusSeconds(10)));
+        post2.setThread(testTopicForumThread);
+        post2.setUser(testUser);
+        posts.add(post);
+        posts.add(post2);
+        testTopicForumThread.setId(1l);
+        testTopicForumThread.setPosts(posts);
     }
 
     @Test
@@ -165,5 +185,138 @@ class ForumControllerTest {
                 .andExpect(view().name("forum-not-found"))
                 .andExpect(model().attributeExists("message"));
 
+    }
+
+    @Test
+    void showCreateThreadPage() throws Exception {
+        mockMvc.perform(get("/forum/" + testTopicForum.getName() + "/createThread"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("create-thread-page"))
+                .andExpect(model().attributeExists("topicThreadCreationDto"))
+                .andExpect(model().attributeExists("forumName"));
+    }
+
+    @Test
+    void processCreateThread_validInput() throws Exception {
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(forumService.createNewTopicThread(any(), any(), any())).thenReturn(testTopicForumThread);
+
+        mockMvc.perform(post("/forum/" + testTopicForum.getName() + "/processCreateThread")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("title", testTopicForumThread.getTitle())
+                .param("firstPostContent", testTopicForumThread.getPosts().first().getContent()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName()
+                        + "/show/" + testTopicForumThread.getId()));
+    }
+
+    @Test
+    void processCreateThread_noSuchForum() throws Exception {
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(forumService.createNewTopicThread(any(), any(), any())).thenReturn(testTopicForumThread);
+
+        mockMvc.perform(post("/forum/" + testTopicForum.getName() + "/processCreateThread")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("title", testTopicForumThread.getTitle())
+                .param("firstPostContent", testTopicForumThread.getPosts().first().getContent()))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("forum-not-found"))
+                .andExpect(model().attributeExists("message"));
+    }
+
+    @Test
+    void processCreateThread_blankThreadTitle() throws Exception {
+        testTopicForumThread.setTitle("     ");
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(forumService.createNewTopicThread(any(), any(), any())).thenReturn(testTopicForumThread);
+
+        mockMvc.perform(post("/forum/" + testTopicForum.getName() + "/processCreateThread")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("title", testTopicForumThread.getTitle())
+                .param("firstPostContent", testTopicForumThread.getPosts().first().getContent()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("create-thread-page"))
+                .andExpect(model().hasErrors());
+    }
+
+    @Test
+    void processCreateThread_shortThreadTitle() throws Exception {
+        testTopicForumThread.setTitle("1");
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(forumService.createNewTopicThread(any(), any(), any())).thenReturn(testTopicForumThread);
+
+        mockMvc.perform(post("/forum/" + testTopicForum.getName() + "/processCreateThread")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("title", testTopicForumThread.getTitle())
+                .param("firstPostContent", testTopicForumThread.getPosts().first().getContent()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("create-thread-page"))
+                .andExpect(model().hasErrors());
+    }
+
+    @Test
+    void processCreateThread_blankContent() throws Exception {
+        testTopicForumThread.getPosts().first().setContent("     ");
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(forumService.createNewTopicThread(any(), any(), any())).thenReturn(testTopicForumThread);
+
+        mockMvc.perform(post("/forum/" + testTopicForum.getName() + "/processCreateThread")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("title", testTopicForumThread.getTitle())
+                .param("firstPostContent", testTopicForumThread.getPosts().first().getContent()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("create-thread-page"))
+                .andExpect(model().hasErrors());
+    }
+
+    @Test
+    void showThread_validThread() throws Exception {
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+
+        String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
+        mockMvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(view().name("topic-thread-page"))
+                .andExpect(model().attributeExists("forumName"))
+                .andExpect(model().attributeExists("threadTitle"))
+                .andExpect(model().attributeExists("posts"));
+    }
+
+    @Test
+    void showThread_noSuchForum() throws Exception {
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+
+        String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
+        mockMvc.perform(get(url))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("forum-not-found"))
+                .andExpect(model().attributeExists("message"));
+    }
+
+    @Test
+    void showThread_noSuchThreadOnGivenForum() throws Exception {
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(null);
+
+        String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
+        mockMvc.perform(get(url))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("thread-not-found"))
+                .andExpect(model().attributeExists("message"));
     }
 }
