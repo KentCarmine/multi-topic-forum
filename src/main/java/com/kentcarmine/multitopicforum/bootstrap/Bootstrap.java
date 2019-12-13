@@ -58,6 +58,9 @@ public class Bootstrap implements CommandLineRunner {
         TopicThread forum2Thread1 = new TopicThread("Thread1", testForum2);
         topicThreadRepository.save(forum2Thread1);
 
+        TopicThread forum2Thread2 = new TopicThread("Thread 2", testForum2);
+        topicThreadRepository.save(forum2Thread2);
+
         Post post1 = new Post("Test content 1", Date.from(Instant.now()));
         post1.setUser(userRepository.findByUsername("admin"));
         post1.setThread(forum2Thread1);
@@ -68,11 +71,23 @@ public class Bootstrap implements CommandLineRunner {
         post2.setThread(forum2Thread1);
         post2 = postRepository.save(post2);
 
-        SortedSet<Post> postList = new TreeSet<>();
-        postList.add(post1);
-        postList.add(post2);
-        forum2Thread1.setPosts(postList);
-        forum2Thread1 = topicThreadRepository.save(forum2Thread1);
+        Post post5 = new Post("Test content 2", Date.from(Instant.now().plusSeconds(60)));
+        post5.setUser(userRepository.findByUsername("admin2"));
+        post5.setThread(forum2Thread2);
+        post5 = postRepository.save(post5);
+
+        TopicThread forum1Thread1 = new TopicThread("Thread2", testForum1);
+        topicThreadRepository.save(forum1Thread1);
+
+        Post post3 = new Post("Test content 3", Date.from(Instant.now().plusSeconds(5)));
+        post3.setUser(userRepository.findByUsername("user2"));
+        post3.setThread(forum1Thread1);
+        post3 = postRepository.save(post3);
+
+        Post post4 = new Post("Test content 4", Date.from(Instant.now().plusSeconds(15)));
+        post4.setUser(userRepository.findByUsername("admin2"));
+        post4.setThread(forum1Thread1);
+        post4 = postRepository.save(post4);
     }
 
     private void createUsers() {
