@@ -8,6 +8,9 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.*;
 
+/**
+ * Entity that models a topic thread, that is, a thread of one or more posts within a given topic forum.
+ */
 @Entity
 public class TopicThread {
 

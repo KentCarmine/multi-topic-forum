@@ -6,6 +6,9 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Date;
 
+/**
+ * Entity that models a single forum Post within a TopicThread.
+ */
 @Entity
 public class Post implements Comparable<Post> {
 

@@ -145,7 +145,7 @@ public class ForumController {
     }
 
     /**
-     * Handle form submission for adding a new post to the current thread
+     * Handle processing of form submission for adding a new post to the current thread
      */
     @PostMapping("/forum/{forumName}/show/{threadId}/createPost")
     public ModelAndView addPostToThread(@Valid @ModelAttribute PostCreationDto postCreationDto, BindingResult bindingResult, @PathVariable String forumName,
