@@ -21,7 +21,7 @@ import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -323,23 +323,75 @@ class ForumControllerTest {
 
     @Test
     void addPostToThread_validInput() throws Exception {
-        // TODO:
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+
+        final String content = "Test content";
+        final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
+
+        mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("content", content))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/forum/" + testTopicForumThread.getForum().getName() + "/show/1"));
+
+        verify(forumService, times(1)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
     }
 
     @Test
     void addPostToThread_blankContent() throws Exception {
-        // TODO:
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+
+        final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
+
+        mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("content", ""))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("topic-thread-page"))
+                .andExpect(model().attributeExists("postCreationDto"))
+                .andExpect(model().attributeExists("forumName"))
+                .andExpect(model().attributeExists("threadTitle"))
+                .andExpect(model().attributeExists("threadId"))
+                .andExpect(model().attributeExists("posts"));
+
+        verify(forumService, times(0)).addNewPostToThread(any(), any(), any());
     }
 
     @Test
     void addPostToThread_noSuchForum() throws Exception {
-        // TODO:
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+
+        final String content = "Test content";
+        final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
+
+        mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("content", content))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("forum-not-found"))
+                .andExpect(model().attributeExists("message"));
+
+        verify(forumService, times(0)).addNewPostToThread(any(), any(), any());
     }
 
     @Test
     void addPostToThread_noSuchThreadOnGivenForum() throws Exception {
-        // TODO:
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(null);
+
+        final String content = "Test content";
+        final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
+
+        mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("content", content))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("thread-not-found"))
+                .andExpect(model().attributeExists("message"));
+
+        verify(forumService, times(0)).addNewPostToThread(any(), any(), any());
     }
-
-
 }

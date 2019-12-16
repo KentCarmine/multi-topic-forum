@@ -1,20 +1,20 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
+import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
-import com.kentcarmine.multitopicforum.model.TopicForum;
-import com.kentcarmine.multitopicforum.model.TopicThread;
-import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.model.UserRole;
+import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.parameters.P;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
@@ -199,8 +199,13 @@ class ForumServiceTest {
 
     @Test
     void addNewPostToThread() throws Exception {
-        // TODO
+        final String testContent = "test content";
+        PostCreationDto postCreationDto = new PostCreationDto(testContent);
+        final User testUser = new User("testUser", "password", "test@test.com");
+        testUser.addAuthority(UserRole.USER);
+
+        forumService.addNewPostToThread(postCreationDto, testUser, testTopicThread);
+
+        verify(postRepository, times(1)).save(any());
     }
-
-
 }
