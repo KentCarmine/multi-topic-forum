@@ -2,12 +2,13 @@ package com.kentcarmine.multitopicforum.model;
 
 import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
 import com.kentcarmine.multitopicforum.annotations.ValidEmail;
+import com.kentcarmine.multitopicforum.helpers.ReverseDateOrderPostComparator;
+import org.hibernate.annotations.SortComparator;
+import org.hibernate.annotations.SortNatural;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Entity representing a user
@@ -31,8 +32,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Authority> authorities;
 
+    @SortComparator(ReverseDateOrderPostComparator.class)
     @OneToMany(mappedBy = "user")
-     private List<Post> posts;
+    private SortedSet<Post> posts;
 
     // TODO: Upvote/Downvote tracking to prevent duplicate votes
 
@@ -41,6 +43,7 @@ public class User {
     public User() {
         this.authorities = new HashSet<>();
         this.enabled = false;
+        this.posts = new TreeSet<>();
     }
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long")
@@ -53,6 +56,7 @@ public class User {
         this.email = email;
         this.authorities = authorities;
         this.enabled = false;
+        this.posts = new TreeSet<>();
     }
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long")
@@ -64,6 +68,7 @@ public class User {
         this.email = email;
         this.authorities = new HashSet<>();
         this.enabled = false;
+        this.posts = new TreeSet<>();
     }
 
     public String getUsername() {
@@ -124,6 +129,14 @@ public class User {
 
     public boolean hasAuthority(UserRole role) {
         return this.authorities.stream().anyMatch((a) -> a.getAuthority().equals(role));
+    }
+
+    public SortedSet<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(SortedSet<Post> posts) {
+        this.posts = posts;
     }
 
     @Override

@@ -9,6 +9,12 @@
         <div th:replace="fragments/navbar.html :: navbar"></div>
         <h2 th:text="${user.username} + '\'s Page'"></h2>
         <p>PLACEHOLDER</p>
+        <hr>
+        <div>
+            <h3 th:text="${user.username} + '\'s Posts'"></h3>
+            <div th:if="${user.getPosts().isEmpty()}" th:text="${user.username} +' has not made any posts.'"></div>
+            <div th:each="post : ${user.getPosts()}" th:include="fragments/post-display.html :: post-summary-fragment (post)"></div>
+        </div>
         <div th:if="${#authentication.getName() == user.username}" id="own-user-page">
             <p>Current user</p>
         </div>

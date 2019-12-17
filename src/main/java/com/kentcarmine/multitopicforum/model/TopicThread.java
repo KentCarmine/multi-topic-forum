@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.model;
 
+import org.hibernate.annotations.SortComparator;
 import org.hibernate.annotations.SortNatural;
 
 import javax.persistence.*;

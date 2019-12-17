@@ -20,5 +20,19 @@
                 <hr>
             </div>
         </div>
+
+        <div th:fragment="post-summary-fragment (post)">
+            <div>
+                <span>
+                    <a href="#" th:href="@{'/forum/' + ${post.getThread().getForum().getName()} + '/show/' + ${post.getThread().getId()} + '#post_id_' + ${post.getId()}}" th:text="${post.getThread().getTitle()}">Thread Title</a>
+                </span>
+                <span> @ </span>
+                <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
+            </div>
+            <div th:text="${post.getAbbreviatedContent()}"> <!--TODO: Restrict content length-->
+                Abbreviated Content
+            </div>
+            <hr>
+        </div>
     </body>
 </html>

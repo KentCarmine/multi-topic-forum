@@ -11,6 +11,7 @@ import java.util.Date;
  */
 @Entity
 public class Post implements Comparable<Post> {
+    private static final int ABBREVIATED_CONTENT_LENGTH = 50;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -81,6 +82,24 @@ public class Post implements Comparable<Post> {
 
     public void setThread(TopicThread thread) {
         this.thread = thread;
+    }
+
+    public String getAbbreviatedContent() {
+        return getAbbreviatedContent(ABBREVIATED_CONTENT_LENGTH);
+    }
+
+    /**
+     * Get the first length characters of the content, and append ... if more characters are available.
+     *
+     * @param length the number of characters of content to get
+     * @return the first length characters of the content, possibly appended with ...
+     */
+    public String getAbbreviatedContent(int length) {
+        if (content.length() <= length) {
+            return content;
+        } else {
+            return content.substring(0, length) + "...";
+        }
     }
 
     @Override
