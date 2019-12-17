@@ -10,6 +10,8 @@ import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 
+import java.util.SortedSet;
+
 /**
  * Specification for services that provide actions related to Forums
  */
@@ -28,4 +30,6 @@ public interface ForumService {
     TopicThread getThreadByForumNameAndId(String forumName, Long id);
 
     Post addNewPostToThread(PostCreationDto postCreationDto, User creatingUser, TopicThread thread);
+
+    SortedSet<TopicForum> getAllForums();
 }

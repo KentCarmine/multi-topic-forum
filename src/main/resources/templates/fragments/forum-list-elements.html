@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Forum List Elements Fragments</title>
+    </head>
+    <body>
+        <tr th:fragment="forum-list-element (forum)">
+            <td>
+                <a href="#" th:href="@{'/forum/' + ${forum.getName()}}" th:text="${forum.getName()}">Forum Name</a>
+            </td>
+            <td th:text="${forum.getDescription()}"></td>
+        </tr>
+    </body>
+</html>

@@ -17,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Service that provides actions related to TopicForums.
@@ -136,6 +133,23 @@ public class ForumServiceImpl implements ForumService {
         post.setUser(creatingUser);
         post.setThread(thread);
         return postRepository.save(post);
+    }
+
+    /**
+     * Return a SortedSet of all forums sorted in alphabetical order by name
+     *
+     * @return a SortedSet of all forums sorted in alphabetical order by name
+     */
+    public SortedSet<TopicForum> getAllForums() {
+        SortedSet<TopicForum> forums = new TreeSet<>(new Comparator<TopicForum>() {
+            @Override
+            public int compare(TopicForum o1, TopicForum o2) {
+                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+            }
+        });
+        topicForumRepository.findAll().forEach(forums::add);
+
+        return forums;
     }
 
     /**

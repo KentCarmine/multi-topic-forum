@@ -11,6 +11,9 @@
             <span>
                 <a th:href="@{/}" href="#">Home</a>
             </span>
+            <span>
+                <a th:href="@{/forums}" href="#">All Forums</a>
+            </span>
             <span sec:authorize="isAuthenticated()" th:if="${#request.requestURI != '/users/' + #authentication.getName()}">
                 <a th:href="@{'/users/'+${#authentication.getName()}}" href="#">User home</a>
             </span>

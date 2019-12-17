@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>All Topic Forums</title>
+    </head>
+    <body>
+        <div th:replace="fragments/navbar.html :: navbar"></div>
+        <!--TODO: Add Forum Search bar-->
+        <h2>All Forums</h2>
+        <div th:if="${forums.isEmpty()}" th:text="There are no Topic Forums!">No Forums Exist</div>
+        <table>
+            <tr>
+                <th>Forum Name</th>
+                <th>Description</th>
+            </tr>
+            <tr th:each="forum : ${forums}" th:include="fragments/forum-list-elements.html :: forum-list-element (${forum})"></tr> <!--TODO: Paginate?-->
+        </table>
+    </body>
+</html>

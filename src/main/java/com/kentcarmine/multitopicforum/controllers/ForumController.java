@@ -21,6 +21,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
+import java.util.SortedSet;
 
 /**
  * Controller for TopicForum-related actions
@@ -35,6 +37,16 @@ public class ForumController {
     public ForumController(ForumService forumService, UserService userService) {
         this.forumService = forumService;
         this.userService = userService;
+    }
+
+    /**
+     * Display a page that lists all TopicForums.
+     */
+    @GetMapping("/forums")
+    public String showAllForumsPage(Model model) {
+        SortedSet<TopicForum> forums = forumService.getAllForums();
+        model.addAttribute("forums", forums);
+        return "forums-list-page";
     }
 
     /**
