@@ -10,12 +10,11 @@
 
         <h2 th:text="${threadTitle}">Thread Title</h2>
 
-        <div>
+        <div> <!--TODO: Add Pagination?-->
             <div th:each="post : ${posts}" th:include="fragments/post-display.html :: post-fragment (${post})"></div>
         </div>
 
         <div sec:authorize="isAuthenticated()">
-            <hr>
             <form id="new-post-form" th:action="@{'/forum/' + ${forumName} + '/show/' + ${threadId} + '/createPost'}" th:object="${postCreationDto}" method="post">
                 <div th:if="${#fields.hasErrors('*')}">
                     <p style="color: red">Please Correct Errors Below:</p>

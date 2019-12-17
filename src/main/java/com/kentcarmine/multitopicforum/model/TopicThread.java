@@ -67,6 +67,14 @@ public class TopicThread {
         this.posts = posts;
     }
 
+    public Post getFirstPost() {
+        return getPosts().first();
+    }
+
+    public Post getLastPost() {
+        return getPosts().last();
+    }
+
     public TopicForum getForum() {
         return forum;
     }

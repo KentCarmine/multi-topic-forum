@@ -14,10 +14,11 @@
 
         <div sec:authorize="isAuthenticated()">
             <a href="#" th:href="@{'/forum/' + ${forum.getName()} + '/createThread'}">Create Thread</a>
+            <hr>
         </div>
 
-        <div>
-            <p> ...PLACEHOLDER...</p>
+        <div th:each="thread : ${forum.getThreads()}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread})"> <!--TODO: Add Pagination?-->
+
         </div>
     </body>
 </html>

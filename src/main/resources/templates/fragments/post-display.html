@@ -6,15 +6,19 @@
     </head>
     <body>
         <div th:fragment="post-fragment (post)"> <!--TODO: Add upvote/downvote display and arg-->
-            <div>
-                <span th:text="${post.getUser().getUsername()}">Poster</span>
-                <span> | </span>
-                <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
-            </div>
-            <div th:text="${post.getContent()}">
-                Content
+            <div th:id="'post_id_' + ${post.getId()}">
+                <div>
+                    <span>
+                        <a href="#" th:href="@{'/users/' + ${post.getUser().getUsername()}}" th:text="${post.getUser().getUsername()}">Poster</a>
+                    </span>
+                    <span> @ </span>
+                    <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
+                </div>
+                <div th:text="${post.getContent()}">
+                    Content
+                </div>
+                <hr>
             </div>
         </div>
-
     </body>
 </html>

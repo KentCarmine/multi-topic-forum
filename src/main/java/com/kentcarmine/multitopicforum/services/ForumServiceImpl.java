@@ -47,7 +47,7 @@ public class ForumServiceImpl implements ForumService {
     public TopicForum getForumByName(String name) {
         return topicForumRepository.findByName(name);
     }
-    
+
     @Override
     public boolean isForumWithNameExists(String name) {
         return topicForumRepository.findByName(name) != null;
