@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
+import com.kentcarmine.multitopicforum.dtos.TopicForumSearchDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
@@ -19,8 +20,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -42,10 +47,32 @@ public class ForumController {
     /**
      * Display a page that lists all TopicForums.
      */
+//    @GetMapping("/forums")
+//    public String showAllForumsPage(Model model) {
+//        SortedSet<TopicForum> forums = forumService.getAllForums();
+//        model.addAttribute("forums", forums);
+//        model.addAttribute("topicForumSearchDto", new TopicForumSearchDto());
+//        return "forums-list-page";
+//    }
+
+    /**
+     * Display a page that lists all TopicForums, or a page that lists the TopicForums matching the search criteria. If
+     * there are no forums that fit the criteria, informs the user. If the search was invalid, displays all TopicForums
+     * and informs the user the search was invalid.
+     */
     @GetMapping("/forums")
-    public String showAllForumsPage(Model model) {
-        SortedSet<TopicForum> forums = forumService.getAllForums();
+    public String showForumsPage(ServletRequest request, Model model, @RequestParam(required = false) String search,
+                                 @RequestParam(required = false) String searchError) throws UnsupportedEncodingException {
+        SortedSet<TopicForum> forums;
+
+        if (search == null || search.equals("") || request.getParameterMap().containsKey("searchError")) {
+            forums = forumService.getAllForums();
+        } else {
+            forums = forumService.searchTopicForums(search);
+        }
+
         model.addAttribute("forums", forums);
+        model.addAttribute("topicForumSearchDto", new TopicForumSearchDto());
         return "forums-list-page";
     }
 
@@ -191,6 +218,22 @@ public class ForumController {
     }
 
     /**
+     * Handles processing of submission of TopicForum search form.
+     * @throws UnsupportedEncodingException
+     */
+    @PostMapping("/searchTopicForums")
+    public String processTopicForumSearch(@Valid TopicForumSearchDto topicForumSearchDto, BindingResult bindingResult) throws UnsupportedEncodingException {
+
+        if (bindingResult.hasErrors()) {
+            return "redirect:/forums?searchError";
+        }
+
+        String searchParams = "?search=" + encodeUrl(topicForumSearchDto.getSearchText().trim());
+        System.out.println("#### URL: " + searchParams);
+        return "redirect:/forums" + searchParams;
+    }
+
+    /**
      * Exception handler that shows an error page when a forum with a given name is not found.
      */
     @ExceptionHandler(ForumNotFoundException.class)
@@ -224,5 +267,15 @@ public class ForumController {
         }
 
         return bindingResult;
+    }
+
+    /**
+     * Helper method that encodes a string to be URL safe
+     * @param value the string to encode
+     * @return the encoded string
+     * @throws UnsupportedEncodingException
+     */
+    private String encodeUrl(String value) throws UnsupportedEncodingException {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
     }
 }

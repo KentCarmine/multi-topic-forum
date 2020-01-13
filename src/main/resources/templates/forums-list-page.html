@@ -6,15 +6,29 @@
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
-        <!--TODO: Add Forum Search bar-->
+        <div>
+            <span style="float: right">
+                <form th:action="@{/searchTopicForums}" th:object="${topicForumSearchDto}" method="post">
+                    <input th:field="*{searchText}" type="text" name="searchText" placeholder="Search" value="">
+                    <button type="submit">Search</button>
+                </form>
+            </span>
+        </div>
         <h2>All Forums</h2>
-        <div th:if="${forums.isEmpty()}" th:text="There are no Topic Forums!">No Forums Exist</div>
-        <table>
-            <tr>
-                <th>Forum Name</th>
-                <th>Description</th>
-            </tr>
-            <tr th:each="forum : ${forums}" th:include="fragments/forum-list-elements.html :: forum-list-element (${forum})"></tr> <!--TODO: Paginate?-->
-        </table>
+
+        <div th:if="${param.searchError}">
+            <p style="color: red">Invalid search terms.</p>
+        </div>
+
+        <div th:if="${forums.isEmpty()}">There are no Topic Forums!</div>
+        <div th:if="${!forums.isEmpty()}">
+            <table>
+                <tr>
+                    <th>Forum Name</th>
+                    <th>Description</th>
+                </tr>
+                <tr th:each="forum : ${forums}" th:include="fragments/forum-list-elements.html :: forum-list-element (${forum})"></tr> <!--TODO: Paginate?-->
+            </table>
+        </div>
     </body>
 </html>

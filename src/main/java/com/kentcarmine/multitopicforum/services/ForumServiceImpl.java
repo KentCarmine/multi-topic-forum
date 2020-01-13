@@ -16,8 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Service that provides actions related to TopicForums.
@@ -150,6 +156,95 @@ public class ForumServiceImpl implements ForumService {
         topicForumRepository.findAll().forEach(forums::add);
 
         return forums;
+    }
+
+    /**
+     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
+     * double quotes and spaces, but not spaces within double quotes) of the given search text.
+     *
+     * @param searchText The text to search for
+     * @return the set of TopicForums (ordered alphabetically) that match the search terms
+     * @throws UnsupportedEncodingException
+     */
+    public SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException {
+        SortedSet<TopicForum> forums = new TreeSet<>(new Comparator<TopicForum>() {
+            @Override
+            public int compare(TopicForum o1, TopicForum o2) {
+                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+            }
+        });
+
+        List<String> searchTerms = parseSearchText(searchText);
+        List<List<TopicForum>> searchTermResults = new ArrayList<>();
+        for (int i = 0; i < searchTerms.size(); i++) {
+            searchTermResults.add(new ArrayList<TopicForum>());
+        }
+
+//        System.out.println("### SEARCH TERMS:");
+//        for (String st: searchTerms) {
+//            System.out.println(st);
+//        }
+//        System.out.println("### END SEARCH TERMS");
+
+        for(int i = 0; i < searchTerms.size(); i++) {
+            String st = searchTerms.get(i);
+            searchTermResults.set(i, topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase("%" + st + "%", "%" + st + "%"));
+        }
+
+        if (!searchTermResults.isEmpty()) {
+            forums.addAll(searchTermResults.get(0));
+            searchTermResults.remove(0);
+            for (List<TopicForum> str : searchTermResults) {
+                forums.retainAll(str);
+            }
+        }
+
+//        System.out.println("### SEARCH RESULTS:");
+//        for (TopicForum f : forums) {
+//            System.out.println(f.getName());
+//        }
+//        System.out.println("### END SEARCH RESULTS");
+
+        return forums;
+    }
+
+    /**
+     * Helper method that parses text entered into a search field. The string is split on spaces and double quotes, with
+     * substrings inside double quotes still containing spaces. Returns a list of tokens.
+     *
+     * @param searchText the text to be parsed.
+     * @return the list of tokens
+     * @throws UnsupportedEncodingException
+     */
+    private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
+        List<String> searchTerms = new ArrayList<>();
+
+        searchText = decodeUrl(searchText).trim();
+
+        String regex = "\"([^\"]*)\"|(\\S+)";
+
+        Matcher matcher = Pattern.compile(regex).matcher(searchText);
+        while (matcher.find()) {
+            if (matcher.group(1) != null) {
+//                System.out.println(matcher.group(1));
+                searchTerms.add(matcher.group(1));
+            } else {
+//                System.out.println(matcher.group(2));
+                searchTerms.add(matcher.group(2));
+            }
+        }
+
+        return searchTerms.stream().filter(st -> st.length() > 0).distinct().collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method that decodes a URL-safe encoded string
+     * @param value the string to decode
+     * @return the decodes tring
+     * @throws UnsupportedEncodingException
+     */
+    private String decodeUrl(String value) throws UnsupportedEncodingException {
+        return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
     }
 
     /**

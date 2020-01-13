@@ -52,7 +52,7 @@ public class Bootstrap implements CommandLineRunner {
         TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing.");
         topicForumRepository.save(testForum1);
 
-        TopicForum testForum2 = new TopicForum("TestForum2", "Second forum for testing!");
+        TopicForum testForum2 = new TopicForum("DemoForum2", "Second forum for testing!");
         topicForumRepository.save(testForum2);
 
         TopicThread forum2Thread1 = new TopicThread("Thread1", testForum2);

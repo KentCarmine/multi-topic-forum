@@ -10,6 +10,7 @@ import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 
+import java.io.UnsupportedEncodingException;
 import java.util.SortedSet;
 
 /**
@@ -32,4 +33,6 @@ public interface ForumService {
     Post addNewPostToThread(PostCreationDto postCreationDto, User creatingUser, TopicThread thread);
 
     SortedSet<TopicForum> getAllForums();
+
+    SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException;
 }
