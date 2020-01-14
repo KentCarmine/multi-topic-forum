@@ -76,7 +76,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/administration").hasAnyAuthority("MODERATOR", "ADMINISTRATOR", "SUPER_ADMINISTRATOR")
                 .antMatchers("/createNewForum", "/processNewForumCreation").hasAnyAuthority("ADMINISTRATOR", "SUPER_ADMINISTRATOR")
                 .antMatchers("/forums").permitAll()
-                .antMatchers("/searchTopicForums").permitAll()
+                .antMatchers("/searchTopicForums**").permitAll()
                 .antMatchers("/forum/*/show/*/createPost").authenticated()
                 .antMatchers("/forum/*/show/*").permitAll()
                 .antMatchers("/forum/*/createThread", "/forum/*/processCreateThread").authenticated()

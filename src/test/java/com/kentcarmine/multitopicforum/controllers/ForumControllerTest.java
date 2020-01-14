@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
+import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
 import com.kentcarmine.multitopicforum.services.UserService;
@@ -16,6 +17,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -393,5 +396,84 @@ class ForumControllerTest {
                 .andExpect(model().attributeExists("message"));
 
         verify(forumService, times(0)).addNewPostToThread(any(), any(), any());
+    }
+
+    @Test
+    void processTopicForumSearch_validSearch() throws Exception {
+        final String searchText = "  \"Description of test \"  ";
+        mockMvc.perform(post("/searchTopicForums")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("searchText", searchText))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/forums?search=" + URLEncoderDecoderHelper.encode(searchText.trim())));
+    }
+
+    @Test
+    void processTopicForumSearch_invalidSearch() throws Exception {
+        final String searchText = "\"";
+        mockMvc.perform(post("/searchTopicForums")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("searchText", searchText))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/forums?searchError"));
+    }
+
+    @Test
+    void showForumsPage_allForums() throws Exception {
+        mockMvc.perform(get("/forums"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("forums-list-page"))
+                .andExpect(model().attributeExists("forums"))
+                .andExpect(model().attributeExists("topicForumSearchDto"));
+
+        verify(forumService, times(1)).getAllForums();
+        verify(forumService, times(0)).searchTopicForums(anyString());
+    }
+
+    @Test
+    void showForumsPage_validForumSearch() throws Exception {
+        String searchString = URLEncoderDecoderHelper.encode(" \"Description of test \"   ");
+        SortedSet<TopicForum> forumsResults = new TreeSet<>(new Comparator<TopicForum>() {
+            @Override
+            public int compare(TopicForum o1, TopicForum o2) {
+                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+            }
+        });
+        forumsResults.add(testTopicForum);
+
+        when(forumService.searchTopicForums(anyString())).thenReturn(forumsResults);
+
+        mockMvc.perform(get("/forums?search=" + searchString))
+                .andExpect(status().isOk())
+                .andExpect(view().name("forums-list-page"))
+                .andExpect(model().attributeExists("forums"))
+                .andExpect(model().attributeExists("topicForumSearchDto"));
+
+        verify(forumService, times(0)).getAllForums();
+        verify(forumService, times(1)).searchTopicForums(anyString());
+    }
+
+    @Test
+    void showForumsPage_invalidForumSearch() throws Exception {
+        mockMvc.perform(get("/forums?searchError"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("forums-list-page"))
+                .andExpect(model().attributeExists("forums"))
+                .andExpect(model().attributeExists("topicForumSearchDto"));
+
+        verify(forumService, times(1)).getAllForums();
+        verify(forumService, times(0)).searchTopicForums(anyString());
+    }
+
+    @Test
+    void showForumsPage_emptyStringForumSearch() throws Exception {
+        mockMvc.perform(get("/forums?search="))
+                .andExpect(status().isOk())
+                .andExpect(view().name("forums-list-page"))
+                .andExpect(model().attributeExists("forums"))
+                .andExpect(model().attributeExists("topicForumSearchDto"));
+
+        verify(forumService, times(1)).getAllForums();
+        verify(forumService, times(0)).searchTopicForums(anyString());
     }
 }

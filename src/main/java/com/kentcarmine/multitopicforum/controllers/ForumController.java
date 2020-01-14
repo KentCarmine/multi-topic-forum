@@ -6,6 +6,7 @@ import com.kentcarmine.multitopicforum.dtos.TopicForumSearchDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
+import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
@@ -43,17 +44,6 @@ public class ForumController {
         this.forumService = forumService;
         this.userService = userService;
     }
-
-    /**
-     * Display a page that lists all TopicForums.
-     */
-//    @GetMapping("/forums")
-//    public String showAllForumsPage(Model model) {
-//        SortedSet<TopicForum> forums = forumService.getAllForums();
-//        model.addAttribute("forums", forums);
-//        model.addAttribute("topicForumSearchDto", new TopicForumSearchDto());
-//        return "forums-list-page";
-//    }
 
     /**
      * Display a page that lists all TopicForums, or a page that lists the TopicForums matching the search criteria. If
@@ -228,8 +218,8 @@ public class ForumController {
             return "redirect:/forums?searchError";
         }
 
-        String searchParams = "?search=" + encodeUrl(topicForumSearchDto.getSearchText().trim());
-        System.out.println("#### URL: " + searchParams);
+        String searchParams = "?search=" + URLEncoderDecoderHelper.encode(topicForumSearchDto.getSearchText().trim());
+//        System.out.println("#### URL: " + searchParams);
         return "redirect:/forums" + searchParams;
     }
 
@@ -267,15 +257,5 @@ public class ForumController {
         }
 
         return bindingResult;
-    }
-
-    /**
-     * Helper method that encodes a string to be URL safe
-     * @param value the string to encode
-     * @return the encoded string
-     * @throws UnsupportedEncodingException
-     */
-    private String encodeUrl(String value) throws UnsupportedEncodingException {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
     }
 }

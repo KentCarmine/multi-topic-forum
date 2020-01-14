@@ -9,6 +9,7 @@ import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
+import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -17,7 +18,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.parameters.P;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -207,5 +208,46 @@ class ForumServiceTest {
         forumService.addNewPostToThread(postCreationDto, testUser, testTopicThread);
 
         verify(postRepository, times(1)).save(any());
+    }
+
+    @Test
+    void searchTopicForums_multipleResults() throws Exception {
+        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(List.of(testTopicForum, testTopicForum2));
+
+        final String searchStr = "\"Description of test\"";
+
+        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+
+        assertEquals(2, results.size());
+        assertEquals(testTopicForum, results.first());
+        assertEquals(testTopicForum2, results.last());
+
+        verify(topicForumRepository, times(1)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
+    }
+
+    @Test
+    void searchTopicForums_noResults() throws Exception {
+        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(new ArrayList<TopicForum>());
+
+        final String searchStr = "\"foo BAR baz\"";
+
+        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+
+        assertEquals(0, results.size());
+
+        verify(topicForumRepository, times(1)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
+    }
+
+    @Test
+    void searchTopicForums_emptySearch() throws Exception {
+//        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(new ArrayList<TopicForum>());
+
+        final String searchStr = "";
+
+        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+
+        assertEquals(0, results.size());
+
+        verify(topicForumRepository, times(0)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
     }
 }

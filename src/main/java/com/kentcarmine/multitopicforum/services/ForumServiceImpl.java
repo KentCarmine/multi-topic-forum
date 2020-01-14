@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
+import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
@@ -219,7 +220,8 @@ public class ForumServiceImpl implements ForumService {
     private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
         List<String> searchTerms = new ArrayList<>();
 
-        searchText = decodeUrl(searchText).trim();
+//        searchText = decodeUrl(searchText).trim();
+        searchText = URLEncoderDecoderHelper.decode(searchText).trim();
 
         String regex = "\"([^\"]*)\"|(\\S+)";
 
@@ -235,16 +237,6 @@ public class ForumServiceImpl implements ForumService {
         }
 
         return searchTerms.stream().filter(st -> st.length() > 0).distinct().collect(Collectors.toList());
-    }
-
-    /**
-     * Helper method that decodes a URL-safe encoded string
-     * @param value the string to decode
-     * @return the decodes tring
-     * @throws UnsupportedEncodingException
-     */
-    private String decodeUrl(String value) throws UnsupportedEncodingException {
-        return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
     }
 
     /**
