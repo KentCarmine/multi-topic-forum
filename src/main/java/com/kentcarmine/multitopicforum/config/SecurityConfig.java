@@ -71,8 +71,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.authorizeRequests()
                 .antMatchers("/h2-console**").permitAll() // TODO: For debug only
                 .antMatchers("/login").permitAll()
-                .antMatchers("/registerUser").permitAll()
-                .antMatchers("/processUserRegistration").permitAll()
+                .antMatchers("/users/*").permitAll()
+                .antMatchers("/users", "/users?*", "/processSearchUsers").permitAll()
+                .antMatchers("/registerUser", "/processUserRegistration", "/registrationConfirm").permitAll()
+                .antMatchers("/processChangePassword", "/changePassword",
+                        "/processResetPasswordStarterForm", "/resetPassword", "/resendRegistrationEmail").permitAll()
                 .antMatchers("/administration").hasAnyAuthority("MODERATOR", "ADMINISTRATOR", "SUPER_ADMINISTRATOR")
                 .antMatchers("/createNewForum", "/processNewForumCreation").hasAnyAuthority("ADMINISTRATOR", "SUPER_ADMINISTRATOR")
                 .antMatchers("/forums").permitAll()

@@ -7,6 +7,9 @@ import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
 
+import java.io.UnsupportedEncodingException;
+import java.util.SortedSet;
+
 
 public interface UserService {
 
@@ -39,4 +42,8 @@ public interface UserService {
     boolean emailExists(String email);
 
     boolean usernameExists(String username);
+
+    SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException;
+
+    SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException;
 }

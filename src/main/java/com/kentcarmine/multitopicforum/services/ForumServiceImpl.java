@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
+import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
@@ -210,33 +211,14 @@ public class ForumServiceImpl implements ForumService {
     }
 
     /**
-     * Helper method that parses text entered into a search field. The string is split on spaces and double quotes, with
-     * substrings inside double quotes still containing spaces. Returns a list of tokens.
+     * Helper method that parses search text.
      *
      * @param searchText the text to be parsed.
      * @return the list of tokens
      * @throws UnsupportedEncodingException
      */
     private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
-        List<String> searchTerms = new ArrayList<>();
-
-//        searchText = decodeUrl(searchText).trim();
-        searchText = URLEncoderDecoderHelper.decode(searchText).trim();
-
-        String regex = "\"([^\"]*)\"|(\\S+)";
-
-        Matcher matcher = Pattern.compile(regex).matcher(searchText);
-        while (matcher.find()) {
-            if (matcher.group(1) != null) {
-//                System.out.println(matcher.group(1));
-                searchTerms.add(matcher.group(1));
-            } else {
-//                System.out.println(matcher.group(2));
-                searchTerms.add(matcher.group(2));
-            }
-        }
-
-        return searchTerms.stream().filter(st -> st.length() > 0).distinct().collect(Collectors.toList());
+        return SearchParserHelper.parseSearchText(searchText);
     }
 
     /**

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Multi-Topic Forum | Search Users</title>
+    </head>
+    <body>
+        <div th:replace="fragments/navbar.html :: navbar"></div>
+
+        <h2>Search For Users</h2>
+        <form th:action="@{/processSearchUsers}" th:object="${userSearchDto}" method="post">
+            <label>Search Users</label>
+            <br>
+            <input type="text" th:field="*{searchText}" name="searchText" placeholder="Search">
+            <button type="submit">Search</button>
+        </form>
+
+
+        <div th:if="${param.searchError}">
+            <hr>
+            <p style="color: red">Invalid search terms.</p>
+        </div>
+
+        <div th:if="${param.search}">
+            <hr>
+            <div th:if="${usernames.isEmpty()}">
+                <p>No matching users found.</p>
+            </div>
+            <div th:if="${!usernames.isEmpty()}">
+                <ol>
+                    <li th:each="username : ${usernames}">
+                        <a th:href="@{'/users/' + ${username}}" href="#" th:text="${username}"></a>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+    </body>
+</html>

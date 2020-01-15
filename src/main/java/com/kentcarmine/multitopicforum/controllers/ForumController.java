@@ -212,7 +212,8 @@ public class ForumController {
      * @throws UnsupportedEncodingException
      */
     @PostMapping("/searchTopicForums")
-    public String processTopicForumSearch(@Valid TopicForumSearchDto topicForumSearchDto, BindingResult bindingResult) throws UnsupportedEncodingException {
+    public String processTopicForumSearch(@Valid TopicForumSearchDto topicForumSearchDto, BindingResult bindingResult)
+            throws UnsupportedEncodingException {
 
         if (bindingResult.hasErrors()) {
             return "redirect:/forums?searchError";

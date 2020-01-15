@@ -3,8 +3,10 @@ package com.kentcarmine.multitopicforum.controllers;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
 import com.kentcarmine.multitopicforum.dtos.UserEmailDto;
 import com.kentcarmine.multitopicforum.dtos.UserPasswordDto;
+import com.kentcarmine.multitopicforum.dtos.UserSearchDto;
 import com.kentcarmine.multitopicforum.events.OnRegistrationCompleteEvent;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
+import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
@@ -16,8 +18,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,10 +25,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.Calendar;
-import java.util.Locale;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 /**
  * Controller for handling all user-related tasks (ie. login/logout, registration, password reset, etc)
@@ -269,6 +270,42 @@ public class UserController {
 
         mv = new ModelAndView("redirect:/login?passwordUpdateSuccess");
         return mv;
+    }
+
+    /**
+     * Displays a page that provides means of searching all users of this application. This page also displays the results
+     * of such a search (including errors on invalid searches), and no results (if no users matching the search are found).
+     * @throws UnsupportedEncodingException
+     */
+    @GetMapping("/users")
+    public String showUsersListPage(ServletRequest request, Model model, @RequestParam(required = false) String search,
+                                    @RequestParam(required = false) String searchError)
+            throws UnsupportedEncodingException {
+
+        if (request.getParameterMap().containsKey("search")) {
+            SortedSet<String> usernames = userService.searchForUsernames(search);
+            model.addAttribute("usernames", usernames);
+        }
+
+        model.addAttribute("userSearchDto", new UserSearchDto());
+        return "user-search-page";
+    }
+
+    /**
+     * Handles processing of searches for Users. If the search is invalid, display an error on the /users page, otherwise
+     * display the /users page with a list of all users matching the search
+     * @throws UnsupportedEncodingException
+     */
+    @PostMapping("/processSearchUsers")
+    public String processesSearchForUsers(@Valid UserSearchDto userSearchDto, BindingResult bindingResult)
+            throws UnsupportedEncodingException {
+
+        if (bindingResult.hasErrors()) {
+            return "redirect:/users?searchError";
+        }
+
+        String searchText = URLEncoderDecoderHelper.encode(userSearchDto.getSearchText().trim());
+        return "redirect:/users?search=" + searchText;
     }
 
     /**

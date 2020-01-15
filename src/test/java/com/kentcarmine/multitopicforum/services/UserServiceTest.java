@@ -31,6 +31,8 @@ import javax.annotation.security.RunAs;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.List;
+import java.util.SortedSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -42,6 +44,10 @@ class UserServiceTest {
     private static final String TEST_USERNAME = "TestUser";
     private static final String TEST_USER_PASSWORD = "testPassword";
     private static final String TEST_USER_EMAIL = "testuser@test.com";
+
+    private static final String TEST_USERNAME_2 = "User2";
+    private static final String TEST_USER_2_PASSWORD = TEST_USER_PASSWORD;
+    private static final String TEST_USER_2_EMAIL = "user2fortesting@testemail.com";
 
     UserService userService;
 
@@ -66,6 +72,7 @@ class UserServiceTest {
     private UserDtoToUserConverter userDtoToUserConverter;
 
     private User testUser;
+    private User testUser2;
 
     @BeforeEach
     void setUp() {
@@ -77,6 +84,9 @@ class UserServiceTest {
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
+
+        testUser2 = new User(TEST_USERNAME_2, TEST_USER_2_PASSWORD, TEST_USER_2_EMAIL);
+        testUser2.addAuthority(UserRole.USER);
 
         when(passwordEncoder.encode(anyString())).thenReturn(TEST_USER_PASSWORD);
     }
@@ -342,4 +352,73 @@ class UserServiceTest {
         assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
     }
 
+    @Test
+    void searchForUsers_multipleResults() throws Exception {
+        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
+
+        SortedSet<User> results = userService.searchForUsers("user");
+
+        assertEquals(2, results.size());
+        assertEquals(testUser, results.first());
+        assertEquals(testUser2, results.last());
+
+        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+    }
+
+    @Test
+    void searchForUsers_noResults() throws Exception {
+        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
+
+        SortedSet<User> results = userService.searchForUsers("0-qht0g-24nhg");
+
+        assertEquals(0, results.size());
+
+        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+    }
+
+    @Test
+    void searchForUsers_emptySearchText() throws Exception {
+        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
+
+        SortedSet<User> results = userService.searchForUsers("");
+
+        assertEquals(0, results.size());
+
+        verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
+    }
+
+    @Test
+    void searchForUsernames_multipleResults() throws Exception {
+        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
+
+        SortedSet<String> results = userService.searchForUsernames("user");
+
+        assertEquals(2, results.size());
+        assertEquals(testUser.getUsername(), results.first());
+        assertEquals(testUser2.getUsername(), results.last());
+
+        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+    }
+
+    @Test
+    void searchForUsernames_noResults() throws Exception {
+        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
+
+        SortedSet<String> results = userService.searchForUsernames("naofg9-03t");
+
+        assertEquals(0, results.size());
+
+        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+    }
+
+    @Test
+    void searchForUsernames_emptySearchText() throws Exception {
+        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
+
+        SortedSet<String> results = userService.searchForUsernames("");
+
+        assertEquals(0, results.size());
+
+        verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
+    }
 }
