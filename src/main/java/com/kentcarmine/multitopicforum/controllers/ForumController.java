@@ -1,9 +1,6 @@
 package com.kentcarmine.multitopicforum.controllers;
 
-import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumSearchDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -27,8 +24,10 @@ import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Controller for TopicForum-related actions
@@ -107,8 +106,59 @@ public class ForumController {
             throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
         }
 
+        model.addAttribute("topicThreadSearchDto", new TopicThreadSearchDto());
         model.addAttribute("forum", forum);
         return "forum-page";
+    }
+
+    /**
+     * Handles processing of searches for threads on a forum with a given name.
+     * @throws UnsupportedEncodingException
+     */
+    @PostMapping("/processSearchThreads/{name}")
+    public String processSearchThreads(@Valid TopicThreadSearchDto topicThreadSearchDto, BindingResult bindingResult,
+                                       @PathVariable String name) throws UnsupportedEncodingException {
+
+        if (!forumService.isForumWithNameExists(name)) {
+            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
+        }
+
+        if (bindingResult.hasErrors()) {
+            return "redirect:/searchForumThreads/" + name + "?searchError";
+        }
+
+        StringBuilder searchUrl = new StringBuilder("?search=");
+        searchUrl.append(URLEncoderDecoderHelper.encode(topicThreadSearchDto.getSearchText().trim()));
+
+        return "redirect:/searchForumThreads/" + name + searchUrl.toString();
+    }
+
+    /**
+     * Displays the list of results of a search for forum threads within a TopicForum with a given name. Displays an
+     * error if the search was invalid, and informs the user if no results matching the search were found.
+     * @throws UnsupportedEncodingException
+     */
+    @GetMapping("/searchForumThreads/{name}")
+    public String searchForumThreads(ServletRequest request, Model model, @PathVariable String name,
+                                     @RequestParam(required = false) String search,
+                                     @RequestParam(required = false) String searchError)
+            throws UnsupportedEncodingException {
+
+        if (!forumService.isForumWithNameExists(name)) {
+            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
+        }
+
+        if (request.getParameterMap().containsKey("search")) {
+            String searchText = URLEncoderDecoderHelper.decode(search);
+
+            SortedSet<TopicThread> threads = forumService.searchTopicThreads(name, search);
+
+            model.addAttribute("threads", threads);
+            model.addAttribute("forumName", name);
+            model.addAttribute("searchText", searchText);
+        }
+
+        return "search-threads-results-page";
     }
 
     /**

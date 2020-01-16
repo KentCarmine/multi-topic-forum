@@ -33,7 +33,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
      * @return a ModelAndView representing the error page and a 500 Internal Server Error
      */
     @ExceptionHandler({MailAuthenticationException.class})
-    public ModelAndView handleMailError(RuntimeException e, HttpServletRequest request) {
+    public ModelAndView handleMailError(MailAuthenticationException e, HttpServletRequest request) {
         logger.error("500 status code", e);
 
         ModelAndView mv = new ModelAndView("registration-confirmation-error", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -49,7 +49,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
      * @return a ModelAndView representing the error page and a 500 Internal Server Error
      */
     @ExceptionHandler({Exception.class})
-    public ModelAndView handleGenericError(RuntimeException e, HttpServletRequest request) {
+    public ModelAndView handleGenericError(Exception e, HttpServletRequest request) {
         logger.error("500 status code", e);
 
         ModelAndView mv = new ModelAndView("general-error-page", HttpStatus.INTERNAL_SERVER_ERROR);

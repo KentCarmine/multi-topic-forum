@@ -148,6 +148,7 @@ public class ForumServiceImpl implements ForumService {
      *
      * @return a SortedSet of all forums sorted in alphabetical order by name
      */
+    @Override
     public SortedSet<TopicForum> getAllForums() {
         SortedSet<TopicForum> forums = new TreeSet<>(new Comparator<TopicForum>() {
             @Override
@@ -168,6 +169,7 @@ public class ForumServiceImpl implements ForumService {
      * @return the set of TopicForums (ordered alphabetically) that match the search terms
      * @throws UnsupportedEncodingException
      */
+    @Override
     public SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException {
         SortedSet<TopicForum> forums = new TreeSet<>(new Comparator<TopicForum>() {
             @Override
@@ -208,6 +210,59 @@ public class ForumServiceImpl implements ForumService {
 //        System.out.println("### END SEARCH RESULTS");
 
         return forums;
+    }
+
+    /**
+     * Searches for all topic threads in a topic forum with the given forumName that have titles that contain all tokens
+     * (delimited on double quotes and spaces, but not spaces within double quotes) of the given search text. Empty
+     * search text or a search of "" returns all threads in the given forum
+     *
+     * @param forumName the name of the forum to search
+     * @param searchText The text to search for
+     * @return the set of TopicThreads (ordered reverse chronologically by creation date of the first post) that match
+     * the search terms
+     * @throws UnsupportedEncodingException
+     */
+    @Override
+    public SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText)
+            throws UnsupportedEncodingException {
+        SortedSet<TopicThread> threads = new TreeSet<>(new Comparator<TopicThread>() {
+            @Override
+            public int compare(TopicThread o1, TopicThread o2) {
+                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt()); // Newest threads first
+            }
+        });
+
+        if (searchText.equals("") || searchText.equals("\"\"")) {
+            TopicForum forum = topicForumRepository.findByName(forumName);
+            if (forum != null) {
+                threads.addAll(forum.getThreads());
+            }
+
+            return threads;
+        }
+
+        List<String> searchTerms = parseSearchText(searchText);
+        List<List<TopicThread>> searchTermResults = new ArrayList<>();
+        for (int i = 0; i < searchTerms.size(); i++) {
+            searchTermResults.add(new ArrayList<TopicThread>());
+        }
+
+        for(int i = 0; i < searchTerms.size(); i++) {
+            String st = searchTerms.get(i);
+            searchTermResults.set(i, topicThreadRepository
+                    .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase("%" + st + "%", forumName));
+        }
+
+        if (!searchTermResults.isEmpty()) {
+            threads.addAll(searchTermResults.get(0));
+            searchTermResults.remove(0);
+            for (List<TopicThread> str : searchTermResults) {
+                threads.retainAll(str);
+            }
+        }
+
+        return threads;
     }
 
     /**

@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
 import com.kentcarmine.multitopicforum.services.UserService;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -176,7 +177,7 @@ class ForumControllerTest {
         mockMvc.perform(get("/forum/" + testTopicForum.getName()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("forum-page"))
-                .andExpect(model().attributeExists("forum"));
+                .andExpect(model().attributeExists("forum", "topicThreadSearchDto"));
     }
 
     @Test
@@ -187,7 +188,6 @@ class ForumControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(view().name("forum-not-found"))
                 .andExpect(model().attributeExists("message"));
-
     }
 
     @Test
@@ -475,5 +475,129 @@ class ForumControllerTest {
 
         verify(forumService, times(1)).getAllForums();
         verify(forumService, times(0)).searchTopicForums(anyString());
+    }
+
+    @Test
+    void processSearchThreads_validSearch() throws Exception {
+        String searchString = " \" Thread Title\"   ";
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+
+        mockMvc.perform(post("/processSearchThreads/" + testTopicForum.getName())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("searchText", searchString))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/searchForumThreads/" + testTopicForum.getName()
+                        + "?search=" + URLEncoderDecoderHelper.encode(searchString.trim())));
+    }
+
+    @Test
+    void processSearchThreads_invalidSearchText() throws Exception {
+        String searchString = " \" invalid search text   ";
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+
+        mockMvc.perform(post("/processSearchThreads/" + testTopicForum.getName())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("searchText", searchString))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/searchForumThreads/" + testTopicForum.getName()
+                        + "?searchError"));
+    }
+
+    @Test
+    void processSearchThreads_noSuchForumName() throws Exception {
+        String searchString = " \" Thread Title\"   ";
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
+
+        mockMvc.perform(post("/processSearchThreads/" + testTopicForum.getName())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("searchText", searchString))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("forum-not-found"))
+                .andExpect(model().attributeExists("message"));
+    }
+
+    @Test
+    void searchForumThreads_validSearchWithResults() throws Exception {
+        final String searchText = "test";
+        final String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
+        final String url = "/searchForumThreads/" + testTopicForum.getName() + "?search=" + urlSafeSearchText;
+
+        SortedSet<TopicThread> threadsResults  = new TreeSet<>(new Comparator<TopicThread>() {
+            @Override
+            public int compare(TopicThread o1, TopicThread o2) {
+                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt());
+            }
+        });
+        threadsResults.add(testTopicForumThread);
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.searchTopicThreads(anyString(), anyString())).thenReturn(threadsResults);
+
+        mockMvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(view().name("search-threads-results-page"))
+                .andExpect(model().attributeExists("threads", "forumName", "searchText"))
+                .andExpect(model().attribute("threads", IsCollectionWithSize.hasSize(threadsResults.size())));
+
+        verify(forumService, times(1)).isForumWithNameExists(anyString());
+        verify(forumService, times(1)).searchTopicThreads(anyString(), anyString());
+    }
+
+    @Test
+    void searchForumThreads_invalidSearch() throws Exception {
+        final String url = "/searchForumThreads/" + testTopicForum.getName() + "?searchError";
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+
+        mockMvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(view().name("search-threads-results-page"))
+                .andExpect(model().attributeDoesNotExist("threads", "forumName", "searchText"));
+
+        verify(forumService, times(1)).isForumWithNameExists(anyString());
+        verify(forumService, times(0)).searchTopicThreads(anyString(), anyString());
+    }
+
+    @Test
+    void searchForumThreads_emptyStringSearch() throws Exception {
+        final String searchText = "\"\"";
+        final String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
+        final String url = "/searchForumThreads/" + testTopicForum.getName() + "?search=" + urlSafeSearchText;
+
+        SortedSet<TopicThread> threadsResults  = new TreeSet<>(new Comparator<TopicThread>() {
+            @Override
+            public int compare(TopicThread o1, TopicThread o2) {
+                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt());
+            }
+        });
+        threadsResults.add(testTopicForumThread);
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.searchTopicThreads(anyString(), anyString())).thenReturn(threadsResults);
+
+        mockMvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(view().name("search-threads-results-page"))
+                .andExpect(model().attributeExists("threads", "forumName", "searchText"))
+                .andExpect(model().attribute("threads", IsCollectionWithSize.hasSize(threadsResults.size())));
+
+        verify(forumService, times(1)).isForumWithNameExists(anyString());
+        verify(forumService, times(1)).searchTopicThreads(anyString(), anyString());
+    }
+
+    @Test
+    void searchForumThreads_noSuchForumName() throws Exception {
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
+
+        mockMvc.perform(get("/searchForumThreads/aihgpnwng?searchError"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("forum-not-found"))
+                .andExpect(model().attributeExists("message"));
+
+        verify(forumService, times(1)).isForumWithNameExists(anyString());
+        verify(forumService, times(0)).searchTopicThreads(anyString(), anyString());
     }
 }

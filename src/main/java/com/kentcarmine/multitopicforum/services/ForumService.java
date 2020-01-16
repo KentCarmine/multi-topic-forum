@@ -35,4 +35,6 @@ public interface ForumService {
     SortedSet<TopicForum> getAllForums();
 
     SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException;
+
+    SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText) throws UnsupportedEncodingException;
 }

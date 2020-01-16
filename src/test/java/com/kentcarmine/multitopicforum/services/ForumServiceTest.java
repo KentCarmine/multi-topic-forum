@@ -18,6 +18,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.parameters.P;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,6 +63,8 @@ class ForumServiceTest {
 
         testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
         testTopicThread = new TopicThread(TEST_TOPIC_THREAD_NAME, testTopicForum);
+        testTopicThread.getPosts().add(new Post("test post content", Date.from(Instant.now())));
+        testTopicForum.addThread(testTopicThread);
 
         testTopicForum2 = new TopicForum(TEST_TOPIC_FORUM_NAME_2, TEST_TOPIC_FORUM_DESC_2);
         testTopicThread2 = new TopicThread(TEST_TOPIC_THREAD_NAME_2, testTopicForum2);
@@ -240,8 +243,6 @@ class ForumServiceTest {
 
     @Test
     void searchTopicForums_emptySearch() throws Exception {
-//        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(new ArrayList<TopicForum>());
-
         final String searchStr = "";
 
         SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
@@ -250,4 +251,53 @@ class ForumServiceTest {
 
         verify(topicForumRepository, times(0)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
     }
+
+    @Test
+    void searchTopicThreads_existingResults() throws Exception {
+        when(topicThreadRepository.findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString()))
+                .thenReturn(List.of(testTopicThread));
+
+        final String searchStr = "test";
+
+        SortedSet<TopicThread> results = forumService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+
+        assertEquals(1, results.size());
+        assertEquals(testTopicThread.getTitle(), results.first().getTitle());
+
+        verify(topicForumRepository, times(0)).findByName(anyString());
+        verify(topicThreadRepository, times(1))
+                .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
+    }
+
+    @Test
+    void searchTopicThreads_noResults() throws Exception {
+        when(topicThreadRepository.findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString()))
+                .thenReturn(List.of());
+
+        final String searchStr = "test";
+
+        SortedSet<TopicThread> results = forumService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+
+        assertEquals(0, results.size());
+
+        verify(topicForumRepository, times(0)).findByName(anyString());
+        verify(topicThreadRepository, times(1))
+                .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
+    }
+
+    @Test
+    void searchTopicThreads_emptySearch() throws Exception {
+        when(topicForumRepository.findByName(anyString())).thenReturn(testTopicForum);
+
+        final String searchStr = "";
+
+        SortedSet<TopicThread> results = forumService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+
+        assertEquals(1, results.size());
+
+        verify(topicForumRepository, times(1)).findByName(anyString());
+        verify(topicThreadRepository, times(0))
+                .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
+    }
+
 }

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="'Searching ' + ${forumName} + ' for \'' + ${searchText} + '\''">Search {FORUM} for {SEARCH_TEXT}</title>
+    </head>
+    <body>
+        <div th:replace="fragments/navbar.html :: navbar"></div>
+
+        <h2 th:text="'Search results for \'' + ${searchText} + '\' on ' + ${forumName}">Search results for {SEARCH_TEXT} on {FORUM}</h2>
+
+        <div th:if="${param.searchError}">
+            <p style="color: red">Invalid search terms</p>
+        </div>
+
+        <div th:if="${param.search}">
+            <div th:if="${threads != null && !threads.isEmpty()}">
+                <ul>
+                    <li th:each="thread : ${threads}"
+                         th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread})"></li> <!--TODO: Add Pagination?-->
+                </ul>
+            </div>
+            <div th:if="${threads == null || threads.isEmpty()}">
+                <p th:text="'No threads found for search: \'' + ${searchText} + '\''">No threads found for search</p>
+            </div>
+        </div>
+
+        </div>
+    </body>
+</html>
