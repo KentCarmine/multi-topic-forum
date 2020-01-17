@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.listeners;
 
 import com.kentcarmine.multitopicforum.events.OnRegistrationCompleteEvent;
 import com.kentcarmine.multitopicforum.model.User;
+import com.kentcarmine.multitopicforum.services.EmailService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -23,13 +24,14 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 
     private final MessageSource messageSource;
 
-    private final JavaMailSender javaMailSender;
+    private final EmailService emailService;
+
 
     @Autowired
-    public RegistrationListener(UserService userService, MessageSource messageSource, JavaMailSender javaMailSender) {
+    public RegistrationListener(UserService userService, MessageSource messageSource, EmailService emailService) {
         this.userService = userService;
         this.messageSource = messageSource;
-        this.javaMailSender = javaMailSender;
+        this.emailService = emailService;
     }
 
     @Override
@@ -51,12 +53,9 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         String subject = "Multi-Topic Forum Registration Confirmation";
         String confirmationUrl = event.getAppUrl() + "/registrationConfirm?token=" + token;
         String message = messageSource.getMessage("message.regSucc", null, event.getLocale());
+        String fullContent = message + "\n" + confirmationUrl;
 
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(recipientEmail);
-        email.setSubject(subject);
-        email.setText(message + "\n" + "http://localhost:8080" + confirmationUrl);
-        javaMailSender.send(email);
+        emailService.sendEmail(recipientEmail, subject, fullContent);
     }
 
 }

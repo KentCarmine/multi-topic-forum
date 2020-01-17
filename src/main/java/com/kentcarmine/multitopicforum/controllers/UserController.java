@@ -11,6 +11,7 @@ import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
+import com.kentcarmine.multitopicforum.services.EmailService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,6 +25,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -40,14 +42,15 @@ public class UserController {
     private final UserService userService;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final MessageSource messageSource;
-    private final JavaMailSender mailSender;
+    private final EmailService emailService;
+
 
     @Autowired
-    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher, MessageSource messageSource, JavaMailSender mailSender) {
+    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher, MessageSource messageSource, EmailService emailService) {
         this.userService = userService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.messageSource = messageSource;
-        this.mailSender = mailSender;
+        this.emailService = emailService;
     }
 
     /**
@@ -98,7 +101,7 @@ public class UserController {
      * complete registration if the input is valid, or informing them of errors in their input if the input is not valid
      */
     @PostMapping("/processUserRegistration")
-    public ModelAndView processUserRegistration(@Valid @ModelAttribute("user") UserDto user, BindingResult bindingResult, WebRequest request) {
+    public ModelAndView processUserRegistration(@Valid @ModelAttribute("user") UserDto user, BindingResult bindingResult, HttpServletRequest request) {
         User loggedInUser = userService.getLoggedInUser();
         if (loggedInUser != null) {
             return new ModelAndView("redirect:/users/" + loggedInUser.getUsername());
@@ -113,7 +116,7 @@ public class UserController {
         } else {
             User registeredUser = userService.createUserByUserDto(user);
             try {
-                String appUrl = request.getContextPath();
+                String appUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString() + request.getContextPath();
                 applicationEventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request.getLocale(), appUrl));
             } catch (Exception ex) {
                 System.out.println("### Error occurred completing registration ###");
@@ -180,8 +183,7 @@ public class UserController {
             return "redirect:/login";
         }
 
-        SimpleMailMessage email = constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, user);
-        mailSender.send(email);
+        sendResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, user);
 
         return "redirect:/login?regEmailSent";
     }
@@ -216,7 +218,7 @@ public class UserController {
 
         if (user != null && user.isEnabled()) {
             PasswordResetToken resetToken = userService.createPasswordResetTokenForUser(user);
-            mailSender.send(constructPasswordResetEmail(getAppUrl(request), request.getLocale(), resetToken, user));
+            sendPasswordResetEmail(getAppUrl(request), request.getLocale(), resetToken, user);
         }
 
         mv = new ModelAndView("redirect:/");
@@ -329,59 +331,40 @@ public class UserController {
      * @return the app's url including current context path
      */
     private String getAppUrl(HttpServletRequest request) {
-        return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+//        return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString() + request.getContextPath();
     }
 
     /**
-     * Helper method that creates an email to send to a user including a link to allow them to reset their password.
+     * Helper method that sends an email to the user including a link to allow them to reset their password.
      *
      * @param appUrl the url to click on
      * @param locale the locale
      * @param token the token to send
      * @param user the user to whom the token belongs
-     * @return the password reset email
      */
-    private SimpleMailMessage constructPasswordResetEmail(String appUrl, Locale locale, PasswordResetToken token, User user) {
+    private void sendPasswordResetEmail(String appUrl, Locale locale, PasswordResetToken token, User user) {
         String resetUrl = appUrl + "/changePassword?username=" + user.getUsername() + "&token=" + token.getToken();
         String message = messageSource.getMessage("message.resetPasswordLinkPrompt", null, locale) + "\n" + resetUrl;
         String subject = "Multi-Topic Forum Password Reset";
 
-        return constructEmail(subject, message, user);
+        emailService.sendEmail(user.getEmail(), subject, message);
     }
 
     /**
-     * Helper method that creates an email to send to a user including a link with an updated registration verification
-     * token.
+     * Helper method that sends an email to the user including a link with an updated registration verification token.
      *
      * @param appUrl the url to click on
      * @param locale the locale
      * @param newToken the token to send
      * @param user the user attempting to register
-     * @return the account registration verification email
      */
-    private SimpleMailMessage constructResendVerificationTokenEmail(String appUrl, Locale locale,
-                                                                    VerificationToken newToken, User user) {
+    private void sendResendVerificationTokenEmail(String appUrl, Locale locale, VerificationToken newToken, User user) {
         String confirmationUrl = appUrl + "/registrationConfirm?token=" + newToken.getToken();
         String message = messageSource.getMessage("message.resendToken", null, locale) + "\n" + confirmationUrl;
         String subject = "Multi-Topic Forum Registration Confirmation : Re-sent";
 
-        return constructEmail(subject, message , user);
-    }
-
-    /**
-     * Helper method taht constructs an email
-     *
-     * @param subject the subject of the email
-     * @param body the body of the email
-     * @param user the user to send the email to
-     * @return the constructed emil with the given subject, body, and email address of the recipient
-     */
-    private SimpleMailMessage constructEmail(String subject, String body, User user) {
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setSubject(subject);
-        email.setText(body);
-        email.setTo(user.getEmail());
-        return email;
+        emailService.sendEmail(user.getEmail(), subject, message);
     }
 
     /**

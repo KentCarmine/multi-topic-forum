@@ -10,7 +10,9 @@ import com.kentcarmine.multitopicforum.model.VerificationToken;
 import java.io.UnsupportedEncodingException;
 import java.util.SortedSet;
 
-
+/**
+ * Specification for services that provide actions related to Users
+ */
 public interface UserService {
 
     User getLoggedInUser();

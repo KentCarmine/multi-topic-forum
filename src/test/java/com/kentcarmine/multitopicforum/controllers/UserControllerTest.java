@@ -7,6 +7,7 @@ import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
+import com.kentcarmine.multitopicforum.services.EmailService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.assertj.core.data.TemporalUnitOffset;
 import org.assertj.core.internal.bytebuddy.matcher.CollectionSizeMatcher;
@@ -65,7 +66,7 @@ class UserControllerTest {
     MessageSource messageSource;
 
     @Mock
-    JavaMailSender mailSender;
+    EmailService emailService;
 
     User testUser;
     User testUser2;
@@ -74,7 +75,7 @@ class UserControllerTest {
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        userController = new UserController(userService, applicationEventPublisher, messageSource, mailSender);
+        userController = new UserController(userService, applicationEventPublisher, messageSource, emailService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(userController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
 
@@ -254,7 +255,7 @@ class UserControllerTest {
                 .andExpect(view().name("redirect:/"));
 
         verify(userService, times(0)).createPasswordResetTokenForUser(any());
-        verify(mailSender, times(0)).send(any(MimeMessage.class));
+        verify(emailService, times(0)).sendEmail(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -270,7 +271,7 @@ class UserControllerTest {
                 .andExpect(view().name("redirect:/"));
 
         verify(userService, times(0)).createPasswordResetTokenForUser(any());
-        verify(mailSender, times(0)).send(any(MimeMessage.class));
+        verify(emailService, times(0)).sendEmail(anyString(), anyString(), anyString());
     }
 
     @Test
