@@ -43,13 +43,20 @@ public class EmailServiceImpl implements EmailService {
         return ms;
     }
 
-//    @Async
+    @Async
     @Override
     public void sendEmail(String recipientEmail, String subject, String content) {
         SimpleMailMessage email = new SimpleMailMessage();
         email.setTo(recipientEmail);
         email.setSubject(subject);
         email.setText(content);
-        mailSender.send(email);
+
+        try {
+            mailSender.send(email);
+        } catch (Exception e) {
+            System.out.println("### mailSender.send() error");
+            e.printStackTrace();
+            throw e;
+        }
     }
 }
