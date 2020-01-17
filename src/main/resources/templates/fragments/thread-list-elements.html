@@ -10,16 +10,21 @@
                 <a href="#" style="font-size: larger;" th:text="${thread.getTitle()}" th:href="@{'/forum/' + ${thread.getForum().getName()} + '/show/' + ${thread.getId()}}">Thread Title</a>
             </div>
             <div>
-                <span style="width: 50%">
+                <span>
                     <label>Started By: </label>
                     <a href="#" th:text="${thread.getFirstPost().getUser().getUsername()}" th:href="@{'/users/' + ${thread.getFirstPost().getUser().getUsername()}}">Original Poster</a>
                     <span th:text="'@ ' + ${thread.getFirstPost().getPostedAt().toString()}">@ Creation timestamp</span>
                     <span> | </span>
                 </span>
-                <span style="width: 50%">
+                <span>
                     <label>Last Post By: </label>
                     <a href="#" th:text="${thread.getLastPost().getUser().getUsername()}" th:href="@{'/users/' + ${thread.getLastPost().getUser().getUsername()}}">Latest Poster</a>
                     <span th:text="'@ ' + ${thread.getLastPost().getPostedAt().toString()}">@ Updated timestamp</span>
+                    <span> | </span>
+                </span>
+                <span>
+                    <label>Posts:</label>
+                    <span th:text="${thread.getPostCount()}">20</span>
                 </span>
             </div>
             <hr>

@@ -68,6 +68,10 @@ public class TopicThread {
         this.posts = posts;
     }
 
+    public int getPostCount() {
+        return this.posts.size();
+    }
+
     public Post getFirstPost() {
         return getPosts().first();
     }
