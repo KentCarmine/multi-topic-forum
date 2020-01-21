@@ -1,14 +1,12 @@
 package com.kentcarmine.multitopicforum.bootstrap;
 
 import com.kentcarmine.multitopicforum.model.*;
-import com.kentcarmine.multitopicforum.repositories.PostRepository;
-import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
-import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
-import com.kentcarmine.multitopicforum.repositories.UserRepository;
+import com.kentcarmine.multitopicforum.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -29,24 +27,29 @@ public class Bootstrap implements CommandLineRunner {
     private TopicForumRepository topicForumRepository;
     private TopicThreadRepository topicThreadRepository;
     private PostRepository postRepository;
+    private PostVoteRepository postVoteRepository;
 
     @Autowired
-    public Bootstrap(UserRepository userRepository, TopicForumRepository topicForumRepository, TopicThreadRepository topicThreadRepository, PostRepository postRepository) {
+    public Bootstrap(UserRepository userRepository, TopicForumRepository topicForumRepository, TopicThreadRepository topicThreadRepository, PostRepository postRepository, PostVoteRepository postVoteRepository) {
         this.userRepository = userRepository;
         this.topicForumRepository = topicForumRepository;
         this.topicThreadRepository = topicThreadRepository;
         this.postRepository = postRepository;
+        this.postVoteRepository = postVoteRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
+        postVoteRepository.deleteAll();
         topicForumRepository.deleteAll();
         topicThreadRepository.deleteAll();
         postRepository.deleteAll();
         userRepository.deleteAll();
+
         createUsers();
         createTopicForums();
     }
+
 
     private void createTopicForums() {
         TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing.");
@@ -101,6 +104,16 @@ public class Bootstrap implements CommandLineRunner {
             post.setThread(forum2Thread1);
             postRepository.save(post);
         }
+
+        PostVote vote1 = new PostVote(PostVoteState.UPVOTE, userRepository.findByUsername("admin"), post4);
+        vote1 = postVoteRepository.save(vote1);
+
+        PostVote vote2 = new PostVote(PostVoteState.DOWNVOTE, userRepository.findByUsername("admin2"), post1);
+        vote2 = postVoteRepository.save(vote2);
+
+//        post1 = postRepository.findById(post1.getId()).get();
+//        System.out.println("### " + postVoteRepository.findByUserAndPost(userRepository.findByUsername("admin2"), post1));
+//        System.out.println("### " + post1.getPostVotes().get(0).toString());
     }
 
     private void createUsers() {

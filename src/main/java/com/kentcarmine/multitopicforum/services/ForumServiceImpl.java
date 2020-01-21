@@ -7,11 +7,9 @@ import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
-import com.kentcarmine.multitopicforum.model.Post;
-import com.kentcarmine.multitopicforum.model.TopicForum;
-import com.kentcarmine.multitopicforum.model.TopicThread;
-import com.kentcarmine.multitopicforum.model.User;
+import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
+import com.kentcarmine.multitopicforum.repositories.PostVoteRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,15 +35,18 @@ public class ForumServiceImpl implements ForumService {
     private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
     private final TopicThreadRepository topicThreadRepository;
     private final PostRepository postRepository;
+    private final PostVoteRepository postVoteRepository;
 
     @Autowired
     public ForumServiceImpl(TopicForumRepository topicForumRepository,
                             TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter,
-                            TopicThreadRepository topicThreadRepository, PostRepository postRepository) {
+                            TopicThreadRepository topicThreadRepository, PostRepository postRepository,
+                            PostVoteRepository postVoteRepository) {
         this.topicForumRepository = topicForumRepository;
         this.topicForumDtoToTopicForumConverter = topicForumDtoToTopicForumConverter;
         this.topicThreadRepository = topicThreadRepository;
         this.postRepository = postRepository;
+        this.postVoteRepository = postVoteRepository;
     }
 
     @Override
@@ -263,6 +264,30 @@ public class ForumServiceImpl implements ForumService {
         }
 
         return threads;
+    }
+
+    /**
+     * Generates a map from Post IDs to votes made on those posts by the given user. Those values can be 1 (upvote),
+     * 0 (no vote), or -1 (downvote).
+     *
+     * @param loggedInUser the user to check votes made by
+     * @param thread the TopicThread to get the list of post IDs from
+     * @return map from Post IDs to votes made on those posts by the given user
+     */
+    @Override
+    public Map<Long, Integer> generateVoteMap(User loggedInUser, TopicThread thread) {
+        Map<Long, Integer> voteMap = new HashMap<>();
+
+        for (Post post : thread.getPosts()) {
+            PostVote vote = postVoteRepository.findByUserAndPost(loggedInUser, post);
+            if (vote == null) {
+                voteMap.put(post.getId(), PostVoteState.NONE.getValue());
+            } else {
+                voteMap.put(post.getId(), vote.getPostVoteState().getValue());
+            }
+        }
+
+        return voteMap;
     }
 
     /**

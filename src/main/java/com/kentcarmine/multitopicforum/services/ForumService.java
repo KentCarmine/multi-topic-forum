@@ -11,6 +11,7 @@ import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 import java.util.SortedSet;
 
 /**
@@ -37,4 +38,6 @@ public interface ForumService {
     SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException;
 
     SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText) throws UnsupportedEncodingException;
+
+    Map<Long, Integer> generateVoteMap(User loggedInUser, TopicThread thread);
 }

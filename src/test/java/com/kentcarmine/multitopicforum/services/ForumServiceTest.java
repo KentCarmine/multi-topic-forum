@@ -7,6 +7,7 @@ import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
+import com.kentcarmine.multitopicforum.repositories.PostVoteRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.assertj.core.api.ListAssert;
@@ -49,6 +50,9 @@ class ForumServiceTest {
     @Mock
     TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
 
+    @Mock
+    PostVoteRepository postVoteRepository;
+
     private TopicForum testTopicForum;
     private TopicForum testTopicForum2;
     private TopicThread testTopicThread;
@@ -59,7 +63,7 @@ class ForumServiceTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        forumService = new ForumServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter, topicThreadRepository, postRepository);
+        forumService = new ForumServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter, topicThreadRepository, postRepository, postVoteRepository);
 
         testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
         testTopicThread = new TopicThread(TEST_TOPIC_THREAD_NAME, testTopicForum);

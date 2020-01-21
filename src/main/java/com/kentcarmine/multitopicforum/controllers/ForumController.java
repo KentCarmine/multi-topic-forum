@@ -24,10 +24,7 @@ import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Controller for TopicForum-related actions
@@ -216,12 +213,17 @@ public class ForumController {
         model.addAttribute("threadId", threadId);
         model.addAttribute("posts", thread.getPosts());
 
-        if (userService.getLoggedInUser() != null) {
+        User loggedInUser = userService.getLoggedInUser();
+        if (loggedInUser != null) {
             model.addAttribute("postCreationDto", new PostCreationDto());
+            model.addAttribute("loggedInUser", userService.getLoggedInUser());
+            model.addAttribute("voteMap", forumService.generateVoteMap(loggedInUser, thread));
         }
 
         return "topic-thread-page";
     }
+
+
 
     /**
      * Handle processing of form submission for adding a new post to the current thread

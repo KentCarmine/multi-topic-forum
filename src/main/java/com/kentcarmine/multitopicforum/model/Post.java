@@ -4,7 +4,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Entity that models a single forum Post within a TopicThread.
@@ -34,14 +36,17 @@ public class Post implements Comparable<Post> {
     private Date postedAt;
 
     // TODO: Set up upvote/downvote management (unique per user+post, table with composite PK and vote value 1, 0, or -1)
+    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
+    private List<PostVote> postVotes;
 
     public Post() {
-
+        postVotes = new ArrayList<>();
     }
 
     public Post(String content, Date postedAt) {
         this.content = content;
         this.postedAt = postedAt;
+        this.postVotes = new ArrayList<>();
     }
 
     public Long getId() {
@@ -82,6 +87,18 @@ public class Post implements Comparable<Post> {
 
     public void setThread(TopicThread thread) {
         this.thread = thread;
+    }
+
+    public List<PostVote> getPostVotes() {
+        return postVotes;
+    }
+
+    public void setPostVotes(List<PostVote> postVotes) {
+        this.postVotes = postVotes;
+    }
+
+    public int getVoteCount() {
+        return getPostVotes().stream().reduce(0, (subtotal, elem) -> elem.getPostVoteState().getValue(), Integer::sum);
     }
 
     public String getAbbreviatedContent() {
