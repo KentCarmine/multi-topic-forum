@@ -1,9 +1,7 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
-import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -288,6 +286,57 @@ public class ForumServiceImpl implements ForumService {
         }
 
         return voteMap;
+    }
+
+    @Override
+    public Post getPostById(Long id) {
+        Optional<Post> postOpt = postRepository.findById(id);
+        if (postOpt.isEmpty()) {
+            return null;
+        } else {
+            return postOpt.get();
+        }
+    }
+
+    @Override
+    public PostVote getPostVoteByUserAndPost(User user, Post post) {
+        return postVoteRepository.findByUserAndPost(user, post);
+    }
+
+    @Transactional
+    @Override
+    public PostVoteResponseDto handlePostVoteSubmission(User loggedInUser, Post post, PostVoteSubmissionDto postVoteSubmissionDto) {
+        PostVoteResponseDto postVoteResponseDto;
+
+        PostVote postVote = getPostVoteByUserAndPost(loggedInUser, post);
+        if (postVote == null || postVote.getPostVoteState().equals(PostVoteState.NONE)) {
+            if (postVote == null) {
+                System.out.println("### Creating new vote");
+                postVote = new PostVote(PostVoteState.NONE, loggedInUser, post);
+            } else {
+                System.out.println("### Updating existing vote");
+            }
+
+            PostVoteState voteState;
+            if (postVoteSubmissionDto.getVoteValue() == 1) {
+                voteState = PostVoteState.UPVOTE;
+            } else if (postVoteSubmissionDto.getVoteValue() == -1) {
+                voteState = PostVoteState.DOWNVOTE;
+            } else {
+                voteState = PostVoteState.NONE;
+            }
+            postVote.setPostVoteState(voteState);
+            postVote = postVoteRepository.save(postVote);
+            post.addPostVote(postVote);
+
+            postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), true, post.getVoteCount());
+            System.out.println("### Response: " + postVoteResponseDto);
+        } else {
+            System.out.println("### Invalid vote submission in handlePostVoteSubmission()");
+            postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());
+        }
+
+        return postVoteResponseDto;
     }
 
     /**

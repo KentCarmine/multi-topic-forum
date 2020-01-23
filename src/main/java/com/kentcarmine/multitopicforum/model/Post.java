@@ -97,6 +97,10 @@ public class Post implements Comparable<Post> {
         this.postVotes = postVotes;
     }
 
+    public void addPostVote(PostVote postVote) {
+        postVotes.add(postVote);
+    }
+
     public int getVoteCount() {
         return getPostVotes().stream().reduce(0, (subtotal, elem) -> elem.getPostVoteState().getValue(), Integer::sum);
     }

@@ -1,14 +1,9 @@
 package com.kentcarmine.multitopicforum.services;
 
 
-import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
-import com.kentcarmine.multitopicforum.model.Post;
-import com.kentcarmine.multitopicforum.model.TopicForum;
-import com.kentcarmine.multitopicforum.model.TopicThread;
-import com.kentcarmine.multitopicforum.model.User;
+import com.kentcarmine.multitopicforum.model.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -40,4 +35,10 @@ public interface ForumService {
     SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText) throws UnsupportedEncodingException;
 
     Map<Long, Integer> generateVoteMap(User loggedInUser, TopicThread thread);
+
+    Post getPostById(Long id);
+
+    PostVote getPostVoteByUserAndPost(User user, Post post);
+
+    PostVoteResponseDto handlePostVoteSubmission(User loggedInUser, Post post, PostVoteSubmissionDto postVoteSubmissionDto);
 }

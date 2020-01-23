@@ -18,15 +18,20 @@
 
                     <span th:if="${loggedInUser != null}">
                         <span>
-                            <img th:if="${voteMap.get(post.getId()) == 0 || voteMap.get(post.getId()) == -1}" src="/images/green-arrow-hollow.png" width="32" height="32">
-                            <img th:if="${voteMap.get(post.getId()) == 1}" src="/images/black-arrow-green-filled.png" width="32" height="32">
+                            <input type="image" alt="Upvote" width="32" height="32" th:class="upvote-button"
+                                   th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
+                                   th:src="${voteMap.get(post.getId()) == 1} ? '/images/black-arrow-green-filled.png' : '/images/green-arrow-hollow.png'"
+                                   th:name="${'upvote-button-post-id-' + post.getId()}">
                         </span>
-                        <span th:text="${post.getVoteCount()}">
-                            ###
-                        </span>
+                            <span th:class="vote-counter" th:attr="data-post-id=${post.getId()}"
+                                  th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}">
+                                ###
+                            </span>
                         <span>
-                            <img th:if="${voteMap.get(post.getId()) == 0 || voteMap.get(post.getId()) == 1}" src="/images/red-arrow-hollow.png" width="32" height="32">
-                            <img th:if="${voteMap.get(post.getId()) == -1}" src="/images/black-arrow-red-filled.png" width="32" height="32">
+                            <input type="image" alt="Downvote" width="32" height="32" th:class="downvote-button"
+                                   th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
+                                   th:src="${voteMap.get(post.getId()) == -1} ? '/images/black-arrow-red-filled.png' : '/images/red-arrow-hollow.png'"
+                                    th:name="${'downvote-button-post-id-' + post.getId()}">
                         </span>
                     </span>
                 </div>

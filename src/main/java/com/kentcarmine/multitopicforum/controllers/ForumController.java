@@ -12,6 +12,7 @@ import com.kentcarmine.multitopicforum.services.ForumService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -222,8 +223,6 @@ public class ForumController {
 
         return "topic-thread-page";
     }
-
-
 
     /**
      * Handle processing of form submission for adding a new post to the current thread
