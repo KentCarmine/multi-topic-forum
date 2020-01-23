@@ -4,9 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Entity that models a single forum Post within a TopicThread.
@@ -35,18 +33,17 @@ public class Post implements Comparable<Post> {
 
     private Date postedAt;
 
-    // TODO: Set up upvote/downvote management (unique per user+post, table with composite PK and vote value 1, 0, or -1)
-    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
-    private List<PostVote> postVotes;
+    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<PostVote> postVotes;
 
     public Post() {
-        postVotes = new ArrayList<>();
+        postVotes = new HashSet<>();
     }
 
     public Post(String content, Date postedAt) {
         this.content = content;
         this.postedAt = postedAt;
-        this.postVotes = new ArrayList<>();
+        this.postVotes = new HashSet<>();
     }
 
     public Long getId() {
@@ -89,11 +86,11 @@ public class Post implements Comparable<Post> {
         this.thread = thread;
     }
 
-    public List<PostVote> getPostVotes() {
+    public Set<PostVote> getPostVotes() {
         return postVotes;
     }
 
-    public void setPostVotes(List<PostVote> postVotes) {
+    public void setPostVotes(Set<PostVote> postVotes) {
         this.postVotes = postVotes;
     }
 
@@ -101,8 +98,18 @@ public class Post implements Comparable<Post> {
         postVotes.add(postVote);
     }
 
+    /**
+     * Get the sum of the total vote values for this post.
+     *
+     * @return the sum of the total vote values for this post.
+     */
     public int getVoteCount() {
-        return getPostVotes().stream().reduce(0, (subtotal, elem) -> elem.getPostVoteState().getValue(), Integer::sum);
+        int sum = 0;
+        for (PostVote vote : getPostVotes()) {
+            sum += vote.getPostVoteState().getValue();
+        }
+
+        return sum;
     }
 
     public String getAbbreviatedContent() {

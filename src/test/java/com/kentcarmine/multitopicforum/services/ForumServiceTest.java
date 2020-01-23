@@ -304,4 +304,19 @@ class ForumServiceTest {
                 .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
     }
 
+    @Test
+    void handlePostVoteSubmission_validVoteCreateNew() throws Exception {
+        // Check repo size changed by 1
+    }
+
+    @Test
+    void handlePostVoteSubmission_validVoteUpdate() throws Exception {
+        // Check repo size unchanged
+    }
+
+    @Test
+    void handlePostVoteSubmission_invalidVote() throws Exception {
+
+    }
+
 }

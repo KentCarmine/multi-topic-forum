@@ -2,11 +2,13 @@ package com.kentcarmine.multitopicforum.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 /**
  * Entity for modeling upvotes and downvotes on posts.
  */
 @Entity
+@Table(name = "Post_Vote", uniqueConstraints = @UniqueConstraint(columnNames = {"username", "post_id"}))
 public class PostVote {
 
     @Id
@@ -75,6 +77,19 @@ public class PostVote {
 
     public boolean isDownvote() {
         return postVoteState.getValue() == PostVoteState.DOWNVOTE.getValue();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostVote postVote = (PostVote) o;
+        return Objects.equals(id, postVote.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     @Override

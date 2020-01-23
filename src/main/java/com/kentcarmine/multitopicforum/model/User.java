@@ -36,9 +36,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private SortedSet<Post> posts;
 
-    // TODO: Upvote/Downvote tracking to prevent duplicate votes
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    private List<PostVote> postVotes;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<PostVote> postVotes;
 
     private boolean enabled;
 
@@ -46,7 +45,7 @@ public class User {
         this.authorities = new HashSet<>();
         this.enabled = false;
         this.posts = new TreeSet<>();
-        this.postVotes = new ArrayList<>();
+        this.postVotes = new HashSet<>();
     }
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long")
@@ -60,7 +59,7 @@ public class User {
         this.authorities = authorities;
         this.enabled = false;
         this.posts = new TreeSet<>();
-        this.postVotes = new ArrayList<>();
+        this.postVotes = new HashSet<>();
     }
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long")
@@ -73,6 +72,7 @@ public class User {
         this.authorities = new HashSet<>();
         this.enabled = false;
         this.posts = new TreeSet<>();
+        this.postVotes = new HashSet<>();
     }
 
     public String getUsername() {
@@ -99,11 +99,11 @@ public class User {
         this.email = email;
     }
 
-    public List<PostVote> getPostVotes() {
+    public Set<PostVote> getPostVotes() {
         return postVotes;
     }
 
-    public void setPostVotes(List<PostVote> postVotes) {
+    public void setPostVotes(Set<PostVote> postVotes) {
         this.postVotes = postVotes;
     }
 

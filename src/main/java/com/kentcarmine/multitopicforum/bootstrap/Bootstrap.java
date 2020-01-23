@@ -40,16 +40,15 @@ public class Bootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        postVoteRepository.deleteAll();
-        topicForumRepository.deleteAll();
-        topicThreadRepository.deleteAll();
-        postRepository.deleteAll();
-        userRepository.deleteAll();
+//        postVoteRepository.deleteAll();
+//        topicForumRepository.deleteAll();
+//        topicThreadRepository.deleteAll();
+//        postRepository.deleteAll();
+//        userRepository.deleteAll();
 
         createUsers();
         createTopicForums();
     }
-
 
     private void createTopicForums() {
         TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing.");
@@ -110,6 +109,12 @@ public class Bootstrap implements CommandLineRunner {
 
         PostVote vote2 = new PostVote(PostVoteState.DOWNVOTE, userRepository.findByUsername("admin2"), post1);
         vote2 = postVoteRepository.save(vote2);
+
+        PostVote vote3 = new PostVote(PostVoteState.DOWNVOTE, userRepository.findByUsername("user"), post1);
+        vote3 = postVoteRepository.save(vote3);
+
+        PostVote vote4 = new PostVote(PostVoteState.UPVOTE, userRepository.findByUsername("moderator2"), post1);
+        vote4 = postVoteRepository.save(vote4);
 
 //        post1 = postRepository.findById(post1.getId()).get();
 //        System.out.println("### " + postVoteRepository.findByUserAndPost(userRepository.findByUsername("admin2"), post1));

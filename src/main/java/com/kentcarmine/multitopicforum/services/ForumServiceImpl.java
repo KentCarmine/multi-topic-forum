@@ -298,11 +298,28 @@ public class ForumServiceImpl implements ForumService {
         }
     }
 
+    /**
+     * Get the PostVote made by the given user on the given post, or null if no such PostVote exists.
+     * @param user the user owning the PostVote
+     * @param post the post owning the PostVote
+     * @return the PostVote made by the given user on the given post, or null if no such PostVote exists.
+     */
     @Override
     public PostVote getPostVoteByUserAndPost(User user, Post post) {
         return postVoteRepository.findByUserAndPost(user, post);
     }
 
+    /**
+     * Processes submission of a PostVote by the given user on the given post with vote values in the
+     * postVoteSubmissionDto. Either creates a new vote if no vote by that user on that post exists, or updates that
+     * user's existing vote on that post. Then returns data to the client indicating the current number of votes on that
+     * post and if the user's vote was saved.
+     *
+     * @param loggedInUser The user submitting the vote
+     * @param post The post the vote is on
+     * @param postVoteSubmissionDto data about the vote
+     * @return the response object to be sent back to the client
+     */
     @Transactional
     @Override
     public PostVoteResponseDto handlePostVoteSubmission(User loggedInUser, Post post, PostVoteSubmissionDto postVoteSubmissionDto) {

@@ -1,11 +1,4 @@
 $(document).ready(function() {
-    // $(".upvote-link").on('click', function (event) {
-    //     post_vote(event, 1);
-    // });
-    // $(".downvote-link").on('click', function (event) {
-    //     post_vote(event, -1);
-    // });
-
     $(".upvote-button").click(function (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -13,23 +6,16 @@ $(document).ready(function() {
     });
     $(".downvote-button").click(function (event) {
         event.preventDefault();
+        event.stopPropagation();
         post_vote(event, -1);
     });
 });
 
-
+/* Submit the user's vote via AJAX and then update the DOM on response */
 function post_vote(event, vote_value) {
-    console.log("Event");
-    console.log(event);
-    console.log("Event Target[0]");
-    console.log($(event.target)[0]);
-    console.log("Event Target[0] Name");
-    console.log($(event.target)[0].name)
-
     let elem = $(event.target)[0];
-    // let postId = elem.data("post-id");
     let postId = $(elem).attr("data-post-id");
-    console.log("Post Id: " + postId);
+    // console.log("Post Id: " + postId);
 
     let msg = {
         postId: postId,
@@ -48,26 +34,22 @@ function post_vote(event, vote_value) {
         console.log(resp);
         updateVoteDisplay(resp);
     }).fail(function (xhr, status, e) {
-        console.log("Error: " + e);
-        console.log("StatusCode: " + status); // TODO: Update
+        console.log("error submitting vote");
     });
 }
 
+/* Update the DOM to display current vote state */
 function updateVoteDisplay(response) {
     if (response.voteUpdated) {
-        console.log("Vote updated");
+        // console.log("Vote updated");
 
         let upvoteButton = $(".upvote-button[data-post-id=" + response.postId + "]");
-        // console.log(upvoteButton[0].name);
-
         let downvoteButton = $(".downvote-button[data-post-id=" + response.postId + "]");
-        // console.log(downvoteButton[0].name);
 
         upvoteButton.attr("disabled", true);
         downvoteButton.attr("disabled", true);
 
         let voteCtr = $(".vote-counter[data-post-id=" + response.postId + "]");
-        // console.log(voteCtr);
         voteCtr.text(response.voteTotal);
 
         if (response.hasUpvote) {

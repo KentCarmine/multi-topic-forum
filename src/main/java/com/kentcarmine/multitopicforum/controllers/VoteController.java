@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+/**
+ * Handles AJAX submission of and response to upvotes and downvotes on posts.
+ */
 @RestController
 public class VoteController {
 
@@ -30,6 +33,9 @@ public class VoteController {
         this.userService = userService;
     }
 
+    /**
+     * Handles AJAX submission of an upvote or downvote on a post.
+     */
     @PostMapping(value = "/handleVoteAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> processVoteSubmission(@Valid @RequestBody PostVoteSubmissionDto postVoteSubmissionDto, Errors errors) {
         PostVoteResponseDto response;
@@ -47,11 +53,11 @@ public class VoteController {
 
         PostVote postVote = forumService.getPostVoteByUserAndPost(loggedInUser, post);
         if (postVote == null || postVote.getPostVoteState().equals(PostVoteState.NONE)) {
-            System.out.println("### Valid vote submission");
+            System.out.println("### Valid vote submission: " + postVote);
             response = forumService.handlePostVoteSubmission(loggedInUser, post, postVoteSubmissionDto);
             return ResponseEntity.ok(response);
         } else {
-            System.out.println("### Invalid vote submission 2: " + loggedInUser + ", " + post + ", " + errors.toString());
+            System.out.println("### Invalid vote submission 2: " + loggedInUser + ", " + post);
             response = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());
             return ResponseEntity.badRequest().body(response);
         }
