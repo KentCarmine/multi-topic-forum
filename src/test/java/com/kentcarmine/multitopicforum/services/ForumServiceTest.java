@@ -1,22 +1,17 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
-import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.PostVoteRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
-import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.security.core.parameters.P;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -35,6 +30,10 @@ class ForumServiceTest {
     private static final String TEST_TOPIC_FORUM_DESC_2 = "Description of test topic forum 2";
     private static final String TEST_TOPIC_THREAD_NAME = "Test Thread Name";
     private static final String TEST_TOPIC_THREAD_NAME_2 = "Test Thread Name 2";
+
+    private static final String TEST_USERNAME = "TestUser";
+    private static final String TEST_USER_PASSWORD = "testPassword";
+    private static final String TEST_USER_EMAIL = "testuser@test.com";
 
     ForumService forumService;
 
@@ -57,6 +56,9 @@ class ForumServiceTest {
     private TopicForum testTopicForum2;
     private TopicThread testTopicThread;
     private TopicThread testTopicThread2;
+    private Post testPost;
+
+    private User testUser;
 
 
     @BeforeEach
@@ -67,11 +69,16 @@ class ForumServiceTest {
 
         testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
         testTopicThread = new TopicThread(TEST_TOPIC_THREAD_NAME, testTopicForum);
-        testTopicThread.getPosts().add(new Post("test post content", Date.from(Instant.now())));
+        testPost = new Post("test post content", Date.from(Instant.now()));
+        testPost.setId(1L);
+        testTopicThread.getPosts().add(testPost);
         testTopicForum.addThread(testTopicThread);
 
         testTopicForum2 = new TopicForum(TEST_TOPIC_FORUM_NAME_2, TEST_TOPIC_FORUM_DESC_2);
         testTopicThread2 = new TopicThread(TEST_TOPIC_THREAD_NAME_2, testTopicForum2);
+
+        testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
+        testUser.addAuthority(UserRole.USER);
     }
 
     @Test
@@ -305,18 +312,89 @@ class ForumServiceTest {
     }
 
     @Test
-    void handlePostVoteSubmission_validVoteCreateNew() throws Exception {
-        // Check repo size changed by 1
+    void handlePostVoteSubmission_validUpvote() throws Exception {
+        PostVote postVote = new PostVote(PostVoteState.UPVOTE, testUser, testPost);
+        postVote.setId(3L);
+        PostVoteSubmissionDto submissionDto = new PostVoteSubmissionDto(postVote.getPost().getId(), postVote.getPostVoteState().getValue());
+
+        when(postVoteRepository.findByUserAndPost(any(), any())).thenReturn(null);
+        when(postVoteRepository.save(any())).thenReturn(postVote);
+
+        assertEquals(0, testPost.getPostVotes().size());
+        assertEquals(0, testPost.getVoteCount());
+        PostVoteResponseDto response = forumService.handlePostVoteSubmission(testUser, testPost, submissionDto);
+
+        assertEquals(1, testPost.getPostVotes().size());
+        assertEquals(PostVoteState.UPVOTE, testPost.getPostVotes().iterator().next().getPostVoteState());
+        assertEquals(testPost.getPostVotes().iterator().next().getPost().getId(), response.getPostId());
+        assertEquals(1, testPost.getVoteCount());
+        assertTrue(response.isVoteUpdated());
+        assertTrue(response.isHasUpvote());
+        assertFalse(response.isHasDownvote());
+        assertEquals(1, testPost.getVoteCount());
+        assertEquals(1, response.getVoteTotal());
+        assertEquals(testPost.getVoteCount(), response.getVoteTotal());
+
+        verify(postVoteRepository, times(1)).findByUserAndPost(any(), any());
+        verify(postVoteRepository, times(1)).save(any());
     }
 
     @Test
-    void handlePostVoteSubmission_validVoteUpdate() throws Exception {
-        // Check repo size unchanged
+    void handlePostVoteSubmission_validDownvote() throws Exception {
+        PostVote postVote = new PostVote(PostVoteState.DOWNVOTE, testUser, testPost);
+        postVote.setId(3L);
+        PostVoteSubmissionDto submissionDto = new PostVoteSubmissionDto(postVote.getPost().getId(), postVote.getPostVoteState().getValue());
+
+        when(postVoteRepository.findByUserAndPost(any(), any())).thenReturn(null);
+        when(postVoteRepository.save(any())).thenReturn(postVote);
+
+        assertEquals(0, testPost.getPostVotes().size());
+        assertEquals(0, testPost.getVoteCount());
+
+        PostVoteResponseDto response = forumService.handlePostVoteSubmission(testUser, testPost, submissionDto);
+
+        assertEquals(1, testPost.getPostVotes().size());
+        assertEquals(PostVoteState.DOWNVOTE, testPost.getPostVotes().iterator().next().getPostVoteState());
+        assertEquals(testPost.getPostVotes().iterator().next().getPost().getId(), response.getPostId());
+        assertTrue(response.isVoteUpdated());
+        assertFalse(response.isHasUpvote());
+        assertTrue(response.isHasDownvote());
+        assertEquals(-1, testPost.getVoteCount());
+        assertEquals(-1, response.getVoteTotal());
+        assertEquals(testPost.getVoteCount(), response.getVoteTotal());
+
+        verify(postVoteRepository, times(1)).findByUserAndPost(any(), any());
+        verify(postVoteRepository, times(1)).save(any());
     }
 
     @Test
     void handlePostVoteSubmission_invalidVote() throws Exception {
+        PostVote postVote = new PostVote(PostVoteState.UPVOTE, testUser, testPost);
+        postVote.setId(3L);
+        testPost.addPostVote(postVote);
+        testUser.getPostVotes().add(postVote);
 
+        PostVoteSubmissionDto submissionDto = new PostVoteSubmissionDto(postVote.getPost().getId(), postVote.getPostVoteState().getValue());
+
+        when(postVoteRepository.findByUserAndPost(any(), any())).thenReturn(postVote);
+
+        assertEquals(1, testPost.getPostVotes().size());
+        assertEquals(1, testPost.getVoteCount());
+
+        PostVoteResponseDto response = forumService.handlePostVoteSubmission(testUser, testPost, submissionDto);
+
+        assertEquals(1, testPost.getPostVotes().size());
+        assertEquals(PostVoteState.UPVOTE, testPost.getPostVotes().iterator().next().getPostVoteState());
+        assertEquals(testPost.getPostVotes().iterator().next().getPost().getId(), response.getPostId());
+        assertFalse(response.isVoteUpdated());
+        assertTrue(response.isHasUpvote());
+        assertFalse(response.isHasDownvote());
+        assertEquals(1, testPost.getVoteCount());
+        assertEquals(1, response.getVoteTotal());
+        assertEquals(testPost.getVoteCount(), response.getVoteTotal());
+
+        verify(postVoteRepository, times(1)).findByUserAndPost(any(), any());
+        verify(postVoteRepository, times(0)).save(any());
     }
 
 }

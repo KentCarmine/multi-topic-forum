@@ -312,8 +312,8 @@ public class ForumServiceImpl implements ForumService {
     /**
      * Processes submission of a PostVote by the given user on the given post with vote values in the
      * postVoteSubmissionDto. Either creates a new vote if no vote by that user on that post exists, or updates that
-     * user's existing vote on that post. Then returns data to the client indicating the current number of votes on that
-     * post and if the user's vote was saved.
+     * user's existing vote on that post if it has a value of NONE. Then returns data to the client indicating the
+     * current number of votes on that post and if the user's vote was saved.
      *
      * @param loggedInUser The user submitting the vote
      * @param post The post the vote is on
@@ -347,7 +347,7 @@ public class ForumServiceImpl implements ForumService {
             post.addPostVote(postVote);
 
             postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), true, post.getVoteCount());
-            System.out.println("### Response: " + postVoteResponseDto);
+//            System.out.println("### Response: " + postVoteResponseDto);
         } else {
             System.out.println("### Invalid vote submission in handlePostVoteSubmission()");
             postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());

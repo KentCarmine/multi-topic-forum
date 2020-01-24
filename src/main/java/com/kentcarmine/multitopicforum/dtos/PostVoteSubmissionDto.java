@@ -1,7 +1,6 @@
 package com.kentcarmine.multitopicforum.dtos;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import com.kentcarmine.multitopicforum.annotations.ValidVoteValue;
 
 /**
  * Models data received when the user submits an upvote or downvote on a post.
@@ -9,8 +8,7 @@ import javax.validation.constraints.Min;
 public class PostVoteSubmissionDto {
     private Long postId;
 
-    @Min(value = -1, message = "voteValue must be between -1 and 1")
-    @Max(value = 1, message = "voteValue must be between -1 and 1")
+    @ValidVoteValue
     private int voteValue;
 
     public PostVoteSubmissionDto() {

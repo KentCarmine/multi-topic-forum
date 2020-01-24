@@ -40,12 +40,6 @@ public class Bootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        postVoteRepository.deleteAll();
-//        topicForumRepository.deleteAll();
-//        topicThreadRepository.deleteAll();
-//        postRepository.deleteAll();
-//        userRepository.deleteAll();
-
         createUsers();
         createTopicForums();
     }

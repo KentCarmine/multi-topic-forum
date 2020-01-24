@@ -152,12 +152,26 @@ public class Post implements Comparable<Post> {
 
     @Override
     public String toString() {
+        String forumName = null;
+        String threadTitle = null;
+        if (Objects.nonNull(thread)) {
+            threadTitle = thread.getTitle();
+            if (Objects.nonNull(thread.getForum())) {
+                forumName = thread.getForum().getName();
+            }
+        }
+
+        String username = null;
+        if (Objects.nonNull(user)) {
+            username = user.getUsername();
+        }
+
         return "Post{" +
                 "id=" + id +
-                ", forum=" + thread.getForum().getName() +
-                ", thread=" + thread.getTitle() +
+                ", forum=" + forumName +
+                ", thread=" + threadTitle +
                 ", content='" + content + '\'' +
-                ", user=" + user.getUsername() +
+                ", user=" + username +
                 ", postedAt=" + postedAt +
                 '}';
     }
