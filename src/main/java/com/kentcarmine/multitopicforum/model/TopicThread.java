@@ -1,6 +1,5 @@
 package com.kentcarmine.multitopicforum.model;
 
-import org.hibernate.annotations.SortComparator;
 import org.hibernate.annotations.SortNatural;
 
 import javax.persistence.*;
@@ -29,7 +28,7 @@ public class TopicThread {
     private TopicForum forum;
 
     @SortNatural
-    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private SortedSet<Post> posts;
 
     // TODO: Add methods to get creation date and creating user of thread (by getting those values from first post)

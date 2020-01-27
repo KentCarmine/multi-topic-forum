@@ -85,6 +85,11 @@ public class Bootstrap implements CommandLineRunner {
         post4.setThread(forum1Thread1);
         post4 = postRepository.save(post4);
 
+        Post post6 = new Post("Test content 6", Date.from(Instant.now().plusSeconds(20)));
+        post6.setUser(userRepository.findByUsername("moderator2"));
+        post6.setThread(forum1Thread1);
+        post6 = postRepository.save(post6);
+
         User admin = userRepository.findByUsername("admin");
         String lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut " +
                 "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi " +

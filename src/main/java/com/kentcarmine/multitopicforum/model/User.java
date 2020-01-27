@@ -4,7 +4,6 @@ import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
 import com.kentcarmine.multitopicforum.annotations.ValidEmail;
 import com.kentcarmine.multitopicforum.helpers.ReverseDateOrderPostComparator;
 import org.hibernate.annotations.SortComparator;
-import org.hibernate.annotations.SortNatural;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -131,6 +130,24 @@ public class User {
         for (UserRole role : newRoles) {
             addAuthority(role);
         }
+    }
+
+    public boolean isHigherAuthority(User otherUser) {
+        UserRole thisRank = null;
+        for (Authority a : getAuthorities()) {
+            if (thisRank == null || a.getAuthority().isHigherRank(thisRank)) {
+                thisRank = a.getAuthority();
+            }
+        }
+
+        UserRole otherRank = null;
+        for (Authority a : otherUser.getAuthorities()) {
+            if (otherRank == null || a.getAuthority().isHigherRank(otherRank)) {
+                otherRank = a.getAuthority();
+            }
+        }
+
+        return thisRank.isHigherRank(otherRank);
     }
 
     public void removeAuthority(UserRole roleToRemove) {

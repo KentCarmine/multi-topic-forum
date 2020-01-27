@@ -68,6 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/forum/**").permitAll()
                 .antMatchers("/processSearchThreads/*", "/searchForumThreads/**").permitAll()
                 .antMatchers("/handleVoteAjax").authenticated()
+                .antMatchers("/deletePostAjax").hasAnyAuthority("MODERATOR", "ADMINISTRATOR", "SUPER_ADMINISTRATOR")
                 .antMatchers("/").permitAll()
                 .and()
                 .formLogin()

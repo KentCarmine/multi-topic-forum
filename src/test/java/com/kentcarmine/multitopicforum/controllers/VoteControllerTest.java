@@ -44,7 +44,7 @@ class VoteControllerTest {
     @Mock
     MessageSource messageSource;
 
-    VoteController voteController;
+    AjaxController voteController;
 
     MockMvc mockMvc;
 
@@ -55,7 +55,7 @@ class VoteControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        voteController = new VoteController(forumService, userService);
+        voteController = new AjaxController(forumService, userService);
         mockMvc = MockMvcBuilders.standaloneSetup(voteController)
                 .setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
 

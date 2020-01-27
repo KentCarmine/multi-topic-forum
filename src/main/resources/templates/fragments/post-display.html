@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
         <title>Post</title>
@@ -15,28 +16,41 @@
                     <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
                     <span> | </span>
                     <span th:if="${loggedInUser == null}" th:text="${post.getVoteCount()}"></span>
-
-                    <span th:if="${loggedInUser != null}">
-                        <span>
-                            <input type="image" alt="Upvote" width="32" height="32" th:class="upvote-button"
-                                   th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
-                                   th:src="${voteMap.get(post.getId()) == 1} ? '/images/black-arrow-green-filled.png' : '/images/green-arrow-hollow.png'"
-                                   th:name="${'upvote-button-post-id-' + post.getId()}">
-                        </span>
-                            <span th:class="vote-counter" th:attr="data-post-id=${post.getId()}"
-                                  th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}">
-                                ###
+                    <span th:if="${!post.isDeleted()}">
+                        <span th:if="${loggedInUser != null}">
+                            <span>
+                                <input type="image" alt="Upvote" width="32" height="32" th:class="upvote-button"
+                                       th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
+                                       th:src="${voteMap.get(post.getId()) == 1} ? '/images/black-arrow-green-filled.png' : '/images/green-arrow-hollow.png'"
+                                       th:name="${'upvote-button-post-id-' + post.getId()}">
                             </span>
-                        <span>
-                            <input type="image" alt="Downvote" width="32" height="32" th:class="downvote-button"
-                                   th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
-                                   th:src="${voteMap.get(post.getId()) == -1} ? '/images/black-arrow-red-filled.png' : '/images/red-arrow-hollow.png'"
-                                    th:name="${'downvote-button-post-id-' + post.getId()}">
+                                <span th:class="vote-counter" th:attr="data-post-id=${post.getId()}"
+                                      th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}">
+                                    ###
+                                </span>
+                            <span>
+                                <input type="image" alt="Downvote" width="32" height="32" th:class="downvote-button"
+                                       th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
+                                       th:src="${voteMap.get(post.getId()) == -1} ? '/images/black-arrow-red-filled.png' : '/images/red-arrow-hollow.png'"
+                                       th:name="${'downvote-button-post-id-' + post.getId()}">
+                            </span>
+                            <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
+                                <input type="button" th:attr="data-post-id=${post.getId()}"
+                                       th:name="${'delete-button-post-id-' + post.getId()}"
+                                       th:disabled="${!loggedInUser.isHigherAuthority(post.getUser())}"
+                                       class="delete-post-button"
+                                       value="Delete Post">
+                            </span>
                         </span>
                     </span>
                 </div>
-                <div th:text="${post.getContent()}">
-                    Content
+                <div th:if="${!post.isDeleted()}">
+                    <div th:text="${post.getContent()}">
+                        Content
+                    </div>
+                </div>
+                <div th:if="${post.isDeleted()}">
+                    Post has been deleted.
                 </div>
                 <hr>
             </div>

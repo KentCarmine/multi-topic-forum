@@ -33,17 +33,26 @@ public class Post implements Comparable<Post> {
 
     private Date postedAt;
 
+    private boolean deleted;
+    private Date deletedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "deleted_by_username")
+    private User deletedBy;
+
     @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<PostVote> postVotes;
 
     public Post() {
         postVotes = new HashSet<>();
+        deleted = false;
     }
 
     public Post(String content, Date postedAt) {
         this.content = content;
         this.postedAt = postedAt;
         this.postVotes = new HashSet<>();
+        deleted = false;
     }
 
     public Long getId() {
@@ -98,6 +107,30 @@ public class Post implements Comparable<Post> {
         postVotes.add(postVote);
     }
 
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Date getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(Date deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public User getDeletedBy() {
+        return deletedBy;
+    }
+
+    public void setDeletedBy(User deletedBy) {
+        this.deletedBy = deletedBy;
+    }
+
     /**
      * Get the sum of the total vote values for this post.
      *
@@ -141,6 +174,7 @@ public class Post implements Comparable<Post> {
 
     @Override
     public int compareTo(Post o) {
+//        System.out.println("### In Post.compareTo. Comparing " + this + " to " + o);
         if (this.getPostedAt().getTime() > o.getPostedAt().getTime()) {
             return 1;
         } else if (this.getPostedAt().getTime() < o.getPostedAt().getTime()) {
@@ -166,6 +200,16 @@ public class Post implements Comparable<Post> {
             username = user.getUsername();
         }
 
+        String deletedName = null;
+        if (Objects.nonNull(deletedBy)) {
+            deletedName = deletedBy.getUsername();
+        }
+
+        String deletedAtStr = null;
+        if (Objects.nonNull(deletedAt)) {
+            deletedAtStr = deletedAt.toString();
+        }
+
         return "Post{" +
                 "id=" + id +
                 ", forum=" + forumName +
@@ -173,6 +217,9 @@ public class Post implements Comparable<Post> {
                 ", content='" + content + '\'' +
                 ", user=" + username +
                 ", postedAt=" + postedAt +
+                ", deleted=" + deleted +
+                ", deletedAt=" + deletedAtStr +
+                ", deltedBy=" + deletedName +
                 '}';
     }
 }

@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -354,6 +355,20 @@ public class ForumServiceImpl implements ForumService {
         }
 
         return postVoteResponseDto;
+    }
+
+    /**
+     * Flag the given post as deleted by the deleting user at the current time.
+     *
+     * @param post the post to flag as deleted
+     * @param deletingUser the user deleting the post
+     */
+    @Override
+    public void deletePost(Post post, User deletingUser) {
+        post.setDeleted(true);
+        post.setDeletedBy(deletingUser);
+        post.setDeletedAt(java.sql.Date.from(Instant.now()));
+        postRepository.save(post);
     }
 
     /**

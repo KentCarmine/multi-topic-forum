@@ -1,5 +1,7 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.dtos.DeletePostResponseDto;
+import com.kentcarmine.multitopicforum.dtos.DeletePostSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.PostVoteResponseDto;
 import com.kentcarmine.multitopicforum.dtos.PostVoteSubmissionDto;
 import com.kentcarmine.multitopicforum.model.Post;
@@ -16,20 +18,23 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.sql.Date;
+import java.time.Instant;
 
 /**
  * Handles AJAX submission of and response to upvotes and downvotes on posts.
  */
 @RestController
-public class VoteController {
+public class AjaxController {
 
     private final ForumService forumService;
     private final UserService userService;
 
     @Autowired
-    public VoteController(ForumService forumService, UserService userService) {
+    public AjaxController(ForumService forumService, UserService userService) {
         this.forumService = forumService;
         this.userService = userService;
     }
@@ -63,5 +68,30 @@ public class VoteController {
             response = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    @PostMapping(value = "/deletePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DeletePostResponseDto> processDeletePost(@RequestBody DeletePostSubmissionDto deletePostSubmissionDto) {
+//        System.out.println("DeletePostSubmissionDto = " + deletePostSubmissionDto);
+        Post postToDelete = forumService.getPostById(deletePostSubmissionDto.getPostId());
+//        System.out.println("PostToDelete = " + postToDelete.toString());
+
+        if (postToDelete == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new DeletePostResponseDto("Error: Post not found.", null));
+        }
+
+        User postingUser = postToDelete.getUser();
+        if (!userService.getLoggedInUser().isHigherAuthority(postingUser)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DeletePostResponseDto("Error: Insufficient permissions to delete that post.", postToDelete.getId()));
+        }
+
+
+        forumService.deletePost(postToDelete, userService.getLoggedInUser());
+        String postUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                + "/forum/" + postToDelete.getThread().getForum().getName()
+                + "/show/" + postToDelete.getThread().getId()
+                + "#post_id_" + postToDelete.getId();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new DeletePostResponseDto("Post deleted.", postToDelete.getId(), postUrl));
     }
 }
