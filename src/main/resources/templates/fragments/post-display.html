@@ -35,11 +35,21 @@
                                        th:name="${'downvote-button-post-id-' + post.getId()}">
                             </span>
                             <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-                                <input type="button" th:attr="data-post-id=${post.getId()}"
-                                       th:name="${'delete-button-post-id-' + post.getId()}"
-                                       th:disabled="${!loggedInUser.isHigherAuthority(post.getUser())}"
-                                       class="delete-post-button"
-                                       value="Delete Post">
+                                <span th:if="${!post.isDeleted()}">
+                                    <input type="button" th:attr="data-post-id=${post.getId()}"
+                                           th:name="${'delete-button-post-id-' + post.getId()}"
+                                           th:disabled="${!loggedInUser.isHigherAuthority(post.getUser())}"
+                                           class="delete-post-button"
+                                           value="Delete Post">
+                                </span>
+                                <!--<span th:if="${post.isDeleted()}">
+                                    <input type="button" th:attr="data-post-id=${post.getId()}"
+                                           th:name="${'restore-button-post-id-' + post.getId()}"
+                                           th:disabled="${post.getDeletedBy() != null && !loggedInUser.isHigherAuthority(post.getDeletedBy())}" &lt;!&ndash;TODO Update this&ndash;&gt;
+                                           class="restore-post-button"
+                                           value="Restore Post">
+                                </span>-->
+
                             </span>
                         </span>
                     </span>
@@ -51,6 +61,8 @@
                 </div>
                 <div th:if="${post.isDeleted()}">
                     Post has been deleted.
+                    <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" th:text="'ORIGINAL CONTENT: ' + ${post.getContent()}" >
+                    </div>
                 </div>
                 <hr>
             </div>
