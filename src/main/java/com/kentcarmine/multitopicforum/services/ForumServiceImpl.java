@@ -362,13 +362,14 @@ public class ForumServiceImpl implements ForumService {
      *
      * @param post the post to flag as deleted
      * @param deletingUser the user deleting the post
+     * @return the updated post after saving
      */
     @Override
-    public void deletePost(Post post, User deletingUser) {
+    public Post deletePost(Post post, User deletingUser) {
         post.setDeleted(true);
         post.setDeletedBy(deletingUser);
         post.setDeletedAt(java.sql.Date.from(Instant.now()));
-        postRepository.save(post);
+        return postRepository.save(post);
     }
 
     /**

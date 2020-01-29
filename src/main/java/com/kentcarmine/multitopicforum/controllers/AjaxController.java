@@ -40,7 +40,7 @@ public class AjaxController {
     }
 
     /**
-     * Handles AJAX submission of an upvote or downvote on a post.
+     * Handles processing of AJAX submission of an upvote or downvote on a post.
      */
     @PostMapping(value = "/handleVoteAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PostVoteResponseDto> processVoteSubmission(@Valid @RequestBody PostVoteSubmissionDto postVoteSubmissionDto, Errors errors) {
@@ -70,6 +70,9 @@ public class AjaxController {
         }
     }
 
+    /**
+     * Handles processing of AJAX submission of a delete request on a post.
+     */
     @PostMapping(value = "/deletePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DeletePostResponseDto> processDeletePost(@RequestBody DeletePostSubmissionDto deletePostSubmissionDto) {
 //        System.out.println("DeletePostSubmissionDto = " + deletePostSubmissionDto);
@@ -81,16 +84,21 @@ public class AjaxController {
         }
 
         User postingUser = postToDelete.getUser();
+        System.out.println("### LoggedInUser: " + userService.getLoggedInUser());
+        System.out.println("### PostingUser: " + postingUser);
         if (!userService.getLoggedInUser().isHigherAuthority(postingUser)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DeletePostResponseDto("Error: Insufficient permissions to delete that post.", postToDelete.getId()));
         }
 
-
-        forumService.deletePost(postToDelete, userService.getLoggedInUser());
         String postUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
                 + "/forum/" + postToDelete.getThread().getForum().getName()
                 + "/show/" + postToDelete.getThread().getId()
                 + "#post_id_" + postToDelete.getId();
+
+        if (!postToDelete.isDeleted()) {
+            postToDelete = forumService.deletePost(postToDelete, userService.getLoggedInUser());
+        }
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DeletePostResponseDto("Post deleted.", postToDelete.getId(), postUrl));
     }

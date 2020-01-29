@@ -42,5 +42,5 @@ public interface ForumService {
 
     PostVoteResponseDto handlePostVoteSubmission(User loggedInUser, Post post, PostVoteSubmissionDto postVoteSubmissionDto);
 
-    void deletePost(Post post, User deletingUser);
+    Post deletePost(Post post, User deletingUser);
 }

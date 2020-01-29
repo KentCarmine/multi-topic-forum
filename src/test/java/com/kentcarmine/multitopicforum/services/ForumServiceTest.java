@@ -35,6 +35,10 @@ class ForumServiceTest {
     private static final String TEST_USER_PASSWORD = "testPassword";
     private static final String TEST_USER_EMAIL = "testuser@test.com";
 
+    private static final String TEST_MODERATOR_USERNAME = "TestModerator";
+    private static final String TEST_MODERATOR_PASSWORD = "testModPassword";
+    private static final String TEST_MODERATOR_EMAIL = "testmoderator@test.com";
+
     ForumService forumService;
 
     @Mock
@@ -59,7 +63,7 @@ class ForumServiceTest {
     private Post testPost;
 
     private User testUser;
-
+    private User testModerator;
 
     @BeforeEach
     void setUp() {
@@ -79,6 +83,9 @@ class ForumServiceTest {
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
+
+        testModerator = new User(TEST_MODERATOR_USERNAME, TEST_MODERATOR_PASSWORD, TEST_MODERATOR_EMAIL);
+        testModerator.addAuthorities(UserRole.USER, UserRole.MODERATOR);
     }
 
     @Test
@@ -396,5 +403,38 @@ class ForumServiceTest {
         verify(postVoteRepository, times(1)).findByUserAndPost(any(), any());
         verify(postVoteRepository, times(0)).save(any());
     }
+
+    @Test
+    void deletePost() throws Exception {
+        assertFalse(testPost.isDeleted());
+
+        Date deletedAtTimestamp = Date.from(Instant.now());
+        User deletingUser = testModerator;
+
+        Post testPostDeleted = new Post(testPost.getContent(), testPost.getPostedAt());
+        testPostDeleted.setId(testPost.getId());
+        testPostDeleted.setThread(testPost.getThread());
+        testPostDeleted.setUser(testPost.getUser());
+        testPostDeleted.setPostVotes(testPost.getPostVotes());
+        testPostDeleted.setDeleted(true);
+        testPostDeleted.setDeletedBy(deletingUser);
+        testPostDeleted.setDeletedAt(deletedAtTimestamp);
+
+        when(postRepository.save(any())).thenReturn(testPostDeleted);
+
+        Post result = forumService.deletePost(testPost, deletingUser);
+
+        assertEquals(testPost.getId(), result.getId());
+        assertEquals(testPost.getContent(), result.getContent());
+        assertEquals(testPost.getPostedAt(), result.getPostedAt());
+        assertEquals(testPost.getThread(), result.getThread());
+        assertEquals(testPost.getUser(), result.getUser());
+        assertTrue(result.isDeleted());
+        assertEquals(deletingUser, result.getDeletedBy());
+        assertEquals(deletedAtTimestamp, result.getDeletedAt());
+
+        verify(postRepository, times(1)).save(any());
+    }
+
 
 }

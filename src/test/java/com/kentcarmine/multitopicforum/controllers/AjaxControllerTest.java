@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.kentcarmine.multitopicforum.dtos.DeletePostSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.PostVoteResponseDto;
 import com.kentcarmine.multitopicforum.dtos.PostVoteSubmissionDto;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
@@ -29,11 +30,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("test")
-class VoteControllerTest {
+class AjaxControllerTest {
     private static final String TEST_USERNAME = "TestUser";
     private static final String TEST_USER_PASSWORD = "testPassword";
     private static final String TEST_USER_EMAIL = "testuser@test.com";
 
+    private static final String TEST_MODERATOR_USERNAME = "TestModerator";
+    private static final String TEST_MODERATOR_PASSWORD = "testModPassword";
+    private static final String TEST_MODERATOR_EMAIL = "testmoderator@test.com";
+
+    private static final String TEST_MODERATOR_2_USERNAME = "TestModerator2";
+    private static final String TEST_MODERATOR_2_PASSWORD = "testMod2Password";
+    private static final String TEST_MODERATOR_2_EMAIL = "testmoderator2@test.com";
+
+    private static final String TEST_TOPIC_FORUM_NAME = "TestName";
+    private static final String TEST_TOPIC_FORUM_DESC = "Description of test topic forum";
+    private static final String TEST_TOPIC_FORUM_NAME_2 = "TestName2";
+    private static final String TEST_TOPIC_FORUM_DESC_2 = "Description of test topic forum 2";
+    private static final String TEST_TOPIC_THREAD_NAME = "Test Thread Name";
+    private static final String TEST_TOPIC_THREAD_NAME_2 = "Test Thread Name 2";
 
     @Mock
     ForumService forumService;
@@ -44,26 +59,45 @@ class VoteControllerTest {
     @Mock
     MessageSource messageSource;
 
-    AjaxController voteController;
+    AjaxController ajaxController;
 
     MockMvc mockMvc;
+
+    TopicForum testTopicForum;
+    TopicThread testTopicThread;
 
     Post testPost;
 
     User testUser;
+    User testModerator;
+    User testModerator2;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        voteController = new AjaxController(forumService, userService);
-        mockMvc = MockMvcBuilders.standaloneSetup(voteController)
+        ajaxController = new AjaxController(forumService, userService);
+        mockMvc = MockMvcBuilders.standaloneSetup(ajaxController)
                 .setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
-
-        testPost = new Post("test post content", Date.from(Instant.now()));
-        testPost.setId(5L);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
+
+        testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
+        testTopicThread = new TopicThread(TEST_TOPIC_THREAD_NAME, testTopicForum);
+        testTopicThread.setId(2L);
+        testTopicForum.addThread(testTopicThread);
+
+        testPost = new Post("test post content", Date.from(Instant.now()));
+        testPost.setId(5L);
+        testPost.setUser(testUser);
+        testPost.setThread(testTopicThread);
+        testTopicThread.getPosts().add(testPost);
+
+        testModerator = new User(TEST_MODERATOR_USERNAME, TEST_MODERATOR_PASSWORD, TEST_MODERATOR_EMAIL);
+        testModerator.addAuthorities(UserRole.USER, UserRole.MODERATOR);
+
+        testModerator2 = new User(TEST_MODERATOR_2_USERNAME, TEST_MODERATOR_2_PASSWORD, TEST_MODERATOR_2_EMAIL);
+        testModerator2.addAuthorities(UserRole.USER, UserRole.MODERATOR);
     }
 
     @Test
@@ -257,6 +291,122 @@ class VoteControllerTest {
         verify(forumService, times(1)).getPostById(anyLong());
         verify(forumService, times(0)).getPostVoteByUserAndPost(any(), any());
         verify(forumService, times(0)).handlePostVoteSubmission(any(), any(), any());
+    }
+
+    @Test
+    void processDeletePost_invalidPost() throws Exception {
+        DeletePostSubmissionDto req = new DeletePostSubmissionDto(117L);
+
+        when(forumService.getPostById(anyLong())).thenReturn(null);
+        when(userService.getLoggedInUser()).thenReturn(testModerator);
+
+        MvcResult result = mockMvc.perform(post("/deletePostAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String postIdStr = JsonPath.read(resStr, "$.postId");
+        assertNull(postIdStr);
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: Post not found.", msg);
+
+        verify(forumService, times(0)).deletePost(any(), any());
+    }
+
+    @Test
+    void processDeletePost_insufficientAuthority() throws Exception {
+        testPost.setUser(testModerator2);
+        DeletePostSubmissionDto req = new DeletePostSubmissionDto(testPost.getId());
+
+        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(userService.getLoggedInUser()).thenReturn(testModerator);
+//        when(forumService.deletePost(any(), any())).thenReturn(testPost);
+
+        MvcResult result = mockMvc.perform(post("/deletePostAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+        Long postId = Long.parseLong(JsonPath.read(resStr, "$.postId").toString());
+        assertEquals(testPost.getId(), postId);
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: Insufficient permissions to delete that post.", msg);
+
+        verify(forumService, times(0)).deletePost(any(), any());
+    }
+
+    @Test
+    void processDeletePost_postAlreadyDeleted() throws Exception {
+        testPost.setDeleted(true);
+        DeletePostSubmissionDto req = new DeletePostSubmissionDto(testPost.getId());
+
+        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(userService.getLoggedInUser()).thenReturn(testModerator);
+        when(forumService.deletePost(any(), any())).thenReturn(testPost);
+
+        MvcResult result = mockMvc.perform(post("/deletePostAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+        Long postId = Long.parseLong(JsonPath.read(resStr, "$.postId").toString());
+        assertEquals(testPost.getId(), postId);
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Post deleted.", msg);
+
+        String expectedReloadUrlSuffix = "/forum/" + testPost.getThread().getForum().getName()
+                + "/show/" + testPost.getThread().getId()
+                + "#post_id_" + testPost.getId();
+
+        String reloadUrl = JsonPath.read(resStr, "$.reloadUrl");
+        assertTrue(reloadUrl.endsWith(expectedReloadUrlSuffix));
+
+        verify(forumService, times(0)).deletePost(any(), any());
+    }
+
+    @Test
+    void processDeletePost_validDeletion() throws Exception {
+        DeletePostSubmissionDto req = new DeletePostSubmissionDto(testPost.getId());
+
+        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(userService.getLoggedInUser()).thenReturn(testModerator);
+        when(forumService.deletePost(any(), any())).thenReturn(testPost);
+
+        MvcResult result = mockMvc.perform(post("/deletePostAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+        Long postId = Long.parseLong(JsonPath.read(resStr, "$.postId").toString());
+        assertEquals(testPost.getId(), postId);
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Post deleted.", msg);
+
+        String expectedReloadUrlSuffix = "/forum/" + testPost.getThread().getForum().getName()
+                + "/show/" + testPost.getThread().getId()
+                + "#post_id_" + testPost.getId();
+
+        String reloadUrl = JsonPath.read(resStr, "$.reloadUrl");
+        assertTrue(reloadUrl.endsWith(expectedReloadUrlSuffix));
+
+        verify(forumService, times(1)).deletePost(any(), any());
     }
 
     /**
