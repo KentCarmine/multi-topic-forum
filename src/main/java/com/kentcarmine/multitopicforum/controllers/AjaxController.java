@@ -102,4 +102,10 @@ public class AjaxController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DeletePostResponseDto("Post deleted.", postToDelete.getId(), postUrl));
     }
+
+//    @PostMapping(value = "/restorePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<RestorePostResponseDto> processDeletePost(@RequestBody RestorePostSubmissionDto restorePostSubmissionDto) {
+//
+//    }
+
 }
