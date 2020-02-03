@@ -1,9 +1,6 @@
 package com.kentcarmine.multitopicforum.controllers;
 
-import com.kentcarmine.multitopicforum.dtos.DeletePostResponseDto;
-import com.kentcarmine.multitopicforum.dtos.DeletePostSubmissionDto;
-import com.kentcarmine.multitopicforum.dtos.PostVoteResponseDto;
-import com.kentcarmine.multitopicforum.dtos.PostVoteSubmissionDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.PostVote;
 import com.kentcarmine.multitopicforum.model.PostVoteState;
@@ -84,8 +81,8 @@ public class AjaxController {
         }
 
         User postingUser = postToDelete.getUser();
-        System.out.println("### LoggedInUser: " + userService.getLoggedInUser());
-        System.out.println("### PostingUser: " + postingUser);
+//        System.out.println("### LoggedInUser: " + userService.getLoggedInUser());
+//        System.out.println("### PostingUser: " + postingUser);
         if (!userService.getLoggedInUser().isHigherAuthority(postingUser)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DeletePostResponseDto("Error: Insufficient permissions to delete that post.", postToDelete.getId()));
         }
@@ -103,9 +100,29 @@ public class AjaxController {
                 .body(new DeletePostResponseDto("Post deleted.", postToDelete.getId(), postUrl));
     }
 
-//    @PostMapping(value = "/restorePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<RestorePostResponseDto> processDeletePost(@RequestBody RestorePostSubmissionDto restorePostSubmissionDto) {
-//
-//    }
+    /**
+     * Handles processing of AJAX submission of a restore request on a deleted post.
+     */
+    @PostMapping(value = "/restorePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RestorePostResponseDto> processDeletePost(@RequestBody RestorePostSubmissionDto restorePostSubmissionDto) {
+        Post postToRestore = forumService.getPostById(restorePostSubmissionDto.getPostId());
+
+        if (postToRestore == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RestorePostResponseDto("Error: Post not found.", null));
+        }
+
+        boolean isValidRestoration = postToRestore.isRestorableBy(userService.getLoggedInUser());
+
+        if (isValidRestoration) {
+            postToRestore = forumService.restorePost(postToRestore);
+            String postUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                    + "/forum/" + postToRestore.getThread().getForum().getName()
+                    + "/show/" + postToRestore.getThread().getId()
+                    + "#post_id_" + postToRestore.getId();
+            return ResponseEntity.status(HttpStatus.OK).body(new RestorePostResponseDto("Post restored.", postToRestore.getId(), postUrl));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RestorePostResponseDto("Error: Insufficient permissions to restore that post.", postToRestore.getId()));
+        }
+    }
 
 }

@@ -373,6 +373,19 @@ public class ForumServiceImpl implements ForumService {
     }
 
     /**
+     * Restore the given post from deletion.
+     *
+     * @param post the post to restore
+     * @return the restored post after saving
+     */
+    public Post restorePost(Post post) {
+        post.setDeleted(false);
+        post.setDeletedBy(null);
+        post.setDeletedAt(null);
+        return postRepository.save(post);
+    }
+
+    /**
      * Helper method that parses search text.
      *
      * @param searchText the text to be parsed.

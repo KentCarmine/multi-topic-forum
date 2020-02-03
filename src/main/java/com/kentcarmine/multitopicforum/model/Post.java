@@ -172,6 +172,36 @@ public class Post implements Comparable<Post> {
         return this.getId() == ((Post)(obj)).getId();
     }
 
+    public boolean isDeletableBy(User loggedInUser) {
+        if (loggedInUser == null) {
+            return false;
+        }
+
+        return loggedInUser.isHigherAuthority(this.getUser());
+    }
+
+    /**
+     * Determines if this post can be restored from deletion by the given user.
+     *
+     * @param loggedInUser the user to check restoration authority of
+     * @return true if the given user can restore this post or if it has already been restored, false otherwise
+     */
+    public boolean isRestorableBy(User loggedInUser) {
+        if (loggedInUser == null) {
+            return false;
+        }
+
+        if (!this.isDeleted() || this.getDeletedBy() == null) {
+            return true;
+        }
+
+        if (this.getDeletedBy().equals(loggedInUser) || loggedInUser.isHigherAuthority(this.getDeletedBy())) {
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public int compareTo(Post o) {
 //        System.out.println("### In Post.compareTo. Comparing " + this + " to " + o);

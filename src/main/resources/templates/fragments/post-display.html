@@ -45,14 +45,14 @@
                         <span th:if="${!post.isDeleted()}">
                             <input type="button" th:attr="data-post-id=${post.getId()}"
                                    th:name="${'delete-button-post-id-' + post.getId()}"
-                                   th:disabled="${!loggedInUser.isHigherAuthority(post.getUser())}"
+                                   th:disabled="${!post.isDeletableBy(loggedInUser)}"
                                    class="delete-post-button"
                                    value="Delete Post">
                         </span>
                         <span th:if="${post.isDeleted()}">
                             <input type="button" th:attr="data-post-id=${post.getId()}"
                                    th:name="${'restore-button-post-id-' + post.getId()}"
-                                   th:disabled="${post.getDeletedBy() == null || !post.getDeletedBy().equals(loggedInUser) || post.getDeletedBy().isHigherAuthority(loggedInUser)}"
+                                   th:disabled="${!post.isRestorableBy(loggedInUser)}"
                                    class="restore-post-button"
                                    value="Restore Post">
                         </span>

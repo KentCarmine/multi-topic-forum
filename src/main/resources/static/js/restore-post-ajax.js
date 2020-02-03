@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $(".delete-post-button").click(function (event) {
+    $(".restore-post-button").click(function (event) {
         event.preventDefault();
         event.stopPropagation();
         restorePostConfirmation(event);

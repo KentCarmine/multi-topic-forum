@@ -43,4 +43,6 @@ public interface ForumService {
     PostVoteResponseDto handlePostVoteSubmission(User loggedInUser, Post post, PostVoteSubmissionDto postVoteSubmissionDto);
 
     Post deletePost(Post post, User deletingUser);
+
+    Post restorePost(Post post);
 }
