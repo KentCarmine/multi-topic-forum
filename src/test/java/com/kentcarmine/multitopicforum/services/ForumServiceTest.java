@@ -436,5 +436,36 @@ class ForumServiceTest {
         verify(postRepository, times(1)).save(any());
     }
 
+    @Test
+    void restorePost() throws Exception {
+        Date deletedAtTimestamp =  Date.from(Instant.now());
+        User deletingUser = testModerator;
+        testPost.setDeleted(true);
+        testPost.setDeletedAt(deletedAtTimestamp);
+        testPost.setDeletedBy(deletingUser);
 
+        Post testPostRestored = new Post(testPost.getContent(), testPost.getPostedAt());
+        testPostRestored.setId(testPost.getId());
+        testPostRestored.setThread(testPost.getThread());
+        testPostRestored.setUser(testPost.getUser());
+        testPostRestored.setPostVotes(testPost.getPostVotes());
+        testPostRestored.setDeleted(false);
+        testPostRestored.setDeletedBy(null);
+        testPostRestored.setDeletedAt(null);
+
+        when(postRepository.save(any())).thenReturn(testPostRestored);
+
+        Post result = forumService.restorePost(testPost);
+
+        assertEquals(testPost.getId(), result.getId());
+        assertEquals(testPost.getContent(), result.getContent());
+        assertEquals(testPost.getPostedAt(), result.getPostedAt());
+        assertEquals(testPost.getThread(), result.getThread());
+        assertEquals(testPost.getUser(), result.getUser());
+        assertFalse(result.isDeleted());
+        assertNull(result.getDeletedBy());
+        assertNull(result.getDeletedAt());
+
+        verify(postRepository, times(1)).save(any());
+    }
 }

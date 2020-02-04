@@ -187,18 +187,27 @@ public class Post implements Comparable<Post> {
      * @return true if the given user can restore this post or if it has already been restored, false otherwise
      */
     public boolean isRestorableBy(User loggedInUser) {
+//        System.out.println("### in isRestorableBy");
         if (loggedInUser == null) {
+//            System.out.println("### loggedInUser == null. Returning false");
             return false;
         }
 
         if (!this.isDeleted() || this.getDeletedBy() == null) {
+//            System.out.println("### !this.isDeleted(): " + !this.isDeleted());
+//            System.out.println("### this.getDeletedBy() == null: " + this.getDeletedBy() == null);
+//            System.out.println("### Returning true");
             return true;
         }
 
         if (this.getDeletedBy().equals(loggedInUser) || loggedInUser.isHigherAuthority(this.getDeletedBy())) {
+//            System.out.println("### this.getDeletedBy().equals(loggedInUser): " + this.getDeletedBy().equals(loggedInUser));
+//            System.out.println("### loggedInUser.isHigherAuthority(this.getDeletedBy()): " + loggedInUser.isHigherAuthority(this.getDeletedBy()));
+//            System.out.println("### Returning true");
             return true;
         }
 
+//        System.out.println("### Else case. Returning false");
         return false;
     }
 

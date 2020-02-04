@@ -5,6 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.kentcarmine.multitopicforum.dtos.DeletePostSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.PostVoteResponseDto;
 import com.kentcarmine.multitopicforum.dtos.PostVoteSubmissionDto;
+import com.kentcarmine.multitopicforum.dtos.RestorePostSubmissionDto;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
@@ -43,6 +44,10 @@ class AjaxControllerTest {
     private static final String TEST_MODERATOR_2_PASSWORD = "testMod2Password";
     private static final String TEST_MODERATOR_2_EMAIL = "testmoderator2@test.com";
 
+    private static final String TEST_ADMIN_USERNAME = "TestAdmin";
+    private static final String TEST_ADMIN_PASSWORD = "testAdminPassword";
+    private static final String TEST_ADMIN_EMAIL = "testadmin@test.com";
+
     private static final String TEST_TOPIC_FORUM_NAME = "TestName";
     private static final String TEST_TOPIC_FORUM_DESC = "Description of test topic forum";
     private static final String TEST_TOPIC_FORUM_NAME_2 = "TestName2";
@@ -71,6 +76,7 @@ class AjaxControllerTest {
     User testUser;
     User testModerator;
     User testModerator2;
+    User testAdmin;
 
     @BeforeEach
     void setUp() {
@@ -98,6 +104,9 @@ class AjaxControllerTest {
 
         testModerator2 = new User(TEST_MODERATOR_2_USERNAME, TEST_MODERATOR_2_PASSWORD, TEST_MODERATOR_2_EMAIL);
         testModerator2.addAuthorities(UserRole.USER, UserRole.MODERATOR);
+
+        testAdmin = new User(TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD, TEST_ADMIN_EMAIL);
+        testAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR);
     }
 
     @Test
@@ -408,6 +417,113 @@ class AjaxControllerTest {
 
         verify(forumService, times(1)).deletePost(any(), any());
     }
+
+    @Test
+    void processRestorePost_invalidPost() throws Exception {
+        RestorePostSubmissionDto req = new RestorePostSubmissionDto(192L);
+
+        when(forumService.getPostById(anyLong())).thenReturn(null);
+        when(userService.getLoggedInUser()).thenReturn(testModerator);
+
+        MvcResult result = mockMvc.perform(post("/restorePostAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String postIdStr = JsonPath.read(resStr, "$.postId");
+        assertNull(postIdStr);
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: Post not found.", msg);
+
+        verify(forumService, times(0)).restorePost(any());
+    }
+
+    @Test
+    void processRestorePost_insufficientAuthority() throws Exception {
+        User deletingUser = testModerator2;
+        Date deletedAt = Date.from(Instant.now());
+
+        testPost.setDeleted(true);
+        testPost.setDeletedBy(deletingUser);
+        testPost.setDeletedAt(deletedAt);
+
+        RestorePostSubmissionDto req = new RestorePostSubmissionDto(192L);
+
+        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(userService.getLoggedInUser()).thenReturn(testModerator);
+
+        MvcResult result = mockMvc.perform(post("/restorePostAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        Long postId = Long.parseLong(JsonPath.read(resStr, "$.postId").toString());
+        assertEquals(testPost.getId(), postId);
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: Insufficient permissions to restore that post.", msg);
+
+        verify(forumService, times(0)).restorePost(any());
+    }
+
+    @Test
+    void processRestorePost_validRestoration() throws Exception {
+        User deletingUser = testModerator2;
+        Date deletedAt = Date.from(Instant.now());
+
+        testPost.setDeleted(true);
+        testPost.setDeletedBy(deletingUser);
+        testPost.setDeletedAt(deletedAt);
+
+        Post testPostRestored = new Post(testPost.getContent(), testPost.getPostedAt());
+        testPostRestored.setId(testPost.getId());
+        testPostRestored.setThread(testPost.getThread());
+        testPostRestored.setUser(testPost.getUser());
+        testPostRestored.setPostVotes(testPost.getPostVotes());
+        testPostRestored.setDeleted(false);
+        testPostRestored.setDeletedBy(null);
+        testPostRestored.setDeletedAt(null);
+
+        RestorePostSubmissionDto req = new RestorePostSubmissionDto(192L);
+
+        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(forumService.restorePost(any())).thenReturn(testPostRestored);
+
+        MvcResult result = mockMvc.perform(post("/restorePostAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        Long postId = Long.parseLong(JsonPath.read(resStr, "$.postId").toString());
+        assertEquals(testPost.getId(), postId);
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Post restored.", msg);
+
+        String expectedReloadUrlSuffix = "/forum/" + testPost.getThread().getForum().getName()
+                + "/show/" + testPost.getThread().getId()
+                + "#post_id_" + testPost.getId();
+
+        String reloadUrl = JsonPath.read(resStr, "$.reloadUrl");
+        assertTrue(reloadUrl.endsWith(expectedReloadUrlSuffix));
+
+        verify(forumService, times(1)).restorePost(any());
+    }
+
 
     /**
      * Helper method to convert objects into JSON strings.

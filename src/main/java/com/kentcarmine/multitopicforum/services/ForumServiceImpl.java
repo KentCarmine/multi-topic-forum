@@ -364,6 +364,7 @@ public class ForumServiceImpl implements ForumService {
      * @param deletingUser the user deleting the post
      * @return the updated post after saving
      */
+    @Transactional
     @Override
     public Post deletePost(Post post, User deletingUser) {
         post.setDeleted(true);
@@ -378,6 +379,8 @@ public class ForumServiceImpl implements ForumService {
      * @param post the post to restore
      * @return the restored post after saving
      */
+    @Transactional
+    @Override
     public Post restorePost(Post post) {
         post.setDeleted(false);
         post.setDeletedBy(null);

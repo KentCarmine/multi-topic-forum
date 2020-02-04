@@ -112,6 +112,7 @@ public class AjaxController {
         }
 
         boolean isValidRestoration = postToRestore.isRestorableBy(userService.getLoggedInUser());
+        System.out.println("### isValidRestoration: " + isValidRestoration);
 
         if (isValidRestoration) {
             postToRestore = forumService.restorePost(postToRestore);
