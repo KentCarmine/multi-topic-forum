@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
@@ -75,6 +76,7 @@ public class UserController {
 //            SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().forEach((a) -> System.out.println(((GrantedAuthority) a).toString()));
             User user = userService.getUser(username);
             model.addAttribute("user", user);
+            model.addAttribute("loggedInUser", userService.getLoggedInUser());
             return "user-page";
         } else {
             throw new UserNotFoundException("User with name " + username + " was not found");

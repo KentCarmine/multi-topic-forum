@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+    </head>
+
+    <body>
+        <input type="button" class="promote-user-button" th:fragment="promote-button-fragment (user, loggedInUser)"
+               th:attr="data-username=${user.getUsername()}, data-promotable-rank=${user.getIncrementedRank()},  data-promotable-rank-display=${user.getIncrementedRank().getDisplayRank()}"
+               th:disabled="${!user.isPromotableBy(loggedInUser)}"
+               th:value="${'Promote to ' + user.getIncrementedRank().getDisplayRank()}">
+
+        <!--TODO: Add demote button-->
+    </body>
+</html>

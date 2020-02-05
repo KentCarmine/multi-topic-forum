@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
+import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
 
 import java.io.UnsupportedEncodingException;
@@ -48,4 +49,8 @@ public interface UserService {
     SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException;
 
     SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException;
+
+    boolean isValidPromotionRequest(User loggedInUser, User userToPromote, UserRole promotedRank);
+
+    User promoteUser(User userToPromote);
 }

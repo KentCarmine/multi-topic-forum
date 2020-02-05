@@ -3,13 +3,33 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
-        <title th:text="'Multi-Topic Forum |' + ${user.username} + '\'s Page'">PLACEHOLDER Page</title>
+        <title th:text="'Multi-Topic Forum | ' + ${user.username} + '\'s Page'">PLACEHOLDER Page</title>
+        <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+        <script type="text/javascript" th:src="@{/js/promote-demote-user-ajax.js}"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
         <h2 th:text="${user.username} + '\'s Page'"></h2>
         <p>PLACEHOLDER</p>
         <hr>
+
+        <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" th:if="${!user.isSuperadmin() && !user.isAdmin()}">
+            <h3>Administrative Options</h3>
+
+            <div id="promote-user-button-container">
+                <div th:replace="fragments/promote-demote-buttons.html :: promote-button-fragment (${user}, ${loggedInUser})">
+                </div>
+            </div>
+
+            <div id="demote-user-button-container">
+                <!--            <input type="button" id="demote-user-button"-->
+                <!--                   th:disabled="${!user.isDemotableBy(loggedInUser)}"-->
+                <!--                   th:value="${'Promote to ' + user.getDecrementedRank()}">-->
+            </div>
+
+            <hr>
+        </div>
+
         <div>
             <h3 th:text="${user.username} + '\'s Posts'"></h3>
             <div th:if="${user.getPosts().isEmpty()}" th:text="${user.username} +' has not made any posts.'"></div>

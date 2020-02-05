@@ -1,20 +1,17 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.*;
-import com.kentcarmine.multitopicforum.model.Post;
-import com.kentcarmine.multitopicforum.model.PostVote;
-import com.kentcarmine.multitopicforum.model.PostVoteState;
-import com.kentcarmine.multitopicforum.model.User;
+import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
@@ -126,4 +123,59 @@ public class AjaxController {
         }
     }
 
+    /**
+     * Handles processing of AJAX submission of a user promotion request.
+     */
+    @PostMapping(value = "/promoteUserAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> processPromoteUser(@RequestBody PromoteUserSubmissionDto promoteUserSubmissionDto) {
+        User userToPromote = userService.getUser(promoteUserSubmissionDto.getUsername());
+        User loggedInUser = userService.getLoggedInUser();
+        UserRole promotableRank = promoteUserSubmissionDto.getPromotableRank();
+
+        if (userToPromote == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PromoteUserResponseDto("Error: User not found"));
+        }
+
+        if (loggedInUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto("Error: Insufficient permissions to promote that user."));
+        }
+
+        if (userService.isValidPromotionRequest(loggedInUser, userToPromote, promotableRank)) {
+            userToPromote = userService.promoteUser(userToPromote);
+
+            String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                    + "/promoteUserButton/" + userToPromote.getUsername();
+            String newDemoteButtonUrl = ""; // TODO: Add this
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new PromoteUserResponseDto(userToPromote.getUsername() + " promoted to " + userToPromote.getHighestAuthority().getDisplayRank() + ".",
+                            newPromoteButtonUrl, newDemoteButtonUrl));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto("Error: Insufficient permissions to promote that user."));
+        }
+    }
+
+    /**
+     * Provides a promotion button for a user with the given username in an up-to-date state.
+     */
+    @GetMapping(value = "/promoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView promoteUserButton(@PathVariable String username) {
+        User loggedInUser = userService.getLoggedInUser();
+        User user = userService.getUser(username);
+
+        ModelAndView mv;
+
+        if (user == null || loggedInUser == null) {
+            System.out.println("### Invalid use of /promoteUserButton");
+            mv = new ModelAndView();
+            mv.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            return mv;
+        }
+
+        mv = new ModelAndView("fragments/promote-demote-buttons :: promote-button-fragment");
+        mv.setStatus(HttpStatus.OK);
+        mv.addObject("user", user);
+        mv.addObject("loggedInUser", loggedInUser);
+        return mv;
+    }
 }

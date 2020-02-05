@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name="authorities")
-public class Authority {
+public class Authority implements Comparable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +53,24 @@ public class Authority {
 
     public void setAuthority(UserRole authority) {
         this.authority = authority;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Authority other;
+        if (o instanceof Authority) {
+            other = (Authority)o;
+        } else {
+            throw new ClassCastException("o not instanceof Authority");
+        }
+
+        if (this.getAuthority().isHigherRank(other.getAuthority())) {
+            return 1;
+        } else if (other.getAuthority().isHigherRank(this.getAuthority())) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 
     @Override

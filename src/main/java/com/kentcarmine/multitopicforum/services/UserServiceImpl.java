@@ -326,6 +326,47 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Promotes the given user by one rank, then saves and returns that user.
+     *
+     * @param userToPromote the user to be promoted
+     * @return the updated user
+     */
+    public User promoteUser(User userToPromote) {
+        userToPromote.addAuthority(userToPromote.getIncrementedRank());
+        return userRepository.save(userToPromote);
+    }
+
+    /**
+     * Checks if the logged in user can promote the userToPromote to the promoted rank. The logged in user must be
+     * higher ranked than the rank they are promoting userToPromote to, and userToPromote must not be a superadmin or
+     * be promoted to superadmin.
+     *
+     * @param loggedInUser the logged in (promoting) user
+     * @param userToPromote the user to be promoted
+     * @param promotedRank the rank to promote to
+     * @return true if the promotion request is valid, false otherwise
+     */
+    public boolean isValidPromotionRequest(User loggedInUser, User userToPromote, UserRole promotedRank) {
+        if(promotedRank == null || loggedInUser == null || userToPromote == null) {
+            return false;
+        }
+
+        if (userToPromote.getHighestAuthority().equals(UserRole.SUPER_ADMINISTRATOR)
+                || userToPromote.getIncrementedRank().equals(UserRole.SUPER_ADMINISTRATOR)
+                || promotedRank.equals(UserRole.SUPER_ADMINISTRATOR)) {
+            return false;
+        }
+
+        if (loggedInUser.getHighestAuthority().isHigherRank(userToPromote.getIncrementedRank())
+                && loggedInUser.getHighestAuthority().isHigherRank(promotedRank)
+                && userToPromote.getIncrementedRank().equals(promotedRank)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Helper method that adds a given userRole to a given user and then saves that user.
      *
      * @param user the user to add the role to.
