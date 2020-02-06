@@ -2,10 +2,7 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import com.kentcarmine.multitopicforum.dtos.DeletePostSubmissionDto;
-import com.kentcarmine.multitopicforum.dtos.PostVoteResponseDto;
-import com.kentcarmine.multitopicforum.dtos.PostVoteSubmissionDto;
-import com.kentcarmine.multitopicforum.dtos.RestorePostSubmissionDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
@@ -27,6 +24,7 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -524,6 +522,161 @@ class AjaxControllerTest {
         verify(forumService, times(1)).restorePost(any());
     }
 
+    @Test
+    void processPromoteUser_validPromotion() throws Exception {
+        User promotedUser = new User(testUser.getUsername(), testUser.getPassword(), testUser.getEmail(),
+                testUser.getAuthorities());
+        testUser.addAuthority(UserRole.MODERATOR);
+
+        when(userService.getUser(any())).thenReturn(testUser);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.isValidPromotionRequest(any(), any(), any())).thenReturn(true);
+        when(userService.promoteUser(any())).thenReturn(promotedUser);
+
+        PromoteUserSubmissionDto req = new PromoteUserSubmissionDto(testUser.getUsername(), UserRole.MODERATOR.name());
+
+        MvcResult result = mockMvc.perform(post("/promoteUserAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals(testUser.getUsername() + " promoted to " + UserRole.MODERATOR.getDisplayRank() + ".", msg);
+
+        String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
+        assertTrue(promoteButtonUrl.endsWith("/promoteUserButton/" + testUser.getUsername()));
+
+        // TODO: Add this once implemented
+//        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+//        assertTrue(demoteButtonUrl.endsWith("/demoteUserButton/" + testUser.getUsername()));
+
+        verify(userService, times(1)).promoteUser(any());
+    }
+
+    @Test
+    void processPromoteUser_invalidPromotion() throws Exception {
+        when(userService.getUser(any())).thenReturn(testUser);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.isValidPromotionRequest(any(), any(), any())).thenReturn(false);
+
+        PromoteUserSubmissionDto req = new PromoteUserSubmissionDto(testUser.getUsername(), UserRole.MODERATOR.name());
+
+        MvcResult result = mockMvc.perform(post("/promoteUserAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: Insufficient permissions to promote that user.", msg);
+
+        String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
+        assertNull(promoteButtonUrl);
+
+        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+        assertNull(demoteButtonUrl);
+
+        verify(userService, times(0)).promoteUser(any());
+    }
+
+    @Test
+    void processPromoteUser_loggedInUserNull() throws Exception {
+        when(userService.getUser(any())).thenReturn(testUser);
+        when(userService.getLoggedInUser()).thenReturn(null);
+
+        PromoteUserSubmissionDto req = new PromoteUserSubmissionDto(testUser.getUsername(), UserRole.MODERATOR.name());
+
+        MvcResult result = mockMvc.perform(post("/promoteUserAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: Insufficient permissions to promote that user.", msg);
+
+        String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
+        assertNull(promoteButtonUrl);
+
+        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+        assertNull(demoteButtonUrl);
+
+        verify(userService, times(0)).isValidPromotionRequest(any(), any(), any());
+        verify(userService, times(0)).promoteUser(any());
+    }
+
+    @Test
+    void processPromoteUser_promotionTargetUserNull() throws Exception {
+        when(userService.getUser(any())).thenReturn(null);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+
+        PromoteUserSubmissionDto req = new PromoteUserSubmissionDto(testUser.getUsername(), UserRole.MODERATOR.name());
+
+        MvcResult result = mockMvc.perform(post("/promoteUserAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: User not found", msg);
+
+        String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
+        assertNull(promoteButtonUrl);
+
+        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+        assertNull(demoteButtonUrl);
+
+        verify(userService, times(0)).isValidPromotionRequest(any(), any(), any());
+        verify(userService, times(0)).promoteUser(any());
+    }
+
+    @Test
+    void promoteUserButton_valid() throws Exception {
+        when(userService.getUser(any())).thenReturn(testUser);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+
+        mockMvc.perform(get("/promoteUserButton/" + testUser.getUsername()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/promote-demote-buttons :: promote-button-fragment"))
+                .andExpect(model().attributeExists("user"))
+                .andExpect(model().attributeExists("loggedInUser"));
+    }
+
+    @Test
+    void promoteUserButton_nullUser() throws Exception {
+        when(userService.getUser(any())).thenReturn(null);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+
+        mockMvc.perform(get("/promoteUserButton/" + TEST_USERNAME))
+                .andExpect(status().isInternalServerError())
+                .andExpect(model().attributeDoesNotExist("user"))
+                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+    }
+
+    @Test
+    void promoteUserButton_nullLoggedInUser() throws Exception {
+        when(userService.getUser(any())).thenReturn(testUser);
+        when(userService.getLoggedInUser()).thenReturn(null);
+
+        mockMvc.perform(get("/promoteUserButton/" + testUser.getUsername()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(model().attributeDoesNotExist("user"))
+                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+    }
 
     /**
      * Helper method to convert objects into JSON strings.

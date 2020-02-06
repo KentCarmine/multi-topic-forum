@@ -49,6 +49,10 @@ class UserServiceTest {
     private static final String TEST_USER_2_PASSWORD = TEST_USER_PASSWORD;
     private static final String TEST_USER_2_EMAIL = "user2fortesting@testemail.com";
 
+    private static final String TEST_ADMIN_USERNAME = "TestAdmin";
+    private static final String TEST_ADMIN_PASSWORD = TEST_USER_PASSWORD;
+    private static final String TEST_ADMIN_EMAIL = "adminfortesting@testemail.com";
+
     UserService userService;
 
     @Mock
@@ -73,6 +77,7 @@ class UserServiceTest {
 
     private User testUser;
     private User testUser2;
+    private User testAdmin;
 
     @BeforeEach
     void setUp() {
@@ -87,6 +92,9 @@ class UserServiceTest {
 
         testUser2 = new User(TEST_USERNAME_2, TEST_USER_2_PASSWORD, TEST_USER_2_EMAIL);
         testUser2.addAuthority(UserRole.USER);
+
+        testAdmin = new User(TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD, TEST_ADMIN_EMAIL);
+        testAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR);
 
         when(passwordEncoder.encode(anyString())).thenReturn(TEST_USER_PASSWORD);
     }
@@ -420,5 +428,85 @@ class UserServiceTest {
         assertEquals(0, results.size());
 
         verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
+    }
+
+    @Test
+    void promoteUser() throws Exception {
+        assertEquals(testUser.getHighestAuthority(), UserRole.USER);
+
+        User expectedResult = new User(testUser.getUsername(), testUser.getPassword(), testUser.getEmail());
+        expectedResult.addAuthorities(UserRole.USER, UserRole.MODERATOR);
+
+        when(userRepository.save(any())).thenReturn(expectedResult);
+
+        User result = userService.promoteUser(testUser);
+
+        assertEquals(testUser.getUsername(), result.getUsername());
+        assertEquals(testUser.getPassword(), result.getPassword());
+        assertEquals(testUser.getEmail(), result.getEmail());
+        assertEquals(result.getHighestAuthority(), UserRole.MODERATOR);
+
+        verify(userRepository, times(1)).save(any());
+    }
+
+    @Test
+    void isValidPromotionRequest_isValid() throws Exception {
+        boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.MODERATOR);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void isValidPromotionRequest_nullInputs() throws Exception {
+        boolean result = userService.isValidPromotionRequest(null, null, null);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidPromotionRequest_userBeingPromotedIsSuperAdmin() throws Exception {
+        testUser.addAuthorities(UserRole.MODERATOR, UserRole.ADMINISTRATOR, UserRole.SUPER_ADMINISTRATOR);
+        boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.MODERATOR);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidPromotionRequest_userBeingPromotedToSuperAdmin() throws Exception {
+        testUser.addAuthorities(UserRole.MODERATOR, UserRole.ADMINISTRATOR);
+        boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.SUPER_ADMINISTRATOR);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidPromotionRequest_promotionRankIsSuperAdmin() throws Exception {
+        testUser.addAuthorities(UserRole.MODERATOR, UserRole.ADMINISTRATOR);
+        boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.SUPER_ADMINISTRATOR);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidPromotionRequest_promoterSameRankAsUserBeingPromoted() throws Exception {
+        boolean result = userService.isValidPromotionRequest(testUser2, testUser, UserRole.MODERATOR);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidPromotionRequest_promoterSameRankAsPromotionTargetRank() throws Exception {
+        testUser.addAuthority(UserRole.MODERATOR);
+        boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.ADMINISTRATOR);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidPromotionRequest_promotionRankMismatch() throws Exception {
+        testUser.addAuthority(UserRole.MODERATOR);
+        boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.MODERATOR);
+
+        assertFalse(result);
     }
 }
