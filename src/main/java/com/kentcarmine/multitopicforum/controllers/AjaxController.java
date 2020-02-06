@@ -143,16 +143,80 @@ public class AjaxController {
         if (userService.isValidPromotionRequest(loggedInUser, userToPromote, promotableRank)) {
             userToPromote = userService.promoteUser(userToPromote);
 
+            String msg = userToPromote.getUsername() + " promoted to "
+                    + userToPromote.getHighestAuthority().getDisplayRank() + ".";
             String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
                     + "/promoteUserButton/" + userToPromote.getUsername();
-            String newDemoteButtonUrl = ""; // TODO: Add this
+            String newDemoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                    + "/demoteUserButton/" + userToPromote.getUsername();
 
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(new PromoteUserResponseDto(userToPromote.getUsername() + " promoted to " + userToPromote.getHighestAuthority().getDisplayRank() + ".",
-                            newPromoteButtonUrl, newDemoteButtonUrl));
+                    .body(new PromoteUserResponseDto(msg, newPromoteButtonUrl, newDemoteButtonUrl));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto("Error: Insufficient permissions to promote that user."));
         }
+    }
+
+    /**
+     * Handles processing of AJAX submission of a user demotion request.
+     */
+    @PostMapping(value = "/demoteUserAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> processDemoteUser(@RequestBody DemoteUserSubmissionDto demoteUserSubmissionDto) {
+        System.out.println("### /demoteUserAjax called");
+        User userToDemote = userService.getUser(demoteUserSubmissionDto.getUsername());
+        User loggedInUser = userService.getLoggedInUser();
+        UserRole demotableRank = demoteUserSubmissionDto.getDemotableRank();
+
+        if (userToDemote == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new DemoteUserResponseDto("Error: User not found"));
+        }
+
+        if (loggedInUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DemoteUserResponseDto("Error: Insufficient permissions to demote that user."));
+        }
+
+        if (userService.isValidDemotionRequest(loggedInUser, userToDemote, demotableRank)) {
+            System.out.println("### in /demoteUserAjax, valid demotion request");
+            userToDemote = userService.demoteUser(userToDemote);
+            System.out.println("### Demoted User: " + userToDemote);
+
+            String msg = userToDemote.getUsername() + " demoted to "
+                    + userToDemote.getHighestAuthority().getDisplayRank() + ".";
+            String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                    + "/promoteUserButton/" + userToDemote.getUsername();
+            String newDemoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                    + "/demoteUserButton/" + userToDemote.getUsername();
+
+            return ResponseEntity.status(HttpStatus.OK).body(new DemoteUserResponseDto(msg, newPromoteButtonUrl,
+                    newDemoteButtonUrl));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DemoteUserResponseDto("Error: Insufficient permissions to demote that user."));
+        }
+    }
+
+    /**
+     * Provides a promotion button for a user with the given username in an up-to-date state.
+     */
+    @GetMapping(value = "/demoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView demoteUserButton(@PathVariable String username) {
+        System.out.println("### /demoteUserButton/" + username + " called");
+        User loggedInUser = userService.getLoggedInUser();
+        User user = userService.getUser(username);
+
+        ModelAndView mv;
+
+        if (user == null || loggedInUser == null) {
+            System.out.println("### Invalid use of /demoteUserButton");
+            mv = new ModelAndView();
+            mv.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            return mv;
+        }
+
+        mv = new ModelAndView("fragments/promote-demote-buttons :: demote-button-fragment");
+        mv.setStatus(HttpStatus.OK);
+        mv.addObject("user", user);
+        mv.addObject("loggedInUser", loggedInUser);
+        return mv;
     }
 
     /**

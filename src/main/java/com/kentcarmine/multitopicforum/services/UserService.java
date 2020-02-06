@@ -53,4 +53,8 @@ public interface UserService {
     boolean isValidPromotionRequest(User loggedInUser, User userToPromote, UserRole promotedRank);
 
     User promoteUser(User userToPromote);
+
+    boolean isValidDemotionRequest(User loggedInUser, User userToDemote, UserRole demotedRank);
+
+    User demoteUser(User userToDemote);
 }

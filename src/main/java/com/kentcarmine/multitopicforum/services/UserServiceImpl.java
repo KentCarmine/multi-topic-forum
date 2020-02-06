@@ -15,6 +15,7 @@ import com.kentcarmine.multitopicforum.repositories.PasswordResetTokenRepository
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
 import com.kentcarmine.multitopicforum.repositories.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -300,6 +301,7 @@ public class UserServiceImpl implements UserService {
      * @return the set of Users (ordered alphabetically) that match the search terms
      * @throws UnsupportedEncodingException
      */
+    @Override
     public SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException {
         SortedSet<User> users = new TreeSet<>((o1, o2) -> o1.getUsername().toLowerCase().compareTo(o2.getUsername().toLowerCase()));
 
@@ -331,6 +333,7 @@ public class UserServiceImpl implements UserService {
      * @param userToPromote the user to be promoted
      * @return the updated user
      */
+    @Override
     public User promoteUser(User userToPromote) {
         userToPromote.addAuthority(userToPromote.getIncrementedRank());
         return userRepository.save(userToPromote);
@@ -346,6 +349,7 @@ public class UserServiceImpl implements UserService {
      * @param promotedRank the rank to promote to
      * @return true if the promotion request is valid, false otherwise
      */
+    @Override
     public boolean isValidPromotionRequest(User loggedInUser, User userToPromote, UserRole promotedRank) {
         if(promotedRank == null || loggedInUser == null || userToPromote == null) {
             return false;
@@ -360,6 +364,48 @@ public class UserServiceImpl implements UserService {
         if (loggedInUser.getHighestAuthority().isHigherRank(userToPromote.getIncrementedRank())
                 && loggedInUser.getHighestAuthority().isHigherRank(promotedRank)
                 && userToPromote.getIncrementedRank().equals(promotedRank)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Demotes the given user by one rank, then saves and returns that user.
+     *
+     * @param userToDemote the user to be demoted
+     * @return the updated user
+     */
+    @Transactional
+    @Override
+    public User demoteUser(User userToDemote) {
+        UserRole roleToRemove = userToDemote.getHighestAuthority();
+        userToDemote.removeAuthority(roleToRemove);
+        authorityRepository.deleteByUserAndAuthority(userToDemote, roleToRemove);
+        return userRepository.save(userToDemote);
+    }
+
+    /**
+     * Checks if the logged in user can demote the userToDemote to the demoted rank. The logged in user must be
+     * higher ranked than the userToDemote, userToDemote must not be of the lowest possible rank, and userToDemote's
+     * next lowest rank and demotedRank must match.
+     *
+     * @param loggedInUser the logged in (demoting) user
+     * @param userToDemote the user to be demoted
+     * @param demotedRank the rank to demote to
+     * @return true if the demotion request is valid, false otherwise
+     */
+    @Override
+    public boolean isValidDemotionRequest(User loggedInUser, User userToDemote, UserRole demotedRank) {
+        if(demotedRank == null || loggedInUser == null || userToDemote == null) {
+            return false;
+        }
+
+        if (userToDemote.getDecrementedRank() == null || !userToDemote.getDecrementedRank().equals(demotedRank)) {
+            return false;
+        }
+
+        if (userToDemote.isDemotableBy(loggedInUser) ) {
             return true;
         }
 

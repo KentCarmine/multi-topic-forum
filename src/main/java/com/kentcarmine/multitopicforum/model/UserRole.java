@@ -16,7 +16,7 @@ public enum UserRole {
 
     private static final SortedSet<UserRole> sortedRanks = constructSortedRanks();
 
-    private int rank;
+    private int rank; // Positive rank values indicate overall authority, negative values indicate other permissions
     private String displayRank;
 
     UserRole(int rank, String displayRank) {
@@ -65,7 +65,7 @@ public enum UserRole {
         return sortedRanks;
     }
 
-    static UserRole getNextAuthority(UserRole authority) {
+    public static UserRole getNextAuthority(UserRole authority) {
         Iterator<UserRole> iter = sortedRanks.iterator();
         UserRole cur = iter.next();
 
@@ -74,6 +74,23 @@ public enum UserRole {
                 return iter.next();
             }
 
+            cur = iter.next();
+        }
+
+        return null;
+    }
+
+    public static UserRole getPreviousAuthority(UserRole authority) {
+        Iterator<UserRole> iter = sortedRanks.iterator();
+        UserRole prev = null;
+        UserRole cur = iter.next();
+
+        while(iter.hasNext()) {
+            if (cur.equals(authority) && prev != null && prev.getRank() > 0) {
+                return prev;
+            }
+
+            prev = cur;
             cur = iter.next();
         }
 

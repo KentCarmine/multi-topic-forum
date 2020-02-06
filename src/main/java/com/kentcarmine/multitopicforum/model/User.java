@@ -185,6 +185,15 @@ public class User {
     }
 
     /**
+     * Get the rank one grade lower than this user's maximum rank
+     *
+     * @return the rank one grade lower than this user's maximum rank
+     */
+    public UserRole getDecrementedRank() {
+        return UserRole.getPreviousAuthority(this.getHighestAuthority());
+    }
+
+    /**
      * Determines if this user is promotable by the given otherUser
      *
      * @param otherUser the user to check if they can promote this user
@@ -196,6 +205,24 @@ public class User {
         }
 
         if (otherUser.getHighestAuthority().isHigherRank(this.getIncrementedRank())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines if this user is demotable by the given otherUser
+     *
+     * @param otherUser the user to check if they can demote this user
+     * @return true if the other user can demote this user, false otherwise
+     */
+    public boolean isDemotableBy(User otherUser) {
+        if (this.getDecrementedRank() == null) {
+            return false;
+        }
+
+        if (otherUser.getHighestAuthority().isHigherRank(this.getHighestAuthority())) {
             return true;
         }
 

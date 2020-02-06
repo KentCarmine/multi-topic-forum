@@ -13,19 +13,18 @@
         <p>PLACEHOLDER</p>
         <hr>
 
-        <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" th:if="${!user.isSuperadmin() && !user.isAdmin()}">
+        <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
             <h3>Administrative Options</h3>
 
-            <div id="promote-user-button-container">
+            <span id="demote-user-button-container">
+                <div th:replace="fragments/promote-demote-buttons.html :: demote-button-fragment (${user}, ${loggedInUser})">
+                </div>
+            </span>
+
+            <span id="promote-user-button-container">
                 <div th:replace="fragments/promote-demote-buttons.html :: promote-button-fragment (${user}, ${loggedInUser})">
                 </div>
-            </div>
-
-            <div id="demote-user-button-container">
-                <!--            <input type="button" id="demote-user-button"-->
-                <!--                   th:disabled="${!user.isDemotableBy(loggedInUser)}"-->
-                <!--                   th:value="${'Promote to ' + user.getDecrementedRank()}">-->
-            </div>
+            </span>
 
             <hr>
         </div>

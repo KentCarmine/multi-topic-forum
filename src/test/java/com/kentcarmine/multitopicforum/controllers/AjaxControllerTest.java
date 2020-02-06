@@ -550,9 +550,8 @@ class AjaxControllerTest {
         String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
         assertTrue(promoteButtonUrl.endsWith("/promoteUserButton/" + testUser.getUsername()));
 
-        // TODO: Add this once implemented
-//        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
-//        assertTrue(demoteButtonUrl.endsWith("/demoteUserButton/" + testUser.getUsername()));
+        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+        assertTrue(demoteButtonUrl.endsWith("/demoteUserButton/" + testUser.getUsername()));
 
         verify(userService, times(1)).promoteUser(any());
     }

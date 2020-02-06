@@ -6,10 +6,15 @@
 
     <body>
         <input type="button" class="promote-user-button" th:fragment="promote-button-fragment (user, loggedInUser)"
-               th:attr="data-username=${user.getUsername()}, data-promotable-rank=${user.getIncrementedRank()},  data-promotable-rank-display=${user.getIncrementedRank().getDisplayRank()}"
+               th:attr="data-username=${user.getUsername()}, data-promotable-rank=${user.getIncrementedRank()}"
+               th:attrappend="data-promotable-rank-display=${user.getIncrementedRank() != null}?${user.getIncrementedRank().getDisplayRank()}"
                th:disabled="${!user.isPromotableBy(loggedInUser)}"
-               th:value="${'Promote to ' + user.getIncrementedRank().getDisplayRank()}">
+               th:value="${user.getIncrementedRank() != null}?${'Promote to ' + user.getIncrementedRank().getDisplayRank()}:'Cannot promote'">>
 
-        <!--TODO: Add demote button-->
+        <input type="button" class="demote-user-button" th:fragment="demote-button-fragment (user, loggedInUser)"
+               th:attr="data-username=${user.getUsername()}, data-demotable-rank=${user.getDecrementedRank()}"
+               th:attrappend="data-demotable-rank-display=${user.getDecrementedRank() != null}?${user.getDecrementedRank().getDisplayRank()}"
+               th:disabled="${!user.isDemotableBy(loggedInUser)}"
+               th:value="${user.getDecrementedRank() != null}?${'Demote to ' + user.getDecrementedRank().getDisplayRank()}:'Cannot demote'">
     </body>
 </html>
