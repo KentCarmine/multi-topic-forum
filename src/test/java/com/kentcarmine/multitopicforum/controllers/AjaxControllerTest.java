@@ -677,6 +677,172 @@ class AjaxControllerTest {
                 .andExpect(model().attributeDoesNotExist("loggedInUser"));
     }
 
+    @Test
+    void processDemoteUser_validPromotion() throws Exception {
+        User demotedUser = new User(testModerator.getUsername(), testModerator.getPassword(), testModerator.getEmail(), testModerator.getAuthorities());
+        demotedUser.removeAuthority(UserRole.MODERATOR);
+
+        when(userService.getUser(anyString())).thenReturn(testModerator);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.isValidDemotionRequest(any(), any(), any())).thenReturn(true);
+        when(userService.demoteUser(any())).thenReturn(demotedUser);
+
+        DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
+
+        MvcResult result = mockMvc.perform(post("/demoteUserAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals(testModerator.getUsername() + " demoted to " + UserRole.USER.getDisplayRank() + ".", msg);
+
+        String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
+        assertTrue(promoteButtonUrl.endsWith("/promoteUserButton/" + testModerator.getUsername()));
+
+        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+        assertTrue(demoteButtonUrl.endsWith("/demoteUserButton/" + testModerator.getUsername()));
+
+        verify(userService, times(1)).isValidDemotionRequest(any(), any(), any());
+        verify(userService, times(1)).demoteUser(any());
+    }
+
+    @Test
+    void processDemoteUser_invalidDemotion() throws Exception {
+        User demotedUser = new User(testModerator.getUsername(), testModerator.getPassword(), testModerator.getEmail(), testModerator.getAuthorities());
+        demotedUser.removeAuthority(UserRole.MODERATOR);
+
+        when(userService.getUser(anyString())).thenReturn(testModerator);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.isValidDemotionRequest(any(), any(), any())).thenReturn(false);
+//        when(userService.demoteUser(any())).thenReturn(demotedUser);
+
+        DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
+
+        MvcResult result = mockMvc.perform(post("/demoteUserAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: Insufficient permissions to demote that user.", msg);
+
+        String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
+        assertNull(promoteButtonUrl);
+
+        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+        assertNull(demoteButtonUrl);
+
+        verify(userService, times(1)).isValidDemotionRequest(any(), any(), any());
+        verify(userService, times(0)).demoteUser(any());
+    }
+
+    @Test
+    void processDemoteUser_demotingNullUser() throws Exception {
+        User demotedUser = new User(testModerator.getUsername(), testModerator.getPassword(), testModerator.getEmail(), testModerator.getAuthorities());
+        demotedUser.removeAuthority(UserRole.MODERATOR);
+
+        when(userService.getUser(anyString())).thenReturn(null);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+
+        DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
+
+        MvcResult result = mockMvc.perform(post("/demoteUserAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: User not found", msg);
+
+        String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
+        assertNull(promoteButtonUrl);
+
+        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+        assertNull(demoteButtonUrl);
+
+        verify(userService, times(0)).isValidDemotionRequest(any(), any(), any());
+        verify(userService, times(0)).demoteUser(any());
+    }
+
+    @Test
+    void processDemoteUser_loggedInUserNull() throws Exception {
+        User demotedUser = new User(testModerator.getUsername(), testModerator.getPassword(), testModerator.getEmail(), testModerator.getAuthorities());
+        demotedUser.removeAuthority(UserRole.MODERATOR);
+
+        when(userService.getUser(anyString())).thenReturn(testModerator);
+        when(userService.getLoggedInUser()).thenReturn(null);
+
+        DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
+
+        MvcResult result = mockMvc.perform(post("/demoteUserAjax")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(req)))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String resStr = result.getResponse().getContentAsString();
+
+        String msg = JsonPath.read(resStr, "$.message");
+        assertEquals("Error: Insufficient permissions to demote that user.", msg);
+
+        String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
+        assertNull(promoteButtonUrl);
+
+        String demoteButtonUrl = JsonPath.read(resStr, "$.newDemoteButtonUrl");
+        assertNull(demoteButtonUrl);
+
+        verify(userService, times(0)).isValidDemotionRequest(any(), any(), any());
+        verify(userService, times(0)).demoteUser(any());
+    }
+
+    @Test
+    void demoteUserButton_valid() throws Exception {
+        when(userService.getUser(any())).thenReturn(testModerator);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+
+        mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("fragments/promote-demote-buttons :: demote-button-fragment"))
+                .andExpect(model().attributeExists("user"))
+                .andExpect(model().attributeExists("loggedInUser"));
+    }
+
+    @Test
+    void demoteUserButton_nullUser() throws Exception {
+        when(userService.getUser(any())).thenReturn(null);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+
+        mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(model().attributeDoesNotExist("user"))
+                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+    }
+
+    @Test
+    void demoteUserButton_nullLoggedInUser() throws Exception {
+        when(userService.getUser(any())).thenReturn(testModerator);
+        when(userService.getLoggedInUser()).thenReturn(null);
+
+        mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(model().attributeDoesNotExist("user"))
+                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+    }
+
     /**
      * Helper method to convert objects into JSON strings.
      *

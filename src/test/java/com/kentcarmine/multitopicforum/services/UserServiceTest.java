@@ -450,6 +450,26 @@ class UserServiceTest {
     }
 
     @Test
+    void demoteUser() throws Exception {
+        testUser.addAuthority(UserRole.MODERATOR);
+
+        User expectedResult = new User(testUser.getUsername(), testUser.getPassword(), testUser.getEmail());
+        expectedResult.addAuthorities(UserRole.USER);
+
+        when(userRepository.save(any())).thenReturn(expectedResult);
+
+        User result = userService.demoteUser(testUser);
+
+        assertEquals(testUser.getUsername(), result.getUsername());
+        assertEquals(testUser.getPassword(), result.getPassword());
+        assertEquals(testUser.getEmail(), result.getEmail());
+        assertEquals(result.getHighestAuthority(), UserRole.USER);
+
+        verify(authorityRepository, times(1)).deleteByUserAndAuthority(any(), any());
+        verify(userRepository, times(1)).save(any());
+    }
+
+    @Test
     void isValidPromotionRequest_isValid() throws Exception {
         boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.MODERATOR);
 
@@ -509,4 +529,45 @@ class UserServiceTest {
 
         assertFalse(result);
     }
+
+    @Test
+    void isValidDemotionRequest_isValid() throws Exception {
+        testUser.addAuthority(UserRole.MODERATOR);
+        boolean result = userService.isValidDemotionRequest(testAdmin, testUser, UserRole.USER);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void isValidDemotionRequest_nullInputs() throws Exception {
+        boolean result = userService.isValidDemotionRequest(null, null, null);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidDemotionRequest_userAlreadyLowestRank() throws Exception {
+        boolean result = userService.isValidDemotionRequest(testAdmin, testUser, UserRole.CHANGE_PASSWORD_PRIVILEGE);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidDemotionRequest_demotionRankMismatch() throws Exception {
+        testAdmin.addAuthority(UserRole.SUPER_ADMINISTRATOR);
+        testUser.addAuthorities(UserRole.MODERATOR, UserRole.ADMINISTRATOR);
+        boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.USER);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isValidDemotionRequest_demotingUserHasInsufficentAuthority() throws Exception {
+        testUser.addAuthorities(UserRole.MODERATOR, UserRole.ADMINISTRATOR);
+        boolean result = userService.isValidPromotionRequest(testAdmin, testUser, UserRole.MODERATOR);
+
+        assertFalse(result);
+    }
+
+
 }
