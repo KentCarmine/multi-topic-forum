@@ -33,10 +33,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
-
+        System.out.println("### in loadUserByUsername. Username = " + username);
         if (user == null) {
             throw new UsernameNotFoundException("No user found with username: " + username);
         }
+
+        System.out.println("### in loadUserByUsername. authorities = " + user.getAuthorities().toString());
 
         boolean accountNonExpired = true;
         boolean credentialsNonExpired = true;

@@ -6,15 +6,16 @@ import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.helpers.AuthenticationFacadeImpl;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
-import com.kentcarmine.multitopicforum.model.PasswordResetToken;
-import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.model.UserRole;
-import com.kentcarmine.multitopicforum.model.VerificationToken;
+import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.AuthorityRepository;
 import com.kentcarmine.multitopicforum.repositories.PasswordResetTokenRepository;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
 import com.kentcarmine.multitopicforum.repositories.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -59,8 +60,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User getLoggedInUser() {
-        return getUser(authenticationService.getLoggedInUserName());
+        User loggedInUser = getUser(authenticationService.getLoggedInUserName());
+        authenticationService.updateAuthorities(loggedInUser);
+        return loggedInUser;
     }
+
 
     /**
      * Get a User by username
