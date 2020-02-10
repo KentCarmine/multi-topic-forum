@@ -45,4 +45,14 @@ public interface ForumService {
     Post deletePost(Post post, User deletingUser);
 
     Post restorePost(Post post);
+
+    boolean canUserLockThread(User user, TopicThread thread);
+
+    boolean canUserUnlockThread(User user, TopicThread thread);
+
+    TopicThread getThreadById(Long id);
+
+    boolean lockThread(User lockingUser, TopicThread thread);
+
+    boolean unlockThread(User unlockingUser, TopicThread thread);
 }

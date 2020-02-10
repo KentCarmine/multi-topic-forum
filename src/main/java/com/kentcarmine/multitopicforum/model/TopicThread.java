@@ -31,6 +31,12 @@ public class TopicThread {
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private SortedSet<Post> posts;
 
+    private boolean isLocked;
+
+    @ManyToOne
+    @JoinColumn(name = "lockingUsername")
+    private User lockingUser;
+
     // TODO: Add methods to get creation date and creating user of thread (by getting those values from first post)
 
     public TopicThread() {
@@ -41,6 +47,7 @@ public class TopicThread {
         this.title = title;
         this.forum = forum;
         this.posts = new TreeSet<>();
+        this.isLocked = false;
     }
 
     public Long getId() {
@@ -83,12 +90,41 @@ public class TopicThread {
         return forum;
     }
 
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        isLocked = locked;
+    }
+
+    public User getLockingUser() {
+        return lockingUser;
+    }
+
+    public void setLockingUser(User lockingUser) {
+        this.lockingUser = lockingUser;
+    }
+
     @Override
     public String toString() {
-        return "TopicThread{" +
+        User lockingUser = this.lockingUser;
+        StringBuilder sb = new StringBuilder(
+                "TopicThread{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
+                ", forum=" + forum +
                 ", posts=" + posts +
-                '}';
+                ", isLocked=" + isLocked);
+
+        if (lockingUser != null) {
+            sb.append(", lockingUser=" + lockingUser.getUsername());
+        } else {
+            sb.append(", lockingUser=null");
+        }
+
+        sb.append('}');
+
+        return sb.toString();
     }
 }

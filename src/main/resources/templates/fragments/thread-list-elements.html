@@ -7,6 +7,7 @@
     <body>
         <div th:fragment="thread-list-element-fragment (thread)">
             <div>
+                <span th:if="${thread.isLocked()}" style="color: red">[LOCKED]</span>
                 <a href="#" style="font-size: larger;" th:text="${thread.getTitle()}" th:href="@{'/forum/' + ${thread.getForum().getName()} + '/show/' + ${thread.getId()}}">Thread Title</a>
             </div>
             <div>

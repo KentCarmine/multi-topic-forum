@@ -70,6 +70,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/handleVoteAjax").authenticated()
                 .antMatchers("/deletePostAjax", "/restorePostAjax").hasAnyAuthority("MODERATOR", "ADMINISTRATOR", "SUPER_ADMINISTRATOR")
                 .antMatchers("/promoteUserAjax, /demoteUserAjax", "/promoteUserButton/*", "/demoteUserButton/*").hasAnyAuthority("ADMINISTRATOR", "SUPER_ADMINISTRATOR")
+                .antMatchers("/lockTopicThread/*", "/unlockTopicThread/*").hasAnyAuthority("MODERATOR", "ADMINISTRATOR", "SUPER_ADMINISTRATOR")
                 .antMatchers("/").permitAll()
                 .and()
                 .formLogin()

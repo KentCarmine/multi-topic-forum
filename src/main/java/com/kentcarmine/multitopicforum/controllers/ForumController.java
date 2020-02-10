@@ -212,6 +212,7 @@ public class ForumController {
         model.addAttribute("forumName", forumName);
         model.addAttribute("threadTitle", thread.getTitle());
         model.addAttribute("threadId", threadId);
+        model.addAttribute("threadIsLocked", thread.isLocked());
         model.addAttribute("posts", thread.getPosts());
 
         User loggedInUser = userService.getLoggedInUser();
@@ -219,9 +220,64 @@ public class ForumController {
             model.addAttribute("postCreationDto", new PostCreationDto());
             model.addAttribute("loggedInUser", userService.getLoggedInUser());
             model.addAttribute("voteMap", forumService.generateVoteMap(loggedInUser, thread));
+            model.addAttribute("canLock", forumService.canUserLockThread(loggedInUser, thread));
+            model.addAttribute("canUnlock", forumService.canUserUnlockThread(loggedInUser, thread));
         }
 
         return "topic-thread-page";
+    }
+
+
+    /**
+     * Handles processing of a request to lock the thread with the given ID
+     */
+    @PostMapping("/lockTopicThread/{threadId}")
+    public String processLockThread(@PathVariable Long threadId) {
+        User loggedInUser = userService.getLoggedInUser();
+        TopicThread thread = forumService.getThreadById(threadId);
+        TopicForum forum = thread.getForum();
+
+        if (loggedInUser == null || thread == null) {
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError";
+        }
+
+        if (thread.isLocked()) {
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadLocked";
+        }
+
+        boolean isLockSuccessful = forumService.lockThread(loggedInUser, thread);
+
+        if (isLockSuccessful) {
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadLocked";
+        } else {
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError";
+        }
+    }
+
+    /**
+     * Handles processing of a request to unlock the thread with the given ID
+     */
+    @PostMapping("/unlockTopicThread/{threadId}")
+    public String processUnlockThread(@PathVariable Long threadId) {
+        User loggedInUser = userService.getLoggedInUser();
+        TopicThread thread = forumService.getThreadById(threadId);
+        TopicForum forum = thread.getForum();
+
+        if (loggedInUser == null || thread == null) {
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError";
+        }
+
+        if (!thread.isLocked()) {
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadUnlocked";
+        }
+
+        boolean isUnlockSuccessful = forumService.unlockThread(loggedInUser, thread);
+
+        if (isUnlockSuccessful) {
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadUnlocked";
+        } else {
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError";
+        }
     }
 
     /**

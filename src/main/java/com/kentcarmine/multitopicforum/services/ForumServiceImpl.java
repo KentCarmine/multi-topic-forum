@@ -389,6 +389,97 @@ public class ForumServiceImpl implements ForumService {
     }
 
     /**
+     * Check if the given user can lock the given thread.
+     *
+     * @param user the user to check for permission to lock the thread
+     * @param thread the thread to check
+     * @return true if the user can lock the thread, false otherwise
+     */
+    @Override
+    public boolean canUserLockThread(User user, TopicThread thread) {
+        if (user == null || thread == null) {
+            return false;
+        }
+
+        boolean userOutranksThreadCreator = user.isHigherAuthority(thread.getFirstPost().getUser());
+        boolean userHasAdministrativeRights = user.isModerator() || user.isAdmin() || user.isSuperadmin();
+
+        return !thread.isLocked() && userHasAdministrativeRights && userOutranksThreadCreator;
+    }
+
+    /**
+     * Check if the given user can unlock the given thread.
+     *
+     * @param user the user to check for permission to unlock the thread
+     * @param thread the thread to check
+     * @return true if the user can unlock the thread, false otherwise
+     */
+    @Override
+    public boolean canUserUnlockThread(User user, TopicThread thread) {
+        if (user == null || thread == null) {
+            return false;
+        }
+
+        boolean userHasAdministrativeRights = user.isModerator() || user.isAdmin() || user.isSuperadmin();
+        boolean userOutranksThreadLocker = thread.getLockingUser() != null && (user.equals(thread.getLockingUser()) ||user.isHigherAuthority(thread.getLockingUser()));
+
+        return thread.isLocked() && userHasAdministrativeRights && userOutranksThreadLocker;
+    }
+
+    /**
+     * If the given user has the permissions to lock the given thread, flags that thread as locked and returns true.
+     * Otherwise, does nothing and returns false.
+     * @param lockingUser the user attempting to lock the thread
+     * @param thread the thread to lock
+     * @return true if the user succeeded in locking the thread, false otherwise
+     */
+    @Override
+    public boolean lockThread(User lockingUser, TopicThread thread) {
+        if (canUserLockThread(lockingUser, thread)) {
+            thread.setLocked(true);
+            thread.setLockingUser(lockingUser);
+            topicThreadRepository.save(thread);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * If the given user has the permissions to unlock the given thread, flags that thread as unlocked and returns true.
+     * Otherwise, does nothing and returns false.
+     * @param unlockingUser the user attempting to unlock the thread
+     * @param thread the thread to unlock
+     * @return true if the user succeeded in unlocking the thread, false otherwise
+     */
+    @Override
+    public boolean unlockThread(User unlockingUser, TopicThread thread){
+        if (canUserUnlockThread(unlockingUser, thread)) {
+            thread.setLocked(false);
+            thread.setLockingUser(null);
+            topicThreadRepository.save(thread);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Gets a thread with the given ID, or null if no such thread exists.
+     * @param id the id of the thread to get
+     * @return the thread with the given id, or null if no such thread exists
+     */
+    public TopicThread getThreadById(Long id) {
+        Optional<TopicThread> thOpt = topicThreadRepository.findById(id);
+
+        if (thOpt.isPresent()) {
+            return thOpt.get();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Helper method that parses search text.
      *
      * @param searchText the text to be parsed.
@@ -397,21 +488,6 @@ public class ForumServiceImpl implements ForumService {
      */
     private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
         return SearchParserHelper.parseSearchText(searchText);
-    }
-
-    /**
-     * Helper method that gets a thread with the given ID, or null if no such thread exists.
-     * @param id the id of the thread to get
-     * @return the thread with the given id, or null if no such thread exists
-     */
-    private TopicThread getThreadById(Long id) {
-        Optional<TopicThread> thOpt = topicThreadRepository.findById(id);
-
-        if (thOpt.isPresent()) {
-            return thOpt.get();
-        } else {
-            return null;
-        }
     }
 
     /**
