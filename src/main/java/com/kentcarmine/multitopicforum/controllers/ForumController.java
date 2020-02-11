@@ -233,11 +233,16 @@ public class ForumController {
      */
     @PostMapping("/lockTopicThread/{threadId}")
     public String processLockThread(@PathVariable Long threadId) {
-        User loggedInUser = userService.getLoggedInUser();
         TopicThread thread = forumService.getThreadById(threadId);
         TopicForum forum = thread.getForum();
 
-        if (loggedInUser == null || thread == null) {
+        if (thread == null) {
+            throw new TopicThreadNotFoundException("Thread was not found");
+        }
+
+        User loggedInUser = userService.getLoggedInUser();
+
+        if (loggedInUser == null) {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError";
         }
 
@@ -259,11 +264,16 @@ public class ForumController {
      */
     @PostMapping("/unlockTopicThread/{threadId}")
     public String processUnlockThread(@PathVariable Long threadId) {
-        User loggedInUser = userService.getLoggedInUser();
         TopicThread thread = forumService.getThreadById(threadId);
         TopicForum forum = thread.getForum();
 
-        if (loggedInUser == null || thread == null) {
+        if (thread == null) {
+            throw new TopicThreadNotFoundException("Thread was not found");
+        }
+
+        User loggedInUser = userService.getLoggedInUser();
+
+        if (loggedInUser == null) {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError";
         }
 

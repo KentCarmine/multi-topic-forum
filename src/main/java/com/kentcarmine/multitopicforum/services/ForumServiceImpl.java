@@ -436,8 +436,7 @@ public class ForumServiceImpl implements ForumService {
     @Override
     public boolean lockThread(User lockingUser, TopicThread thread) {
         if (canUserLockThread(lockingUser, thread)) {
-            thread.setLocked(true);
-            thread.setLockingUser(lockingUser);
+            thread.lock(lockingUser);
             topicThreadRepository.save(thread);
             return true;
         } else {
@@ -455,8 +454,7 @@ public class ForumServiceImpl implements ForumService {
     @Override
     public boolean unlockThread(User unlockingUser, TopicThread thread){
         if (canUserUnlockThread(unlockingUser, thread)) {
-            thread.setLocked(false);
-            thread.setLockingUser(null);
+            thread.unlock();
             topicThreadRepository.save(thread);
             return true;
         } else {

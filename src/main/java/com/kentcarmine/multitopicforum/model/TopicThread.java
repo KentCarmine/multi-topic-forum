@@ -106,6 +106,16 @@ public class TopicThread {
         this.lockingUser = lockingUser;
     }
 
+    public void lock(User lockingUser) {
+        setLocked(true);
+        setLockingUser(lockingUser);
+    }
+
+    public void unlock() {
+        setLocked(false);
+        setLockingUser(null);
+    }
+
     @Override
     public String toString() {
         User lockingUser = this.lockingUser;

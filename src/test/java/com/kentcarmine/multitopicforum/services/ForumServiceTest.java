@@ -39,6 +39,14 @@ class ForumServiceTest {
     private static final String TEST_MODERATOR_PASSWORD = "testModPassword";
     private static final String TEST_MODERATOR_EMAIL = "testmoderator@test.com";
 
+    private static final String TEST_MODERATOR_2_USERNAME = "TestModerator2";
+    private static final String TEST_MODERATOR_2_PASSWORD = "testMod2Password";
+    private static final String TEST_MODERATOR_2_EMAIL = "testmoderator2@test.com";
+
+    private static final String TEST_ADMIN_USERNAME = "TestAdmin";
+    private static final String TEST_ADMIN_PASSWORD = "testAdminPassword";
+    private static final String TEST_ADMIN_EMAIL = "testadmin@test.com";
+
     ForumService forumService;
 
     @Mock
@@ -64,6 +72,8 @@ class ForumServiceTest {
 
     private User testUser;
     private User testModerator;
+    private User testModerator2;
+    private User testAdmin;
 
     @BeforeEach
     void setUp() {
@@ -71,21 +81,28 @@ class ForumServiceTest {
 
         forumService = new ForumServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter, topicThreadRepository, postRepository, postVoteRepository);
 
-        testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
-        testTopicThread = new TopicThread(TEST_TOPIC_THREAD_NAME, testTopicForum);
-        testPost = new Post("test post content", Date.from(Instant.now()));
-        testPost.setId(1L);
-        testTopicThread.getPosts().add(testPost);
-        testTopicForum.addThread(testTopicThread);
-
-        testTopicForum2 = new TopicForum(TEST_TOPIC_FORUM_NAME_2, TEST_TOPIC_FORUM_DESC_2);
-        testTopicThread2 = new TopicThread(TEST_TOPIC_THREAD_NAME_2, testTopicForum2);
-
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
 
         testModerator = new User(TEST_MODERATOR_USERNAME, TEST_MODERATOR_PASSWORD, TEST_MODERATOR_EMAIL);
         testModerator.addAuthorities(UserRole.USER, UserRole.MODERATOR);
+
+        testModerator2 = new User(TEST_MODERATOR_2_USERNAME, TEST_MODERATOR_2_PASSWORD, TEST_MODERATOR_2_EMAIL);
+        testModerator2.addAuthorities(UserRole.USER, UserRole.MODERATOR);
+
+        testAdmin = new User(TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD, TEST_ADMIN_EMAIL);
+        testAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR);
+
+        testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
+        testTopicThread = new TopicThread(TEST_TOPIC_THREAD_NAME, testTopicForum);
+        testPost = new Post("test post content", Date.from(Instant.now()));
+        testPost.setId(1L);
+        testPost.setUser(testUser);
+        testTopicThread.getPosts().add(testPost);
+        testTopicForum.addThread(testTopicThread);
+
+        testTopicForum2 = new TopicForum(TEST_TOPIC_FORUM_NAME_2, TEST_TOPIC_FORUM_DESC_2);
+        testTopicThread2 = new TopicThread(TEST_TOPIC_THREAD_NAME_2, testTopicForum2);
     }
 
     @Test
@@ -468,4 +485,128 @@ class ForumServiceTest {
 
         verify(postRepository, times(1)).save(any());
     }
+
+    @Test
+    void canUserLockThread_valid() throws Exception {
+        boolean result = forumService.canUserLockThread(testModerator, testTopicThread);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void canUserLockThread_nullUserOrThread() throws Exception {
+        boolean result = forumService.canUserLockThread(null, null);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void canUserLockThread_alreadyLocked() throws Exception {
+        testTopicThread.lock(testModerator);
+        boolean result = forumService.canUserLockThread(testAdmin, testTopicThread);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void canUserLockThread_sameRankAsThreadCreator() throws Exception {
+        testPost.setUser(testModerator2);
+
+        boolean result = forumService.canUserLockThread(testModerator, testTopicThread);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void canUserLockThread_insufficientRank() throws Exception {
+        boolean result = forumService.canUserLockThread(testUser, testTopicThread);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void canUserUnlockThread_valid() throws Exception {
+        testTopicThread.lock(testModerator);
+
+        boolean result = forumService.canUserUnlockThread(testAdmin, testTopicThread);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void canUserUnlockThread_nullUserOrThread() throws Exception {
+        boolean result = forumService.canUserUnlockThread(null, null);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void canUserUnlockThread_alreadyUnlocked() throws Exception {
+        boolean result = forumService.canUserUnlockThread(testModerator, testTopicThread);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void canUserUnlockThread_sameRankAsThreadLocker() throws Exception {
+        testTopicThread.lock(testModerator2);
+
+        boolean result = forumService.canUserUnlockThread(testModerator, testTopicThread);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void canUserUnlockThread_insufficientRank() throws Exception {
+        testTopicThread.lock(testModerator);
+
+        boolean result = forumService.canUserUnlockThread(testUser, testTopicThread);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void lockThread_valid() throws Exception {
+        boolean result = forumService.lockThread(testAdmin, testTopicThread);
+
+        assertTrue(result);
+        assertTrue(testTopicThread.isLocked());
+
+        verify(topicThreadRepository, times(1)).save(any());
+    }
+
+    @Test
+    void lockThread_invalid() throws Exception {
+        boolean result = forumService.lockThread(testUser, testTopicThread);
+
+        assertFalse(result);
+        assertFalse(testTopicThread.isLocked());
+
+        verify(topicThreadRepository, times(0)).save(any());
+    }
+
+    @Test
+    void unlockThread_valid() throws Exception {
+        testTopicThread.lock(testModerator);
+
+        boolean result = forumService.unlockThread(testModerator, testTopicThread);
+
+        assertTrue(result);
+        assertTrue(!testTopicThread.isLocked());
+
+        verify(topicThreadRepository, times(1)).save(any());
+    }
+
+    @Test
+    void unlockThread_invalid() throws Exception {
+        testTopicThread.lock(testAdmin);
+
+        boolean result = forumService.unlockThread(testModerator, testTopicThread);
+
+        assertFalse(result);
+        assertFalse(!testTopicThread.isLocked());
+
+        verify(topicThreadRepository, times(0)).save(any());
+    }
+
 }
