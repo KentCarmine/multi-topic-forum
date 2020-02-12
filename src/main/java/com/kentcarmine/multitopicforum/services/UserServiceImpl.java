@@ -1,28 +1,21 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
+import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
-import com.kentcarmine.multitopicforum.helpers.AuthenticationFacadeImpl;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.*;
-import com.kentcarmine.multitopicforum.repositories.AuthorityRepository;
-import com.kentcarmine.multitopicforum.repositories.PasswordResetTokenRepository;
-import com.kentcarmine.multitopicforum.repositories.UserRepository;
-import com.kentcarmine.multitopicforum.repositories.VerificationTokenRepository;
+import com.kentcarmine.multitopicforum.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.io.UnsupportedEncodingException;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,13 +30,14 @@ public class UserServiceImpl implements UserService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final AuthorityRepository authorityRepository;
+    private final DisciplineRepository disciplineRepository;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
                            UserDtoToUserConverter userDtoToUserConverter, PasswordEncoder passwordEncoder,
                            VerificationTokenRepository verificationTokenRepository,
                            PasswordResetTokenRepository passwordResetTokenRepository,
-                           AuthorityRepository authorityRepository) {
+                           AuthorityRepository authorityRepository, DisciplineRepository disciplineRepository) {
         this.userRepository = userRepository;
         this.userDtoToUserConverter = userDtoToUserConverter;
         this.passwordEncoder = passwordEncoder;
@@ -51,6 +45,7 @@ public class UserServiceImpl implements UserService {
         this.verificationTokenRepository = verificationTokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.authorityRepository = authorityRepository;
+        this.disciplineRepository = disciplineRepository;
     }
 
     /**
@@ -414,6 +409,38 @@ public class UserServiceImpl implements UserService {
         }
 
         return false;
+    }
+
+    /**
+     * Creates a new discipline entry described by the UserDisciplineSubmissionDto and created by the loggedInUser.
+     *
+     * @param userDisciplineSubmissionDto describes the discipinary action taken and against which user
+     * @param loggedInUser the logged in user
+     */
+    @Override
+    @Transactional
+    public void disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser) {
+        User disciplinedUser = getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
+
+        DisciplineType disciplineType = userDisciplineSubmissionDto.isBan() ? DisciplineType.BAN : DisciplineType.SUSPENSION;
+
+        Discipline discipline = new Discipline(disciplinedUser, loggedInUser, disciplineType, Date.from(Instant.now()),
+                userDisciplineSubmissionDto.getReason());
+
+        if (disciplineType.equals(DisciplineType.SUSPENSION)) {
+            discipline.setDisciplineDurationHours(userDisciplineSubmissionDto.getSuspensionHours());
+        }
+
+        discipline = disciplineRepository.save(discipline);
+
+        disciplinedUser.addDiscipline(discipline);
+
+        disciplinedUser = userRepository.save(disciplinedUser);
+    }
+
+    @Override
+    public void forceLogOut(User loggedInUser) {
+        // TODO: Implement this
     }
 
     /**

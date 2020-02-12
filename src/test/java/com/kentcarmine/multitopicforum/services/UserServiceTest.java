@@ -8,10 +8,7 @@ import com.kentcarmine.multitopicforum.helpers.AuthenticationFacade;
 import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
-import com.kentcarmine.multitopicforum.repositories.AuthorityRepository;
-import com.kentcarmine.multitopicforum.repositories.PasswordResetTokenRepository;
-import com.kentcarmine.multitopicforum.repositories.UserRepository;
-import com.kentcarmine.multitopicforum.repositories.VerificationTokenRepository;
+import com.kentcarmine.multitopicforum.repositories.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,6 +68,9 @@ class UserServiceTest {
     AuthorityRepository authorityRepository;
 
     @Mock
+    DisciplineRepository disciplineRepository;
+
+    @Mock
     PasswordEncoder passwordEncoder;
 
     private UserDtoToUserConverter userDtoToUserConverter;
@@ -85,7 +85,7 @@ class UserServiceTest {
         userDtoToUserConverter = new UserDtoToUserConverter();
         userService =
                 new UserServiceImpl(userRepository, authenticationService, userDtoToUserConverter, passwordEncoder,
-                        verificationTokenRepository, passwordResetTokenRepository, authorityRepository);
+                        verificationTokenRepository, passwordResetTokenRepository, authorityRepository, disciplineRepository);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);

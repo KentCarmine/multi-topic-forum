@@ -28,14 +28,18 @@ public class Bootstrap implements CommandLineRunner {
     private TopicThreadRepository topicThreadRepository;
     private PostRepository postRepository;
     private PostVoteRepository postVoteRepository;
+    private DisciplineRepository disciplineRepository;
 
     @Autowired
-    public Bootstrap(UserRepository userRepository, TopicForumRepository topicForumRepository, TopicThreadRepository topicThreadRepository, PostRepository postRepository, PostVoteRepository postVoteRepository) {
+    public Bootstrap(UserRepository userRepository, TopicForumRepository topicForumRepository,
+                     TopicThreadRepository topicThreadRepository, PostRepository postRepository,
+                     PostVoteRepository postVoteRepository, DisciplineRepository disciplineRepository) {
         this.userRepository = userRepository;
         this.topicForumRepository = topicForumRepository;
         this.topicThreadRepository = topicThreadRepository;
         this.postRepository = postRepository;
         this.postVoteRepository = postVoteRepository;
+        this.disciplineRepository = disciplineRepository;
     }
 
     @Override
@@ -158,5 +162,15 @@ public class Bootstrap implements CommandLineRunner {
         user2.setEnabled(true);
         user2.addAuthority(UserRole.USER);
         userRepository.save(user2);
+
+        User bannedUser = new User("bannedUser", "$2a$10$iG4pEz6PqsUZdseb7ogQFO4.9MBeOEOi5pupms8AIT1DYO6DXJidK", "bannedUser@test.com");
+        bannedUser.setEnabled(true);
+        bannedUser.addAuthority(UserRole.USER);
+        bannedUser = userRepository.save(bannedUser);
+        Discipline bannedUserDiscipline = new Discipline(bannedUser, admin1, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "Ban for testing");
+        bannedUser.addDiscipline(bannedUserDiscipline);
+        bannedUserDiscipline = disciplineRepository.save(bannedUserDiscipline);
+        bannedUser = userRepository.save(bannedUser);
+
     }
 }

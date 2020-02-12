@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
@@ -57,4 +58,8 @@ public interface UserService {
     boolean isValidDemotionRequest(User loggedInUser, User userToDemote, UserRole demotedRank);
 
     User demoteUser(User userToDemote);
+
+    void disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser);
+
+    void forceLogOut(User loggedInUser);
 }

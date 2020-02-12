@@ -9,6 +9,7 @@ import org.hibernate.annotations.SortNatural;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Entity representing a user
@@ -40,6 +41,9 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<PostVote> postVotes;
 
+    @OneToMany(mappedBy = "disciplinedUser", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<Discipline> disciplines;
+
     private boolean enabled;
 
     public User() {
@@ -61,6 +65,7 @@ public class User {
         this.enabled = false;
         this.posts = new TreeSet<>();
         this.postVotes = new HashSet<>();
+        this.disciplines = new HashSet<>();
     }
 
     public User(@Size(min = 4, message = "Username must be at least {min} characters long")
@@ -74,6 +79,7 @@ public class User {
         this.enabled = false;
         this.posts = new TreeSet<>();
         this.postVotes = new HashSet<>();
+        this.disciplines = new HashSet<>();
     }
 
     public String getUsername() {
@@ -153,13 +159,15 @@ public class User {
 //    }
 
     public boolean isHigherAuthority(User otherUser) {
+//        System.out.println("### in isHigherAuthority(). THIS.getHighestAuthority() = " + this.getHighestAuthority());
+//        System.out.println("### in isHigherAuthority(). otherUser = " + otherUser);
         return this.getHighestAuthority().isHigherRank(otherUser.getHighestAuthority());
     }
 
     public void removeAuthority(UserRole roleToRemove) {
-        System.out.println("### Auth size before: " + authorities.size());
+//        System.out.println("### Auth size before: " + authorities.size());
         this.authorities.removeIf((a) -> a.getAuthority().equals(roleToRemove));
-        System.out.println("### Auth size after: " + authorities.size());
+//        System.out.println("### Auth size after: " + authorities.size());
     }
 
     public boolean hasAuthority(UserRole role) {
@@ -251,6 +259,55 @@ public class User {
 
     public void setPosts(SortedSet<Post> posts) {
         this.posts = posts;
+    }
+
+    public Set<Discipline> getDisciplines() {
+        return disciplines;
+    }
+
+    public void setDisciplines(Set<Discipline> disciplines) {
+        this.disciplines = disciplines;
+    }
+
+    public void addDiscipline(Discipline newDiscipline) {
+        this.disciplines.add(newDiscipline);
+    }
+
+    public boolean isBannedOrSuspended() {
+        for (Discipline disc : disciplines) {
+            if (disc.isActive()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    public Set<Discipline> getActiveDisciplines() {
+        Set<Discipline> activeDisciplines = disciplines.stream().filter(Discipline::isActive).collect(Collectors.toSet());
+
+        return activeDisciplines;
+    }
+
+    public Discipline getGreatestDurationActiveDiscipline() {
+        Set<Discipline> activeDisciplines = getActiveDisciplines();
+
+        Discipline mostSevere = null;
+//        Date now = Date.from(Instant.now());
+
+        for (Discipline ad : activeDisciplines) {
+            if (ad.getDisciplineType().equals(DisciplineType.BAN)) {
+                return ad;
+            }
+
+            if (ad.getDisciplineType().equals(DisciplineType.SUSPENSION)
+                    && (mostSevere == null || ad.getDisciplineEndTime().after(mostSevere.getDisciplineEndTime()))) {
+                mostSevere = ad;
+            }
+        }
+
+        return mostSevere;
     }
 
     @Override

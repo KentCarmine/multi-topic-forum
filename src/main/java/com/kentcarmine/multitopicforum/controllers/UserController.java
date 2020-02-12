@@ -1,16 +1,10 @@
 package com.kentcarmine.multitopicforum.controllers;
 
-import com.kentcarmine.multitopicforum.dtos.UserDto;
-import com.kentcarmine.multitopicforum.dtos.UserEmailDto;
-import com.kentcarmine.multitopicforum.dtos.UserPasswordDto;
-import com.kentcarmine.multitopicforum.dtos.UserSearchDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.events.OnRegistrationCompleteEvent;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
-import com.kentcarmine.multitopicforum.model.PasswordResetToken;
-import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.model.UserRole;
-import com.kentcarmine.multitopicforum.model.VerificationToken;
+import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.EmailService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -312,6 +306,82 @@ public class UserController {
         return "redirect:/users?search=" + searchText;
     }
 
+    @GetMapping("/manageUserDiscipline/{username}")
+    public String showManageUserDisciplinePage(@PathVariable String username, Model model) {
+        User user = userService.getUser(username);
+
+        if (user == null) {
+            throw new UserNotFoundException("User " + username + " was not found.");
+        }
+
+        // TODO: Add lists of active and past disciplinary actions to model (as lists of dtos)
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto();
+        userDisciplineSubmissionDto.setDisciplinedUsername(username);
+        model.addAttribute("userDisciplineSubmissionDto", userDisciplineSubmissionDto);
+
+        return "user-discipline-page";
+    }
+
+    @PostMapping("/processCreateUserDiscipline")
+    public ModelAndView processUserDisciplineSubmission(@Valid UserDisciplineSubmissionDto userDisciplineSubmissionDto, BindingResult bindingResult) {
+        ModelAndView mv;
+//        System.out.println("### in processUserDisciplineSubmission(). UserDisciplineSubmissionDto = " + userDisciplineSubmissionDto.toString());
+
+        updateDisciplineSubmissionBindingResult(userDisciplineSubmissionDto, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            mv = new ModelAndView("user-discipline-page", "userDisciplineSubmissionDto", userDisciplineSubmissionDto);
+            mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+            return mv;
+        }
+
+        User loggedInUser = userService.getLoggedInUser();
+        User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
+
+        userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+
+        mv = new ModelAndView("redirect:/users/" + disciplinedUser.getUsername() + "?userDisciplined");
+        mv.setStatus(HttpStatus.OK);
+        return mv;
+    }
+
+    @GetMapping("/showDisciplineInfo/{username}")
+    public String showDisciplineInfoPage(@PathVariable String username, Model model) {
+        User user = userService.getUser(username);
+        User loggedInUser = userService.getLoggedInUser();
+
+        if (loggedInUser == null) {
+            return "redirect:/login";
+        }
+
+        if (!user.equals(loggedInUser)) {
+            return "redirect:/showDisciplineInfo/" + loggedInUser.getUsername();
+        }
+
+        if (!loggedInUser.isBannedOrSuspended()) {
+            return "redirect:/login";
+        }
+
+        Discipline greatestDurationActiveDiscipline = loggedInUser.getGreatestDurationActiveDiscipline();
+
+        StringBuilder msgBuilder = new StringBuilder("You have been ");
+
+        if (greatestDurationActiveDiscipline.isBan()) {
+            msgBuilder.append("permanently banned.");
+        } else {
+            String endsAtStr = greatestDurationActiveDiscipline.getDisciplineEndTime().toString();
+            msgBuilder.append("suspended. Your suspension will end at: " + endsAtStr + ".");
+        }
+
+        msgBuilder.append("The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
+
+        model.addAttribute("message", msgBuilder.toString());
+
+        userService.forceLogOut(loggedInUser); // TODO: implement this method
+
+        return "user-discipline-info-page"; // TODO: Create this page
+    }
+
     /**
      * Handler method that handles displaying an error page when a UserNotFoundException occurs.
      *
@@ -385,6 +455,21 @@ public class UserController {
         if (userService.emailExists(userDto.getEmail())) {
             bindingResult.rejectValue("email", "message.regError",
                     "Email " + userDto.getEmail() + " already exists");
+        }
+
+        return bindingResult;
+    }
+
+    private BindingResult updateDisciplineSubmissionBindingResult(UserDisciplineSubmissionDto userDisciplineSubmissionDto, BindingResult bindingResult) {
+        User loggedInUser = userService.getLoggedInUser();
+        User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
+        if (disciplinedUser == null) {
+            System.out.println("### in updateDisciplineSubmissionBindingResult(). disciplinedUser == null");
+            bindingResult.rejectValue("disciplinedUsername", null, "Could not find user " + userDisciplineSubmissionDto.getDisciplinedUsername());
+        }
+
+        if (loggedInUser == null || !loggedInUser.isHigherAuthority(disciplinedUser)) {
+            bindingResult.reject("insufficientAuthority", null, "You do not have the authority to discipline this user");
         }
 
         return bindingResult;

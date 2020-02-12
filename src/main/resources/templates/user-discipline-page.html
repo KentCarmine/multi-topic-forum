@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="'Multi-Topic Forum | Manage' + ${username} + '\'s Bans and Suspensions'">PLACEHOLDER</title>
+        <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+        <script type="text/javascript" th:src="@{/js/create-user-discipline.js}"></script>
+    </head>
+    <body>
+        <div th:replace="fragments/navbar.html :: navbar"></div>
+        <h2 th:text="'Manage' + ${username} + '\'s Bans and Suspensions'"></h2>
+        <hr>
+
+        <div id="active-discipline-container">
+            <!--TODO: Fill in-->
+        </div>
+
+        <div id="past-discipline-container">
+            <!--TODO: Fill in-->
+        </div>
+
+        <div id="create-new-discipline-container">
+            <form th:action="@{'/processCreateUserDiscipline'}" th:object="${userDisciplineSubmissionDto}" method="POST">
+                <div th:if="${#fields.hasErrors('*')}">
+                    <p style="color: red">Please Correct Errors Below:</p>
+                    <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
+                </div>
+
+                <input type="hidden" name="disciplinedUsername" th:field="*{disciplinedUsername}" th:value="*{disciplinedUsername}">
+
+                <span>
+                    <label>Discipline Type: </label>
+                    <span>
+                        <input id="suspension-radio-button" type="radio" name="disciplineType" th:field="*{disciplineType}" value="Suspension">Suspension</input>
+                        <input id="ban-radio-button" type="radio" name="disciplineType" th:field="*{disciplineType}" value="Ban">Ban</input>
+                    </span>
+                    <div id="suspension-duration-container">
+                        <label>Hours of Suspension</label>
+                        <input type="text" name="suspensionDuration" placeholder="Hours to suspend for" th:field="*{suspensionHours}">
+                    </div>
+                </span>
+
+                <div>
+                    <label>Reason for Discipline</label>
+                    <input type="text" name="reason" th:field="*{reason}" placeholder="Reason for disciplinary action">
+                </div>
+
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+
+
+    </body>
+</html>
