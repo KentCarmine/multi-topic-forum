@@ -16,7 +16,8 @@ import java.io.IOException;
 import java.util.Date;
 
 /**
- * Handler that allows a user who successfully logs in to automatically redirect  to their home page.
+ * Handler that allows a user who successfully logs in to automatically redirect to their home page, or their
+ * disciplinary status page if they are currently banned or suspended.
  */
 @Component
 public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
@@ -35,6 +36,7 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
         User user = userService.getUser(loggedInUserName);
 
         if (user != null && user.isBannedOrSuspended()) {
+            System.out.println("### in onAuthenticationSuccess banned case. User = " + user);
             String url = "/showDisciplineInfo/" + loggedInUserName;
             redirectStrategy.sendRedirect(req, res, url);
         } else {

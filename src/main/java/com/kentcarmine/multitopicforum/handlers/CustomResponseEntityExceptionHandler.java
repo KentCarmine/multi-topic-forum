@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.handlers;
 
+import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,22 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     public CustomResponseEntityExceptionHandler(MessageSource messageSource) {
         super();
         this.messageSource = messageSource;
+    }
+
+    /**
+     * Handle exception resulting from a disciplined user attempting to take actions that require authentication. Redirect
+     * them to a page displaying their discipline state.
+     *
+     * @param e the triggering exception
+     */
+    @ExceptionHandler({DisciplinedUserException.class})
+    public ModelAndView handleDisciplinedUserTakingActionRequiringAuth(DisciplinedUserException e, HttpServletRequest request) {
+        logger.error(e);
+
+//        System.out.println("### in handleDisciplinedUserTakingActionRequiringAuth. User = " + e.getUser());
+
+        ModelAndView mv = new ModelAndView("redirect:/showDisciplineInfo/" + e.getUser().getUsername());
+        return mv;
     }
 
     /**

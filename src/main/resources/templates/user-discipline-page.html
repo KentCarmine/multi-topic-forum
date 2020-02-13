@@ -3,13 +3,13 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
-        <title th:text="'Multi-Topic Forum | Manage' + ${username} + '\'s Bans and Suspensions'">PLACEHOLDER</title>
+        <title th:text="'Multi-Topic Forum | Manage' + ${userDisciplineSubmissionDto.getDisciplinedUsername()} + '\'s Bans and Suspensions'">PLACEHOLDER</title>
         <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
         <script type="text/javascript" th:src="@{/js/create-user-discipline.js}"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
-        <h2 th:text="'Manage' + ${username} + '\'s Bans and Suspensions'"></h2>
+        <h2 th:text="'Manage ' + ${userDisciplineSubmissionDto.getDisciplinedUsername()} + '\'s Bans and Suspensions'"></h2>
         <hr>
 
         <div id="active-discipline-container">
@@ -37,7 +37,7 @@
                     </span>
                     <div id="suspension-duration-container">
                         <label>Hours of Suspension</label>
-                        <input type="text" name="suspensionDuration" placeholder="Hours to suspend for" th:field="*{suspensionHours}">
+                        <input id="suspension-duration-field" type="text" name="suspensionDuration" placeholder="1-720 hours" th:field="*{suspensionHours}">
                     </div>
                 </span>
 

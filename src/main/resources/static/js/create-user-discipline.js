@@ -30,5 +30,7 @@ function showSuspensionDurationContainer() {
 
 function hideSuspensionDurationContainer() {
     let container = $("#suspension-duration-container");
+    let sdField = $("#suspension-duration-field");
+    sdField.val(0);
     container.hide();
 }

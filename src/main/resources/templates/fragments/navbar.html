@@ -17,21 +17,48 @@
             <span>
                 <a th:href="@{/users}" href="#">Search Users</a>
             </span>
+
             <span sec:authorize="isAuthenticated()" th:if="${#request.requestURI != '/users/' + #authentication.getName()}">
                 <a th:href="@{'/users/'+${#authentication.getName()}}" href="#">User home</a>
             </span>
-            <span sec:authorize="isAnonymous()">
+
+            <span th:if="${#authentication == null || #authorization.expression('hasRole(''ROLE_ANONYMOUS'')')}">
                 <a href="#" th:href="@{/login}">Login</a>
             </span>
             <span sec:authorize="isAuthenticated()">
                 <a href="#" th:href="@{/logout}">Logout</a>
             </span>
-            <span sec:authorize="isAnonymous()">
+            <span th:if="${#authentication == null || #authorization.expression('hasRole(''ROLE_ANONYMOUS'')')}">
                 <a href="#" th:href="@{/registerUser}">Register</a>
             </span>
+
             <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
                 <a href="#", th:href="@{/administration}">Administration</a>
             </span>
+<!--            <span>-->
+<!--                <a th:href="@{/}" href="#">Home</a>-->
+<!--            </span>-->
+<!--            <span>-->
+<!--                <a th:href="@{/forums}" href="#">All Forums</a>-->
+<!--            </span>-->
+<!--            <span>-->
+<!--                <a th:href="@{/users}" href="#">Search Users</a>-->
+<!--            </span>-->
+<!--            <span sec:authorize="isAuthenticated()" th:if="${#request.requestURI != '/users/' + #authentication.getName()}">-->
+<!--                <a th:href="@{'/users/'+${#authentication.getName()}}" href="#">User home</a>-->
+<!--            </span>-->
+<!--            <span sec:authorize="isAnonymous()">-->
+<!--                <a href="#" th:href="@{/login}">Login</a>-->
+<!--            </span>-->
+<!--            <span sec:authorize="isAuthenticated()">-->
+<!--                <a href="#" th:href="@{/logout}">Logout</a>-->
+<!--            </span>-->
+<!--            <span sec:authorize="isAnonymous()">-->
+<!--                <a href="#" th:href="@{/registerUser}">Register</a>-->
+<!--            </span>-->
+<!--            <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">-->
+<!--                <a href="#", th:href="@{/administration}">Administration</a>-->
+<!--            </span>-->
         </div>
     </body>
 </html>

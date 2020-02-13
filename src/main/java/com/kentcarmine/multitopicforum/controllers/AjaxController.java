@@ -42,7 +42,9 @@ public class AjaxController {
 
 //        System.out.println("### PostVoteSub = " + postVoteSubmissionDto.toString());
 
-        User loggedInUser = userService.getLoggedInUser();
+//        User loggedInUser = userService.getLoggedInUser();
+        User loggedInUser = getLoggedInUserIfNotDisciplined();
+
         Post post = forumService.getPostById(postVoteSubmissionDto.getPostId());
 
         if (loggedInUser == null || post == null || errors.hasErrors()) {
@@ -80,7 +82,9 @@ public class AjaxController {
         User postingUser = postToDelete.getUser();
 //        System.out.println("### LoggedInUser: " + userService.getLoggedInUser());
 //        System.out.println("### PostingUser: " + postingUser);
-        if (!userService.getLoggedInUser().isHigherAuthority(postingUser)) {
+        User loggedInUser = getLoggedInUserIfNotDisciplined();
+
+        if (loggedInUser == null || !loggedInUser.isHigherAuthority(postingUser)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DeletePostResponseDto("Error: Insufficient permissions to delete that post.", postToDelete.getId()));
         }
 
@@ -90,7 +94,7 @@ public class AjaxController {
                 + "#post_id_" + postToDelete.getId();
 
         if (!postToDelete.isDeleted()) {
-            postToDelete = forumService.deletePost(postToDelete, userService.getLoggedInUser());
+            postToDelete = forumService.deletePost(postToDelete, loggedInUser);
         }
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -108,8 +112,9 @@ public class AjaxController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RestorePostResponseDto("Error: Post not found.", null));
         }
 
-        boolean isValidRestoration = postToRestore.isRestorableBy(userService.getLoggedInUser());
-        System.out.println("### isValidRestoration: " + isValidRestoration);
+        User loggedInUser = getLoggedInUserIfNotDisciplined();
+        boolean isValidRestoration = postToRestore.isRestorableBy(loggedInUser);
+//        System.out.println("### isValidRestoration: " + isValidRestoration);
 
         if (isValidRestoration) {
             postToRestore = forumService.restorePost(postToRestore);
@@ -129,7 +134,7 @@ public class AjaxController {
     @PostMapping(value = "/promoteUserAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> processPromoteUser(@RequestBody PromoteUserSubmissionDto promoteUserSubmissionDto) {
         User userToPromote = userService.getUser(promoteUserSubmissionDto.getUsername());
-        User loggedInUser = userService.getLoggedInUser();
+        User loggedInUser = getLoggedInUserIfNotDisciplined();
         UserRole promotableRank = promoteUserSubmissionDto.getPromotableRank();
 
         if (userToPromote == null) {
@@ -164,7 +169,7 @@ public class AjaxController {
     public ResponseEntity<?> processDemoteUser(@RequestBody DemoteUserSubmissionDto demoteUserSubmissionDto) {
         System.out.println("### /demoteUserAjax called");
         User userToDemote = userService.getUser(demoteUserSubmissionDto.getUsername());
-        User loggedInUser = userService.getLoggedInUser();
+        User loggedInUser = getLoggedInUserIfNotDisciplined();
         UserRole demotableRank = demoteUserSubmissionDto.getDemotableRank();
 
         if (userToDemote == null) {
@@ -200,7 +205,7 @@ public class AjaxController {
     @GetMapping(value = "/demoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView demoteUserButton(@PathVariable String username) {
         System.out.println("### /demoteUserButton/" + username + " called");
-        User loggedInUser = userService.getLoggedInUser();
+        User loggedInUser = getLoggedInUserIfNotDisciplined();
         User user = userService.getUser(username);
 
         ModelAndView mv;
@@ -224,7 +229,7 @@ public class AjaxController {
      */
     @GetMapping(value = "/promoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView promoteUserButton(@PathVariable String username) {
-        User loggedInUser = userService.getLoggedInUser();
+        User loggedInUser = getLoggedInUserIfNotDisciplined();
         User user = userService.getUser(username);
 
         ModelAndView mv;
@@ -241,5 +246,14 @@ public class AjaxController {
         mv.addObject("user", user);
         mv.addObject("loggedInUser", loggedInUser);
         return mv;
+    }
+
+    private User getLoggedInUserIfNotDisciplined() {
+        User loggedInUser = userService.getLoggedInUser();
+        if (loggedInUser == null || loggedInUser.isBannedOrSuspended()) {
+            return null;
+        }
+
+        return loggedInUser;
     }
 }

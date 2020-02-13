@@ -3,17 +3,30 @@ package com.kentcarmine.multitopicforum.services;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
+import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.util.*;
@@ -57,6 +70,11 @@ public class UserServiceImpl implements UserService {
     public User getLoggedInUser() {
         User loggedInUser = getUser(authenticationService.getLoggedInUserName());
         authenticationService.updateAuthorities(loggedInUser);
+
+//        if (loggedInUser.isBannedOrSuspended()) {
+//            forceLogOut(loggedInUser);
+//        }
+
         return loggedInUser;
     }
 
@@ -428,7 +446,7 @@ public class UserServiceImpl implements UserService {
                 userDisciplineSubmissionDto.getReason());
 
         if (disciplineType.equals(DisciplineType.SUSPENSION)) {
-            discipline.setDisciplineDurationHours(userDisciplineSubmissionDto.getSuspensionHours());
+            discipline.setDisciplineDurationHours(Integer.parseInt(userDisciplineSubmissionDto.getSuspensionHours()));
         }
 
         discipline = disciplineRepository.save(discipline);
@@ -438,9 +456,45 @@ public class UserServiceImpl implements UserService {
         disciplinedUser = userRepository.save(disciplinedUser);
     }
 
+    /**
+     * Forcibly logs out the currently logged in user and clears their remember me cookie
+     *
+     * @param loggedInUser the logged in user
+     * @param req the HTTPServletRequest to call logout on
+     * @param res the HTTPServletResponse to use to set cleared remember me cookie on
+     */
     @Override
-    public void forceLogOut(User loggedInUser) {
-        // TODO: Implement this
+    public void forceLogOut(User loggedInUser, HttpServletRequest req, HttpServletResponse res) {
+//        HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        new SecurityContextLogoutHandler().logout(req, null, null);
+        AnonymousAuthenticationToken anonymous = new AnonymousAuthenticationToken("anonymous", "anonymous",
+                new ArrayList(Arrays.asList(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))));
+        SecurityContextHolder.getContext().setAuthentication(anonymous);
+        cancelRememberMeCookie(req, res);
+    }
+
+    /**
+     * Helper method that clears the user's remember me cookie (if any)
+     */
+    private void cancelRememberMeCookie(HttpServletRequest req, HttpServletResponse res) {
+        String cookieName = AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY;
+        Cookie cookie = new Cookie(cookieName, null);
+        cookie.setMaxAge(0);
+        cookie.setPath(StringUtils.hasLength(req.getContextPath()) ? req.getContextPath() : "/");
+        res.addCookie(cookie);
+    }
+
+    /**
+     * Throw a DisciplinedUserException if the given user has any active disciplines
+     *
+     * @param user the user to check for active disiciplines
+     * @throws DisciplinedUserException if the given user has active disciplines
+     */
+    @Override
+    public void handleDisciplinedUser(User user) throws DisciplinedUserException {
+        if (user != null && user.isBannedOrSuspended()) {
+            throw new DisciplinedUserException(user);
+        }
     }
 
     /**

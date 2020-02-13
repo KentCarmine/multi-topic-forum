@@ -9,6 +9,8 @@ import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.SortedSet;
 
@@ -61,5 +63,8 @@ public interface UserService {
 
     void disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser);
 
-    void forceLogOut(User loggedInUser);
+//    void forceLogOut(User loggedInUser);
+    void forceLogOut(User loggedInUser, HttpServletRequest httpServletRequest, HttpServletResponse res);
+
+    void handleDisciplinedUser(User user);
 }

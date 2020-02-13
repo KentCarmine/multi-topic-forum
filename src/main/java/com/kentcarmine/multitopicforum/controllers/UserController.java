@@ -14,9 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -24,9 +27,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller for handling all user-related tasks (ie. login/logout, registration, password reset, etc)
@@ -54,6 +59,8 @@ public class UserController {
     @GetMapping("/login")
     public String showLoginForm() {
         User loggedInUser = userService.getLoggedInUser();
+
+
         if (loggedInUser != null) {
             return "redirect:/users/" + loggedInUser.getUsername();
         }
@@ -69,8 +76,11 @@ public class UserController {
         if (userService.usernameExists(username)) {
 //            SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().forEach((a) -> System.out.println(((GrantedAuthority) a).toString()));
             User user = userService.getUser(username);
+            User loggedInUser = userService.getLoggedInUser();
+            userService.handleDisciplinedUser(loggedInUser);
+
             model.addAttribute("user", user);
-            model.addAttribute("loggedInUser", userService.getLoggedInUser());
+            model.addAttribute("loggedInUser", loggedInUser);
             return "user-page";
         } else {
             throw new UserNotFoundException("User with name " + username + " was not found");
@@ -83,6 +93,8 @@ public class UserController {
     @GetMapping("/registerUser")
     public String showUserRegistrationForm(Model model) {
         User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
         if (loggedInUser != null) {
             return "redirect:/users/" + loggedInUser.getUsername();
         }
@@ -99,6 +111,8 @@ public class UserController {
     @PostMapping("/processUserRegistration")
     public ModelAndView processUserRegistration(@Valid @ModelAttribute("user") UserDto user, BindingResult bindingResult, HttpServletRequest request) {
         User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
         if (loggedInUser != null) {
             return new ModelAndView("redirect:/users/" + loggedInUser.getUsername());
         }
@@ -306,6 +320,11 @@ public class UserController {
         return "redirect:/users?search=" + searchText;
     }
 
+    /**
+     * Displays the page for managing disciplinary action against the user with the given name. Allows users with
+     * sufficient permissions to ban/suspend that user or reverse active bans or suspensions. Also displays the user's
+     * disciplinary history
+     */
     @GetMapping("/manageUserDiscipline/{username}")
     public String showManageUserDisciplinePage(@PathVariable String username, Model model) {
         User user = userService.getUser(username);
@@ -322,12 +341,17 @@ public class UserController {
         return "user-discipline-page";
     }
 
+    /**
+     * Handles processing of a user discipline submission.
+     */
     @PostMapping("/processCreateUserDiscipline")
     public ModelAndView processUserDisciplineSubmission(@Valid UserDisciplineSubmissionDto userDisciplineSubmissionDto, BindingResult bindingResult) {
         ModelAndView mv;
 //        System.out.println("### in processUserDisciplineSubmission(). UserDisciplineSubmissionDto = " + userDisciplineSubmissionDto.toString());
 
         updateDisciplineSubmissionBindingResult(userDisciplineSubmissionDto, bindingResult);
+
+        System.out.println("### in processUserDisciplineSubmission(). DTO = " + userDisciplineSubmissionDto);
 
         if (bindingResult.hasErrors()) {
             mv = new ModelAndView("user-discipline-page", "userDisciplineSubmissionDto", userDisciplineSubmissionDto);
@@ -336,6 +360,8 @@ public class UserController {
         }
 
         User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
         User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
 
         userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
@@ -345,8 +371,13 @@ public class UserController {
         return mv;
     }
 
+    /**
+     * Shows the discipline status page for the given user, informing them of their disciplinary status (if there is one
+     * active), or redirecting them to their home page if there is not. If there is a disciplinary status, also forcibly
+     * logs the user out and clears their remember me cookie.
+     */
     @GetMapping("/showDisciplineInfo/{username}")
-    public String showDisciplineInfoPage(@PathVariable String username, Model model) {
+    public String showDisciplineInfoPage(@PathVariable String username, Model model, HttpServletRequest request, HttpServletResponse response) {
         User user = userService.getUser(username);
         User loggedInUser = userService.getLoggedInUser();
 
@@ -373,13 +404,14 @@ public class UserController {
             msgBuilder.append("suspended. Your suspension will end at: " + endsAtStr + ".");
         }
 
-        msgBuilder.append("The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
+        msgBuilder.append(" The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
 
+        model.addAttribute("username", username);
         model.addAttribute("message", msgBuilder.toString());
 
-        userService.forceLogOut(loggedInUser); // TODO: implement this method
+        userService.forceLogOut(loggedInUser, request, response);
 
-        return "user-discipline-info-page"; // TODO: Create this page
+        return "user-discipline-info-page";
     }
 
     /**
@@ -463,6 +495,7 @@ public class UserController {
     private BindingResult updateDisciplineSubmissionBindingResult(UserDisciplineSubmissionDto userDisciplineSubmissionDto, BindingResult bindingResult) {
         User loggedInUser = userService.getLoggedInUser();
         User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
+
         if (disciplinedUser == null) {
             System.out.println("### in updateDisciplineSubmissionBindingResult(). disciplinedUser == null");
             bindingResult.rejectValue("disciplinedUsername", null, "Could not find user " + userDisciplineSubmissionDto.getDisciplinedUsername());

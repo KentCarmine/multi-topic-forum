@@ -186,9 +186,11 @@ public class ForumController {
             return mv;
         }
 
-        User currentUser = userService.getLoggedInUser();
+        User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
         TopicForum forum = forumService.getForumByName(name);
-        TopicThread newThread = forumService.createNewTopicThread(topicThreadCreationDto, currentUser, forum);
+        TopicThread newThread = forumService.createNewTopicThread(topicThreadCreationDto, loggedInUser, forum);
 
         mv = new ModelAndView("redirect:/forum/" + name + "/show/" + newThread.getId());
         return mv;
@@ -216,9 +218,11 @@ public class ForumController {
         model.addAttribute("posts", thread.getPosts());
 
         User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
         if (loggedInUser != null) {
             model.addAttribute("postCreationDto", new PostCreationDto());
-            model.addAttribute("loggedInUser", userService.getLoggedInUser());
+            model.addAttribute("loggedInUser", loggedInUser);
             model.addAttribute("voteMap", forumService.generateVoteMap(loggedInUser, thread));
             model.addAttribute("canLock", forumService.canUserLockThread(loggedInUser, thread));
             model.addAttribute("canUnlock", forumService.canUserUnlockThread(loggedInUser, thread));
@@ -241,6 +245,7 @@ public class ForumController {
         }
 
         User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
 
         if (loggedInUser == null) {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError";
@@ -272,6 +277,7 @@ public class ForumController {
         }
 
         User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
 
         if (loggedInUser == null) {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError";
@@ -317,8 +323,10 @@ public class ForumController {
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
             return mv;
         }
+        User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
 
-        forumService.addNewPostToThread(postCreationDto, userService.getLoggedInUser(), thread);
+        forumService.addNewPostToThread(postCreationDto, loggedInUser, thread);
 
         mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId);
         return mv;

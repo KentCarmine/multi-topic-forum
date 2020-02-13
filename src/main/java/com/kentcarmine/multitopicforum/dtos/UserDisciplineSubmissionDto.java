@@ -2,8 +2,6 @@ package com.kentcarmine.multitopicforum.dtos;
 
 import com.kentcarmine.multitopicforum.annotations.ValidUserDisciplineSubmission;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -12,10 +10,6 @@ import javax.validation.constraints.NotNull;
  */
 @ValidUserDisciplineSubmission
 public class UserDisciplineSubmissionDto {
-    private static final int HOURS_IN_30_DAYS = 30 * 24;
-
-    private static final int MIN_SUSPENSION_HOURS = 1;
-    private static final int MAX_SUSPENSION_HOURS = HOURS_IN_30_DAYS;
 
     @NotBlank
     @NotNull
@@ -23,9 +17,7 @@ public class UserDisciplineSubmissionDto {
 
     private String disciplineType;
 
-    @Min(value = MIN_SUSPENSION_HOURS)
-    @Max(value = MAX_SUSPENSION_HOURS)
-    private int suspensionHours;
+    private String suspensionHours;
 
     @NotBlank
     @NotNull
@@ -35,8 +27,7 @@ public class UserDisciplineSubmissionDto {
     public UserDisciplineSubmissionDto() {
     }
 
-    public UserDisciplineSubmissionDto(@NotBlank @NotNull String disciplinedUsername, String disciplineType,
-                                       @Min(value = MIN_SUSPENSION_HOURS) @Max(value = MAX_SUSPENSION_HOURS) int suspensionHours,
+    public UserDisciplineSubmissionDto(@NotBlank @NotNull String disciplinedUsername, String disciplineType, String suspensionHours,
                                        @NotBlank @NotNull String reason) {
         this.disciplinedUsername = disciplinedUsername;
         this.disciplineType = disciplineType;
@@ -68,11 +59,11 @@ public class UserDisciplineSubmissionDto {
         this.disciplineType = disciplineType;
     }
 
-    public int getSuspensionHours() {
+    public String getSuspensionHours() {
         return suspensionHours;
     }
 
-    public void setSuspensionHours(int suspensionHours) {
+    public void setSuspensionHours(String suspensionHours) {
         this.suspensionHours = suspensionHours;
     }
 

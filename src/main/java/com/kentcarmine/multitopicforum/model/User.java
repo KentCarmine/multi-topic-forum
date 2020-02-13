@@ -273,6 +273,11 @@ public class User {
         this.disciplines.add(newDiscipline);
     }
 
+    /**
+     * Returns true if this user is currently banned or suspended. False otherwise.
+     *
+     * @return true if this user is currently banned or suspended. False otherwise.
+     */
     public boolean isBannedOrSuspended() {
         for (Discipline disc : disciplines) {
             if (disc.isActive()) {
@@ -283,13 +288,24 @@ public class User {
         return false;
     }
 
-
+    /**
+     * Returns a set of disciplines associated with this user that are currently active.
+     *
+     * @return a set of disciplines associated with this user that are currently active.
+     */
     public Set<Discipline> getActiveDisciplines() {
         Set<Discipline> activeDisciplines = disciplines.stream().filter(Discipline::isActive).collect(Collectors.toSet());
 
         return activeDisciplines;
     }
 
+    /**
+     * Gets the active discipline associated with this user that has the greatest duration, or null if this user has no
+     * active disciplines
+     *
+     * @return the active discipline associated with this user that has the greatest duration, or null if this user has
+     * no active disciplines
+     */
     public Discipline getGreatestDurationActiveDiscipline() {
         Set<Discipline> activeDisciplines = getActiveDisciplines();
 
