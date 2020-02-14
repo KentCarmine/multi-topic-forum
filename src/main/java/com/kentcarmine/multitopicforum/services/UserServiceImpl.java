@@ -493,6 +493,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void handleDisciplinedUser(User user) throws DisciplinedUserException {
         if (user != null && user.isBannedOrSuspended()) {
+            System.out.println("### in handleDisciplinedUser() fire exception case for " + user);
             throw new DisciplinedUserException(user);
         }
     }

@@ -349,6 +349,9 @@ public class UserController {
         ModelAndView mv;
 //        System.out.println("### in processUserDisciplineSubmission(). UserDisciplineSubmissionDto = " + userDisciplineSubmissionDto.toString());
 
+        User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
         updateDisciplineSubmissionBindingResult(userDisciplineSubmissionDto, bindingResult);
 
         System.out.println("### in processUserDisciplineSubmission(). DTO = " + userDisciplineSubmissionDto);
@@ -359,15 +362,11 @@ public class UserController {
             return mv;
         }
 
-        User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
-
         User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
 
         userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
 
         mv = new ModelAndView("redirect:/users/" + disciplinedUser.getUsername() + "?userDisciplined");
-        mv.setStatus(HttpStatus.OK);
         return mv;
     }
 
@@ -501,7 +500,7 @@ public class UserController {
             bindingResult.rejectValue("disciplinedUsername", null, "Could not find user " + userDisciplineSubmissionDto.getDisciplinedUsername());
         }
 
-        if (loggedInUser == null || !loggedInUser.isHigherAuthority(disciplinedUser)) {
+        if (loggedInUser == null || disciplinedUser == null || !loggedInUser.isHigherAuthority(disciplinedUser)) {
             bindingResult.reject("insufficientAuthority", null, "You do not have the authority to discipline this user");
         }
 

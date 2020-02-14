@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
@@ -47,6 +48,10 @@ class ForumControllerTest {
     private static final String TEST_ADMIN_PASSWORD = "testAdminPassword";
     private static final String TEST_ADMIN_EMAIL = "testadmin@test.com";
 
+    private static final String TEST_SUPER_ADMIN_USERNAME = "TestSuperAdmin";
+    private static final String TEST_SUPER_ADMIN_PASSWORD = "testSuperAdminPassword";
+    private static final String TEST_SUPER_ADMIN_EMAIL = "testsuperadmin@test.com";
+
     ForumController forumController;
 
     MockMvc mockMvc;
@@ -65,6 +70,7 @@ class ForumControllerTest {
     private User testModerator;
     private User testModerator2;
     private User testAdmin;
+    private User testSuperAdmin;
     TopicThread testTopicForumThread;
 
     @BeforeEach
@@ -83,6 +89,9 @@ class ForumControllerTest {
 
         testAdmin = new User(TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD, TEST_ADMIN_EMAIL);
         testAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR);
+
+        testSuperAdmin = new User(TEST_SUPER_ADMIN_USERNAME, TEST_SUPER_ADMIN_PASSWORD, TEST_SUPER_ADMIN_EMAIL);
+        testSuperAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR, UserRole.SUPER_ADMINISTRATOR);
 
         testTopicForum = new TopicForum(TEST_TOPIC_FORUM_NAME, TEST_TOPIC_FORUM_DESC);
         testUser = new User("testUser", "testPassword", "test@testemail.com");
@@ -240,6 +249,28 @@ class ForumControllerTest {
     }
 
     @Test
+    void processCreateThread_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testUser.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+
+
+        mockMvc.perform(post("/forum/" + testTopicForum.getName() + "/processCreateThread")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("title", testTopicForumThread.getTitle())
+                .param("firstPostContent", testTopicForumThread.getPosts().first().getContent()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
+
+        verify(forumService, times(0)).createNewTopicThread(any(), any(), any());
+    }
+
+    @Test
     void processCreateThread_noSuchForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
         when(userService.getLoggedInUser()).thenReturn(testUser);
@@ -347,6 +378,23 @@ class ForumControllerTest {
     }
 
     @Test
+    void showThread_validThread_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testUser.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+
+        String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
+        mockMvc.perform(get(url))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
+    }
+
+    @Test
     void showThread_noSuchForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
         when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
@@ -385,6 +433,29 @@ class ForumControllerTest {
                 .andExpect(view().name("redirect:/forum/" + testTopicForumThread.getForum().getName() + "/show/1"));
 
         verify(forumService, times(1)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
+    }
+
+    @Test
+    void addPostToThread_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testUser.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+
+        final String content = "Test content";
+        final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
+
+        mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("content", content))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
+
+        verify(forumService, times(0)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
     }
 
     @Test
@@ -663,6 +734,26 @@ class ForumControllerTest {
     }
 
     @Test
+    void processLockThread_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testAdmin.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testAdmin)).when(userService).handleDisciplinedUser(any());
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(forumService.getThreadById(anyLong())).thenReturn(testTopicForumThread);
+//        when(forumService.lockThread(any(), any())).thenReturn(true);
+
+        mockMvc.perform(post("/lockTopicThread/1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
+
+        verify(userService, times(1)).getLoggedInUser();
+        verify(forumService, times(1)).getThreadById(anyLong());
+        verify(forumService, times(0)).lockThread(any(), any());
+    }
+
+    @Test
     void processLockThread_lockUnsuccessful() throws Exception {
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(forumService.getThreadById(anyLong())).thenReturn(testTopicForumThread);
@@ -736,6 +827,28 @@ class ForumControllerTest {
         verify(userService, times(1)).getLoggedInUser();
         verify(forumService, times(1)).getThreadById(anyLong());
         verify(forumService, times(1)).unlockThread(any(), any());
+    }
+
+    @Test
+    void processUnlockThread_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testModerator, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testModerator.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testModerator)).when(userService).handleDisciplinedUser(any());
+
+        testTopicForumThread.lock(testModerator);
+
+        when(userService.getLoggedInUser()).thenReturn(testModerator);
+        when(forumService.getThreadById(anyLong())).thenReturn(testTopicForumThread);
+//        when(forumService.unlockThread(any(), any())).thenReturn(true);
+
+        mockMvc.perform(post("/unlockTopicThread/1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testModerator.getUsername()));
+
+        verify(userService, times(1)).getLoggedInUser();
+        verify(forumService, times(1)).getThreadById(anyLong());
+        verify(forumService, times(0)).unlockThread(any(), any());
     }
 
     @Test

@@ -33,10 +33,10 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
      * @param e the triggering exception
      */
     @ExceptionHandler({DisciplinedUserException.class})
-    public ModelAndView handleDisciplinedUserTakingActionRequiringAuth(DisciplinedUserException e, HttpServletRequest request) {
+    public ModelAndView handleDisciplinedUserTakingActionRequiringAuth(DisciplinedUserException e) {
         logger.error(e);
 
-//        System.out.println("### in handleDisciplinedUserTakingActionRequiringAuth. User = " + e.getUser());
+        System.out.println("### in handleDisciplinedUserTakingActionRequiringAuth. User = " + e.getUser());
 
         ModelAndView mv = new ModelAndView("redirect:/showDisciplineInfo/" + e.getUser().getUsername());
         return mv;

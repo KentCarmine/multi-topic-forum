@@ -1,14 +1,15 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
+import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
+import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.helpers.AuthenticationFacade;
-import com.kentcarmine.multitopicforum.model.PasswordResetToken;
-import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.model.UserRole;
+import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -569,5 +570,72 @@ class UserServiceTest {
         assertFalse(result);
     }
 
+    @Test
+    void disciplineUser_ban() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
+        User loggedInUser = testAdmin;
+
+        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), userDisciplineSubmissionDto.getReason());
+        discipline.setId(5L);
+
+        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
+        when(disciplineRepository.save(any())).thenReturn(discipline);
+        when(userRepository.save(eq(testUser))).thenReturn(testUser);
+
+        assertFalse(testUser.isBannedOrSuspended());
+
+        userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+
+        assertTrue(testUser.isBannedOrSuspended());
+        assertEquals(1, testUser.getActiveDisciplines().size());
+        assertEquals(DisciplineType.BAN, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
+
+        verify(userRepository, times(1)).save(any());
+        verify(disciplineRepository, times(1)).save(any());
+    }
+
+    @Test
+    void disciplineUser_suspension() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Suspension", "Suspension for testing");
+        User loggedInUser = testAdmin;
+
+        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.SUSPENSION, java.util.Date.from(Instant.now()), 72, userDisciplineSubmissionDto.getReason());
+        discipline.setId(5L);
+
+        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
+        when(disciplineRepository.save(any())).thenReturn(discipline);
+        when(userRepository.save(eq(testUser))).thenReturn(testUser);
+
+        assertFalse(testUser.isBannedOrSuspended());
+
+        userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+
+        assertTrue(testUser.isBannedOrSuspended());
+        assertEquals(1, testUser.getActiveDisciplines().size());
+        assertEquals(DisciplineType.SUSPENSION, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
+        assertEquals(72, testUser.getGreatestDurationActiveDiscipline().getDisciplineDurationHours());
+
+        verify(userRepository, times(1)).save(any());
+        verify(disciplineRepository, times(1)).save(any());
+    }
+
+    @Test
+    void handleDisciplinedUser_userDisciplined() throws Exception {
+        User loggedInUser = testAdmin;
+        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), "Ban for testing");
+        discipline.setId(5L);
+        testUser.addDiscipline(discipline);
+
+        assertThrows(DisciplinedUserException.class, () -> {
+            userService.handleDisciplinedUser(testUser);
+        });
+    }
+
+    @Test
+    void handleDisciplinedUser_userNotDisciplined() throws Exception {
+        assertDoesNotThrow(() -> {
+            userService.handleDisciplinedUser(testUser);
+        });
+    }
 
 }

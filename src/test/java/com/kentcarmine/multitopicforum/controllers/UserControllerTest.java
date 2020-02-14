@@ -1,12 +1,11 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserEmailDto;
+import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
-import com.kentcarmine.multitopicforum.model.PasswordResetToken;
-import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.model.UserRole;
-import com.kentcarmine.multitopicforum.model.VerificationToken;
+import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.EmailService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.assertj.core.data.TemporalUnitOffset;
@@ -44,12 +43,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class UserControllerTest {
     private static final long DAY = 60 * 60 * 24;
+
     private static final String TEST_USERNAME = "TestUser";
     private static final String TEST_USER_PASSWORD = "testPassword";
     private static final String TEST_USER_EMAIL = "testuser@test.com";
+
     private static final String TEST_USERNAME_2 = "TestUser2";
     private static final String TEST_USER_2_PASSWORD = "testPassword2";
     private static final String TEST_USER_2_EMAIL = "testuser2@test.com";
+
+    private static final String TEST_ADMIN_USERNAME = "TestAdmin";
+    private static final String TEST_ADMIN_PASSWORD = "testAdminPassword";
+    private static final String TEST_ADMIN_EMAIL = "testadmin@test.com";
+
+    private static final String TEST_SUPER_ADMIN_USERNAME = "TestSuperAdmin";
+    private static final String TEST_SUPER_ADMIN_PASSWORD = "testSuperAdminPassword";
+    private static final String TEST_SUPER_ADMIN_EMAIL = "testsuperadmin@test.com";
 
 
     MockMvc mockMvc;
@@ -70,6 +79,8 @@ class UserControllerTest {
 
     User testUser;
     User testUser2;
+    User testAdmin;
+    User testSuperAdmin;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -84,6 +95,12 @@ class UserControllerTest {
 
         testUser2 = new User(TEST_USERNAME_2, TEST_USER_2_PASSWORD, TEST_USER_2_EMAIL);
         testUser2.addAuthority(UserRole.USER);
+
+        testAdmin = new User(TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD, TEST_ADMIN_EMAIL);
+        testAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR);
+
+        testSuperAdmin = new User(TEST_SUPER_ADMIN_USERNAME, TEST_SUPER_ADMIN_PASSWORD, TEST_SUPER_ADMIN_EMAIL);
+        testSuperAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR, UserRole.SUPER_ADMINISTRATOR);
     }
 
     @Test
@@ -124,8 +141,41 @@ class UserControllerTest {
     }
 
     @Test
+    void showUserRegistrationForm_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testUser.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+
+        mockMvc.perform(get("/registerUser"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
+    }
+
+    @Test
+    void processUserRegistration_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testUser.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+
+        mockMvc.perform(post("/processUserRegistration")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", testUser.getUsername())
+                .param("email", testUser.getEmail())
+                .param("password", testUser.getPassword()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
+
+        verify(userService, times(0)).createUserByUserDto(any());
+    }
+
+    @Test
     void showUserPage_validUser() throws Exception {
-        // check model too
         when(userService.usernameExists(anyString())).thenReturn(true);
         when(userService.getUser(any())).thenReturn(testUser);
 
@@ -133,6 +183,21 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-page"))
                 .andExpect(model().attributeExists("user"));
+    }
+
+    @Test
+    void showUserPage_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testUser.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+
+        when(userService.usernameExists(anyString())).thenReturn(true);
+        when(userService.getUser(any())).thenReturn(testUser);
+
+        mockMvc.perform(get("/users/" + testUser.getUsername()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
     }
 
     @Test
@@ -542,5 +607,258 @@ class UserControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/users?searchError"))
                 .andExpect(model().hasErrors());
+    }
+
+    @Test
+    void showManageUserDisciplinePage_validUser() throws Exception {
+        when(userService.getUser(any())).thenReturn(testUser);
+
+        mockMvc.perform(get("/manageUserDiscipline/" + testUser.getUsername()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("user-discipline-page"))
+                .andExpect(model().attributeExists("userDisciplineSubmissionDto"));
+    }
+
+    @Test
+    void showManageUserDisciplinePage_noSuchUser() throws Exception {
+        when(userService.getUser(any())).thenReturn(null);
+
+        mockMvc.perform(get("/manageUserDiscipline/fakeUserDoesNotExistForTesting"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("user-not-found"))
+                .andExpect(model().attributeExists("message"))
+                .andExpect(model().attributeDoesNotExist("userDisciplineSubmissionDto"));
+    }
+
+    @Test
+    void processUserDisciplineSubmission_valid() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto =
+                new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
+                .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
+                .param("reason", userDisciplineSubmissionDto.getReason()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/users/" + userDisciplineSubmissionDto.getDisciplinedUsername() + "?userDisciplined"))
+                .andExpect(model().hasNoErrors());
+
+        verify(userService, times(1)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void processUserDisciplineSubmission_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testAdmin.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testAdmin)).when(userService).handleDisciplinedUser(any());
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", testAdmin.getUsername())
+                .param("disciplineType", "Ban")
+                .param("reason", discipline.getReason()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
+
+        verify(userService, times(0)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void processUserDisciplineSubmission_nullUsername() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto =
+                new UserDisciplineSubmissionDto(null, "Ban", "ban for testing");
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
+                .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
+                .param("reason", userDisciplineSubmissionDto.getReason()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("user-discipline-page"))
+                .andExpect(model().attributeExists("userDisciplineSubmissionDto"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void processUserDisciplineSubmission_blankUsername() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto =
+                new UserDisciplineSubmissionDto("   ", "Ban", "ban for testing");
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
+                .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
+                .param("reason", userDisciplineSubmissionDto.getReason()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("user-discipline-page"))
+                .andExpect(model().attributeExists("userDisciplineSubmissionDto"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void processUserDisciplineSubmission_nullReason() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto =
+                new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", null);
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
+                .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
+                .param("reason", userDisciplineSubmissionDto.getReason()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("user-discipline-page"))
+                .andExpect(model().attributeExists("userDisciplineSubmissionDto"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void processUserDisciplineSubmission_blankReason() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto =
+                new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "   ");
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
+                .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
+                .param("reason", userDisciplineSubmissionDto.getReason()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("user-discipline-page"))
+                .andExpect(model().attributeExists("userDisciplineSubmissionDto"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void processUserDisciplineSubmission_suspensionDurationNotNumeric() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto =
+                new UserDisciplineSubmissionDto(testUser.getUsername(), "Suspension", "suspension for testing");
+        userDisciplineSubmissionDto.setSuspensionHours("-9awrjhg-awrhgn");
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
+                .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
+                .param("suspensionHours", userDisciplineSubmissionDto.getSuspensionHours())
+                .param("reason", userDisciplineSubmissionDto.getReason()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("user-discipline-page"))
+                .andExpect(model().attributeExists("userDisciplineSubmissionDto"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void processUserDisciplineSubmission_suspensionDurationOutOfRange() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto =
+                new UserDisciplineSubmissionDto(testUser.getUsername(), "Suspension", "suspension for testing");
+        userDisciplineSubmissionDto.setSuspensionHours("-70");
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
+                .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
+                .param("suspensionHours", userDisciplineSubmissionDto.getSuspensionHours())
+                .param("reason", userDisciplineSubmissionDto.getReason()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("user-discipline-page"))
+                .andExpect(model().attributeExists("userDisciplineSubmissionDto"))
+                .andExpect(model().hasErrors());
+
+        verify(userService, times(0)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void showDisciplineInfoPage_valid() throws Exception {
+        Discipline discipline = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testAdmin.addDiscipline(discipline);
+
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+
+        mockMvc.perform(get("/showDisciplineInfo/" + testAdmin.getUsername()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("user-discipline-info-page"))
+                .andExpect(model().attributeExists("message"))
+                .andExpect(model().attribute("username", testAdmin.getUsername()));
+
+        verify(userService, times(1)).forceLogOut(any(), any(), any());
+    }
+
+    @Test
+    void showDisciplineInfoPage_loggedInUserNull() throws Exception {
+        Discipline discipline = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testAdmin.addDiscipline(discipline);
+
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+        when(userService.getLoggedInUser()).thenReturn(null);
+
+        mockMvc.perform(get("/showDisciplineInfo/" + testAdmin.getUsername()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login"))
+                .andExpect(model().attributeDoesNotExist("message"))
+                .andExpect(model().attributeDoesNotExist("username"));
+
+        verify(userService, times(0)).forceLogOut(any(), any(), any());
+    }
+
+    @Test
+    void showDisciplineInfoPage_pageForOtherUser() throws Exception {
+        Discipline discipline = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testAdmin.addDiscipline(discipline);
+
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+        when(userService.getLoggedInUser()).thenReturn(testSuperAdmin);
+
+        mockMvc.perform(get("/showDisciplineInfo/" + testAdmin.getUsername()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testSuperAdmin.getUsername()));
+
+        verify(userService, times(0)).forceLogOut(any(), any(), any());
+    }
+
+    @Test
+    void showDisciplineInfoPage_noActiveDisciplines() throws Exception {
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+
+        mockMvc.perform(get("/showDisciplineInfo/" + testAdmin.getUsername()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/login"));
+
+        verify(userService, times(0)).forceLogOut(any(), any(), any());
     }
 }

@@ -27,6 +27,14 @@ public class UserDisciplineSubmissionDto {
     public UserDisciplineSubmissionDto() {
     }
 
+    public UserDisciplineSubmissionDto(@NotBlank @NotNull String disciplinedUsername, String disciplineType,
+                                       @NotBlank @NotNull String reason) {
+        this.disciplinedUsername = disciplinedUsername;
+        this.disciplineType = disciplineType;
+        this.suspensionHours = "0";
+        this.reason = reason;
+    }
+
     public UserDisciplineSubmissionDto(@NotBlank @NotNull String disciplinedUsername, String disciplineType, String suspensionHours,
                                        @NotBlank @NotNull String reason) {
         this.disciplinedUsername = disciplinedUsername;
