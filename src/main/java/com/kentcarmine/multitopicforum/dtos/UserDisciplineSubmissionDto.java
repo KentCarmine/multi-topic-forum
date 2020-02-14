@@ -19,10 +19,9 @@ public class UserDisciplineSubmissionDto {
 
     private String suspensionHours;
 
-    @NotBlank
+    @NotBlank(message = "Reason for disciplinary action must not be blank")
     @NotNull
     private String reason;
-
 
     public UserDisciplineSubmissionDto() {
     }
