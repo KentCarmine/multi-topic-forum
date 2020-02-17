@@ -172,6 +172,18 @@ public class Bootstrap implements CommandLineRunner {
         bannedUserDiscipline = disciplineRepository.save(bannedUserDiscipline);
         bannedUser = userRepository.save(bannedUser);
 
+        Discipline inactiveBannedUserDiscipline1 = new Discipline(bannedUser, admin2, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(72000)), "rescinded ban for testing");
+        inactiveBannedUserDiscipline1.setRescinded(true);
+        bannedUser.addDiscipline(inactiveBannedUserDiscipline1);
+        inactiveBannedUserDiscipline1 = disciplineRepository.save(inactiveBannedUserDiscipline1);
+
+        Discipline inactiveBannedUserDiscipline2 = new Discipline(bannedUser, mod2, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(259200)), 48, "expired suspension for testing");
+        bannedUser.addDiscipline(inactiveBannedUserDiscipline2);
+        inactiveBannedUserDiscipline2 = disciplineRepository.save(inactiveBannedUserDiscipline2);
+
+        bannedUser = userRepository.save(bannedUser);
+
+
         User suspendedAdmin = new User("suspendedAdmin", "$2a$10$bWQBSibD0D2Vp4b65kE/guKzq8nHHWJQodvIji/9lETe25cG/9VNe", "suspendedAdmin@test.com");
         suspendedAdmin.setEnabled(true);
         suspendedAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR);

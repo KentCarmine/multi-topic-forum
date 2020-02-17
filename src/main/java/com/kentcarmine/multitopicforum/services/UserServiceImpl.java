@@ -1,6 +1,8 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
+import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
@@ -44,13 +46,15 @@ public class UserServiceImpl implements UserService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final AuthorityRepository authorityRepository;
     private final DisciplineRepository disciplineRepository;
+    private final DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
                            UserDtoToUserConverter userDtoToUserConverter, PasswordEncoder passwordEncoder,
                            VerificationTokenRepository verificationTokenRepository,
                            PasswordResetTokenRepository passwordResetTokenRepository,
-                           AuthorityRepository authorityRepository, DisciplineRepository disciplineRepository) {
+                           AuthorityRepository authorityRepository, DisciplineRepository disciplineRepository,
+                           DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter) {
         this.userRepository = userRepository;
         this.userDtoToUserConverter = userDtoToUserConverter;
         this.passwordEncoder = passwordEncoder;
@@ -59,6 +63,7 @@ public class UserServiceImpl implements UserService {
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.authorityRepository = authorityRepository;
         this.disciplineRepository = disciplineRepository;
+        this.disciplineToDisciplineViewDtoConverter = disciplineToDisciplineViewDtoConverter;
     }
 
     /**
@@ -496,6 +501,110 @@ public class UserServiceImpl implements UserService {
             System.out.println("### in handleDisciplinedUser() fire exception case for " + user);
             throw new DisciplinedUserException(user);
         }
+    }
+
+    /**
+     * Get a SortedSet of DisciplineViewDtos for all the given user's active disciplines.
+     *
+     * @param user the user to get active disciplines for
+     * @param loggedInUser the logged in user
+     * @return  SortedSet of DisciplineViewDtos for all the given user's active disciplines
+     */
+    @Override
+    public SortedSet<DisciplineViewDto> getActiveDisciplinesForUser(User user, User loggedInUser) {
+        Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
+            @Override
+            public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
+                if (o1.isBan() && o2.isBan()) {
+                    return 0;
+                } else if (o1.isBan()) {
+                    return 1;
+                } else if (o2.isBan()) {
+                    return -1;
+                }
+
+                if (Integer.parseInt(o1.getDisciplineDuration()) > Integer.parseInt(o2.getDisciplineDuration())) {
+                    return 1;
+                } else if (Integer.parseInt(o2.getDisciplineDuration()) > Integer.parseInt(o1.getDisciplineDuration())) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        };
+
+        return getSortedDisciplineViewDtos(user.getActiveDisciplines(), comparator, loggedInUser);
+    }
+
+    /**
+     * Get a SortedSet of DisciplineViewDtos for all the given user's inactive disciplines.
+     *
+     * @param user the user to get inactive disciplines for
+     * @return  SortedSet of DisciplineViewDtos for all the given user's inactive disciplines
+     */
+    @Override
+    public SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user) {
+        Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
+            @Override
+            public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
+                return o1.getDisciplinedAt().compareTo(o2.getDisciplinedAt());
+            }
+        };
+
+        return getSortedDisciplineViewDtos(user.getInactiveDisciplines(), comparator, null);
+    }
+
+    /**
+     * Helper method that converts a Set of Disciplines into a SortedSet of DisciplineViewDtos sorted by duration.
+     *
+     * @param disciplines the set of Disciplines to convert
+     * @return a SortedSet of DisciplineViewDtos sorted by duration
+     */
+    private SortedSet<DisciplineViewDto> getSortedDisciplineViewDtos(Set<Discipline> disciplines, Comparator<DisciplineViewDto> comparator, User loggedInUser) {
+        SortedSet<DisciplineViewDto> dtoSet = new TreeSet<>(comparator);
+
+        for (Discipline d : disciplines) {
+            DisciplineViewDto dto = disciplineToDisciplineViewDtoConverter.convert(d);
+
+            dto.setCanRescind(loggedInUser != null && (loggedInUser.equals(d.getDiscipliningUser())
+                    || loggedInUser.isHigherAuthority(d.getDiscipliningUser())));
+
+            dtoSet.add(dto);
+        }
+
+        return dtoSet;
+    }
+
+    /**
+     * Find the discipline object with the given ID and associated with the given user. Returns null if no such object
+     * exists.
+     *
+     * @param id the id of the Discipline object to find
+     * @param user the user being Disciplined by the object with the given id
+     * @return the Discipline object, or null
+     */
+    @Override
+    public Discipline getDisciplineByIdAndUser(Long id, User user) {
+        Optional<Discipline> discOpt = disciplineRepository.findById(id);
+
+        if (discOpt.isEmpty()) {
+            return null;
+        }
+
+        Discipline discipline = discOpt.get();
+
+        if (!discipline.getDisciplinedUser().equals(user)) {
+            return null;
+        }
+
+        return discipline;
+    }
+
+    @Override
+    @Transactional
+    public void rescindDiscipline(Discipline disciplineToRescind) {
+        disciplineToRescind.setRescinded(true);
+        disciplineRepository.save(disciplineToRescind);
     }
 
     /**

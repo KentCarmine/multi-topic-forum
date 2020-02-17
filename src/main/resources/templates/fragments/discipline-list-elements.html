@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Discipline List Elements Fragments</title>
+    </head>
+    <body>
+
+        <tr th:fragment="disicpline-active-list-element (discipline)">
+            <td style="border: 1px solid black;" th:text="${discipline.getViewableDisciplineType()}">Type</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getDiscipliningUsername()}">Disciplined By</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getDisciplinedAt()}">Disciplined At</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getDisciplinedUntil()}">Disciplined Until</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getDisciplineDuration()}">Duration</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getReason()}">Reason</td>
+            <td style="border: 1px solid black;">
+                <form th:action="@{'/rescindDiscipline/' + ${discipline.getDisciplinedUsername()} + '/' + ${discipline.getId()}}" method="post">
+                    <button type="submit" th:disabled="${!discipline.canRescind()}">Rescind</button>
+                </form>
+            </td>
+        </tr>
+
+        <tr th:fragment="disicpline-inactive-list-element (discipline)">
+            <td style="border: 1px solid black;" th:text="${discipline.getViewableDisciplineType()}">Type</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getDiscipliningUsername()}">Disciplined By</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getDisciplinedAt()}">Disciplined At</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getDisciplinedUntil()}">Disciplined Until</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getDisciplineDuration()}">Duration</td>
+            <td style="border: 1px solid black;" th:text="${discipline.getReason()}">Reason</td>
+            <td style="border: 1px solid black;" th:text="${discipline.isRescinded() ? 'Yes' : 'No' }">Rescinded?</td>
+        </tr>
+
+    </body>
+</html>

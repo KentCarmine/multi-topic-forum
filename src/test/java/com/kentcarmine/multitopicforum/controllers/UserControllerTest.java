@@ -616,7 +616,8 @@ class UserControllerTest {
         mockMvc.perform(get("/manageUserDiscipline/" + testUser.getUsername()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-discipline-page"))
-                .andExpect(model().attributeExists("userDisciplineSubmissionDto"));
+                .andExpect(model().attributeExists("userDisciplineSubmissionDto", "activeDisciplines",
+                        "inactiveDisciplines"));
     }
 
     @Test
@@ -628,6 +629,21 @@ class UserControllerTest {
                 .andExpect(view().name("user-not-found"))
                 .andExpect(model().attributeExists("message"))
                 .andExpect(model().attributeDoesNotExist("userDisciplineSubmissionDto"));
+    }
+
+    @Test
+    void showManageUserDisciplinePage_bannedUserLoggedIn() throws Exception {
+        Discipline discipline = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        testAdmin.addDiscipline(discipline);
+
+        doThrow(new DisciplinedUserException(testAdmin)).when(userService).handleDisciplinedUser(any());
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+
+        mockMvc.perform(get("/manageUserDiscipline/fakedata"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
     }
 
     @Test

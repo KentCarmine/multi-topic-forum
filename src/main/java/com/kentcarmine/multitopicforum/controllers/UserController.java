@@ -1,7 +1,10 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.events.OnRegistrationCompleteEvent;
+import com.kentcarmine.multitopicforum.exceptions.DisciplineNotFoundException;
+import com.kentcarmine.multitopicforum.exceptions.InsufficientAuthorityException;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
@@ -44,9 +47,9 @@ public class UserController {
     private final MessageSource messageSource;
     private final EmailService emailService;
 
-
     @Autowired
-    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher, MessageSource messageSource, EmailService emailService) {
+    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher,
+                          MessageSource messageSource, EmailService emailService) {
         this.userService = userService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.messageSource = messageSource;
@@ -327,18 +330,57 @@ public class UserController {
      */
     @GetMapping("/manageUserDiscipline/{username}")
     public String showManageUserDisciplinePage(@PathVariable String username, Model model) {
+        User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
         User user = userService.getUser(username);
 
         if (user == null) {
             throw new UserNotFoundException("User " + username + " was not found.");
         }
 
-        // TODO: Add lists of active and past disciplinary actions to model (as lists of dtos)
+        SortedSet<DisciplineViewDto> activeDisciplines = userService.getActiveDisciplinesForUser(user, loggedInUser);
+        SortedSet<DisciplineViewDto> inactiveDisciplines = userService.getInactiveDisciplinesForUser(user);
         UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto();
         userDisciplineSubmissionDto.setDisciplinedUsername(username);
+
         model.addAttribute("userDisciplineSubmissionDto", userDisciplineSubmissionDto);
+        model.addAttribute("activeDisciplines", activeDisciplines);
+        model.addAttribute("inactiveDisciplines", inactiveDisciplines);
 
         return "user-discipline-page";
+    }
+
+    /**
+     * Handles rescinding a discipline with the given id and associated with the user with the given username, provided
+     * the logged in user has the authority to do so.
+     */
+    @PostMapping("/rescindDiscipline/{username}/{id}")
+    public String processRescindDiscipline(@PathVariable String username, @PathVariable Long id) {
+        System.out.println("### in processRescindDiscipline. username = " + username + ", id = " + id);
+
+        User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
+        User disciplinedUser = userService.getUser(username);
+        if (disciplinedUser == null) {
+            System.out.println("Error in processRescindDiscipline. disciplinedUser is null");
+            throw new UserNotFoundException("User not found");
+        }
+
+        Discipline disciplineToRescind = userService.getDisciplineByIdAndUser(id, disciplinedUser);
+        if (disciplineToRescind == null) {
+            System.out.println("Error in processRescindDiscipline. disciplineToRescind is null");
+            throw new DisciplineNotFoundException("Discipline to rescind was not found");
+        }
+
+        if (!loggedInUser.equals(disciplineToRescind.getDiscipliningUser()) && !loggedInUser.isHigherAuthority(disciplineToRescind.getDiscipliningUser())) {
+            throw new InsufficientAuthorityException("Insufficient authority to rescind discipline");
+        }
+
+        userService.rescindDiscipline(disciplineToRescind);
+
+        return "redirect:/manageUserDiscipline/" + disciplinedUser.getUsername();
     }
 
     /**

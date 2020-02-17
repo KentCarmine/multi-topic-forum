@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
@@ -75,6 +76,7 @@ class UserServiceTest {
     PasswordEncoder passwordEncoder;
 
     private UserDtoToUserConverter userDtoToUserConverter;
+    private DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
 
     private User testUser;
     private User testUser2;
@@ -86,7 +88,8 @@ class UserServiceTest {
         userDtoToUserConverter = new UserDtoToUserConverter();
         userService =
                 new UserServiceImpl(userRepository, authenticationService, userDtoToUserConverter, passwordEncoder,
-                        verificationTokenRepository, passwordResetTokenRepository, authorityRepository, disciplineRepository);
+                        verificationTokenRepository, passwordResetTokenRepository, authorityRepository,
+                        disciplineRepository, disciplineToDisciplineViewDtoConverter);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);

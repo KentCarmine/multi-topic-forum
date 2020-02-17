@@ -13,12 +13,58 @@
         <hr>
 
         <div id="active-discipline-container">
-            <!--TODO: Fill in-->
+            <h3>Current Bans and Suspensions</h3>
+
+            <div th:if="${!activeDisciplines.isEmpty()}">
+                <table style="border-collapse: separate; border-spacing: 12px 6px; border: 1px solid black;">
+                    <tr>
+                        <th style="border: 1px solid black;">Type</th>
+                        <th style="border: 1px solid black;">Disciplined By</th>
+                        <th style="border: 1px solid black;">Disciplined At</th>
+                        <th style="border: 1px solid black;">Disciplined Until</th>
+                        <th style="border: 1px solid black;">Duration</th>
+                        <th style="border: 1px solid black;">Reason</th>
+                        <th style="border: 1px solid black;">Rescind</th>
+                    </tr>
+
+                    <tr th:each="discipline : ${activeDisciplines}" th:include="fragments/discipline-list-elements.html :: disicpline-active-list-element (${discipline})"></tr>
+
+                </table>
+            </div>
+
+            <div th:if="${activeDisciplines.isEmpty()}">
+                <p>None</p>
+            </div>
         </div>
 
+        <hr>
+
         <div id="past-discipline-container">
-            <!--TODO: Fill in-->
+            <h3>Previous Bans and Suspensions</h3>
+
+            <div th:if="${!inactiveDisciplines.isEmpty()}">
+                <table style="border-collapse: separate; border-spacing: 12px 6px; border: 1px solid black;">
+                    <tr>
+                        <th style="border: 1px solid black;">Type</th>
+                        <th style="border: 1px solid black;">Disciplined By</th>
+                        <th style="border: 1px solid black;">Disciplined At</th>
+                        <th style="border: 1px solid black;">Disciplined Until</th>
+                        <th style="border: 1px solid black;">Duration</th>
+                        <th style="border: 1px solid black;">Reason</th>
+                        <th style="border: 1px solid black;">Was Rescinded?</th>
+                    </tr>
+
+                    <tr th:each="discipline : ${inactiveDisciplines}" th:include="fragments/discipline-list-elements.html :: disicpline-inactive-list-element (${discipline})"></tr>
+
+                </table>
+            </div>
+
+            <div th:if="${inactiveDisciplines.isEmpty()}">
+                <p>None</p>
+            </div>
         </div>
+
+        <hr>
 
         <div id="create-new-discipline-container">
             <form th:action="@{'/processCreateUserDiscipline'}" th:object="${userDisciplineSubmissionDto}" method="POST">

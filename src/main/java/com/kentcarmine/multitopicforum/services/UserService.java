@@ -1,13 +1,11 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
-import com.kentcarmine.multitopicforum.model.PasswordResetToken;
-import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.model.UserRole;
-import com.kentcarmine.multitopicforum.model.VerificationToken;
+import com.kentcarmine.multitopicforum.model.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -63,8 +61,16 @@ public interface UserService {
 
     void disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser);
 
-//    void forceLogOut(User loggedInUser);
     void forceLogOut(User loggedInUser, HttpServletRequest httpServletRequest, HttpServletResponse res);
 
     void handleDisciplinedUser(User user);
+
+    SortedSet<DisciplineViewDto> getActiveDisciplinesForUser(User user, User loggedInUser);
+
+    SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user);
+
+    Discipline getDisciplineByIdAndUser(Long id, User user);
+
+    void rescindDiscipline(Discipline disciplineToRescind);
+
 }

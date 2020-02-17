@@ -294,9 +294,11 @@ public class User {
      * @return a set of disciplines associated with this user that are currently active.
      */
     public Set<Discipline> getActiveDisciplines() {
-        Set<Discipline> activeDisciplines = disciplines.stream().filter(Discipline::isActive).collect(Collectors.toSet());
+        return disciplines.stream().filter(Discipline::isActive).collect(Collectors.toSet());
+    }
 
-        return activeDisciplines;
+    public Set<Discipline> getInactiveDisciplines() {
+        return disciplines.stream().filter(Discipline::isOver).collect(Collectors.toSet());
     }
 
     /**
