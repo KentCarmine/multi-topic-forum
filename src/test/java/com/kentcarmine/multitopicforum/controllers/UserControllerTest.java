@@ -611,7 +611,8 @@ class UserControllerTest {
 
     @Test
     void showManageUserDisciplinePage_validUser() throws Exception {
-        when(userService.getUser(any())).thenReturn(testUser);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
 
         mockMvc.perform(get("/manageUserDiscipline/" + testUser.getUsername()))
                 .andExpect(status().isOk())
@@ -644,6 +645,18 @@ class UserControllerTest {
         mockMvc.perform(get("/manageUserDiscipline/fakedata"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
+    }
+
+    @Test
+    void showManageUserDisciplinePage_insufficientAuthority() throws Exception {
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+
+        mockMvc.perform(get("/manageUserDiscipline/" + testAdmin.getUsername()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/forbidden"))
+                .andExpect(model().attributeDoesNotExist("userDisciplineSubmissionDto", "activeDisciplines",
+                        "inactiveDisciplines"));
     }
 
     @Test

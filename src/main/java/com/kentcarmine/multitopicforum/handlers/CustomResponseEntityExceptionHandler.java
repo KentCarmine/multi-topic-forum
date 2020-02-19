@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.handlers;
 
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
+import com.kentcarmine.multitopicforum.exceptions.InsufficientAuthorityException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,15 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     public CustomResponseEntityExceptionHandler(MessageSource messageSource) {
         super();
         this.messageSource = messageSource;
+    }
+
+    @ExceptionHandler({InsufficientAuthorityException.class})
+    public ModelAndView handleInsuffcientAuthority(InsufficientAuthorityException e) {
+        logger.error(e);
+
+        ModelAndView mv = new ModelAndView("redirect:/forbidden");
+        mv.setStatus(HttpStatus.UNAUTHORIZED);
+        return mv;
     }
 
     /**

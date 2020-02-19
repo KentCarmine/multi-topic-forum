@@ -339,6 +339,11 @@ public class UserController {
             throw new UserNotFoundException("User " + username + " was not found.");
         }
 
+        if (!loggedInUser.isHigherAuthority(user)) {
+            throw new InsufficientAuthorityException(loggedInUser.getUsername() + " has insufficient authority to view "
+                    + user.getUsername() + "'s disciplines.");
+        }
+
         SortedSet<DisciplineViewDto> activeDisciplines = userService.getActiveDisciplinesForUser(user, loggedInUser);
         SortedSet<DisciplineViewDto> inactiveDisciplines = userService.getInactiveDisciplinesForUser(user);
         UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto();
