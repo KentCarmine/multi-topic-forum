@@ -713,10 +713,8 @@ class UserControllerTest {
                 .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
                 .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
                 .param("reason", userDisciplineSubmissionDto.getReason()))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(view().name("user-discipline-page"))
-                .andExpect(model().attributeExists("userDisciplineSubmissionDto"))
-                .andExpect(model().hasErrors());
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("user-not-found"));
 
         verify(userService, times(0)).disciplineUser(any(), any());
     }
@@ -734,10 +732,8 @@ class UserControllerTest {
                 .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
                 .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
                 .param("reason", userDisciplineSubmissionDto.getReason()))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(view().name("user-discipline-page"))
-                .andExpect(model().attributeExists("userDisciplineSubmissionDto"))
-                .andExpect(model().hasErrors());
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("user-not-found"));
 
         verify(userService, times(0)).disciplineUser(any(), any());
     }
@@ -889,5 +885,86 @@ class UserControllerTest {
                 .andExpect(view().name("redirect:/login"));
 
         verify(userService, times(0)).forceLogOut(any(), any(), any());
+    }
+
+    @Test
+    void processRescindDiscipline_valid() throws Exception {
+        Discipline discipline = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        discipline.setId(12L);
+        testAdmin.addDiscipline(discipline);
+
+        when(userService.getLoggedInUser()).thenReturn(testSuperAdmin);
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+        when(userService.getDisciplineByIdAndUser(12L, testAdmin)).thenReturn(discipline);
+
+        mockMvc.perform(post("/rescindDiscipline/" + testAdmin.getUsername() + "/" + discipline.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/manageUserDiscipline/" + testAdmin.getUsername()));
+
+        verify(userService, times(1)).rescindDiscipline(any());
+    }
+
+    @Test
+    void processRescindDiscipline_bannedUserLoggedIn() throws Exception {
+        Discipline disciplineForAdmin = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        disciplineForAdmin.setId(8L);
+        testAdmin.addDiscipline(disciplineForAdmin);
+
+        Discipline discipline = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        discipline.setId(12L);
+        testUser.addDiscipline(discipline);
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        doThrow(new DisciplinedUserException(testAdmin)).when(userService).handleDisciplinedUser(any());
+
+        mockMvc.perform(post("/rescindDiscipline/" + testUser.getUsername() + "/" + discipline.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
+
+        verify(userService, times(0)).rescindDiscipline(any());
+        verify(userService, times(0)).getDisciplineByIdAndUser(anyLong(), any());
+    }
+
+    @Test
+    void processRescindDiscipline_targetUserNull() throws Exception {
+        when(userService.getLoggedInUser()).thenReturn(testSuperAdmin);
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(null);
+
+        mockMvc.perform(post("/rescindDiscipline/" + testAdmin.getUsername() + "/" + 12))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("user-not-found"))
+                .andExpect(model().attributeExists("message"));
+
+        verify(userService, times(0)).rescindDiscipline(any());
+    }
+
+    @Test
+    void processRescindDiscipline_noDisciplineToRescind() throws Exception {
+        when(userService.getLoggedInUser()).thenReturn(testSuperAdmin);
+        when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
+        when(userService.getDisciplineByIdAndUser(12L, testAdmin)).thenReturn(null);
+
+        mockMvc.perform(post("/rescindDiscipline/" + testAdmin.getUsername() + "/" + 12))
+                .andExpect(status().isInternalServerError())
+                .andExpect(view().name("general-error-page"));
+
+        verify(userService, times(0)).rescindDiscipline(any());
+    }
+
+    @Test
+    void processRescindDiscipline_insufficientAuthority() throws Exception {
+        Discipline discipline = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        discipline.setId(12L);
+        testUser.addDiscipline(discipline);
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+        when(userService.getDisciplineByIdAndUser(12L, testUser)).thenReturn(discipline);
+
+        mockMvc.perform(post("/rescindDiscipline/" + testUser.getUsername() + "/" + discipline.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/forbidden"));
+
+        verify(userService, times(0)).rescindDiscipline(any());
     }
 }

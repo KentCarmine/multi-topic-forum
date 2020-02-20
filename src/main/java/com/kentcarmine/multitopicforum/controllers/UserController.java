@@ -330,6 +330,8 @@ public class UserController {
      */
     @GetMapping("/manageUserDiscipline/{username}")
     public String showManageUserDisciplinePage(@PathVariable String username, Model model) {
+        System.out.println("### in showManageUserDisciplinePage()");
+
         User loggedInUser = userService.getLoggedInUser();
         userService.handleDisciplinedUser(loggedInUser);
 
@@ -349,43 +351,13 @@ public class UserController {
         UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto();
         userDisciplineSubmissionDto.setDisciplinedUsername(username);
 
+        System.out.println("### in showManageUserDisciplinePage(). activeDisciplines = " + activeDisciplines);
+
         model.addAttribute("userDisciplineSubmissionDto", userDisciplineSubmissionDto);
         model.addAttribute("activeDisciplines", activeDisciplines);
         model.addAttribute("inactiveDisciplines", inactiveDisciplines);
 
         return "user-discipline-page";
-    }
-
-    /**
-     * Handles rescinding a discipline with the given id and associated with the user with the given username, provided
-     * the logged in user has the authority to do so.
-     */
-    @PostMapping("/rescindDiscipline/{username}/{id}")
-    public String processRescindDiscipline(@PathVariable String username, @PathVariable Long id) {
-        System.out.println("### in processRescindDiscipline. username = " + username + ", id = " + id);
-
-        User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
-
-        User disciplinedUser = userService.getUser(username);
-        if (disciplinedUser == null) {
-            System.out.println("Error in processRescindDiscipline. disciplinedUser is null");
-            throw new UserNotFoundException("User not found");
-        }
-
-        Discipline disciplineToRescind = userService.getDisciplineByIdAndUser(id, disciplinedUser);
-        if (disciplineToRescind == null) {
-            System.out.println("Error in processRescindDiscipline. disciplineToRescind is null");
-            throw new DisciplineNotFoundException("Discipline to rescind was not found");
-        }
-
-        if (!loggedInUser.equals(disciplineToRescind.getDiscipliningUser()) && !loggedInUser.isHigherAuthority(disciplineToRescind.getDiscipliningUser())) {
-            throw new InsufficientAuthorityException("Insufficient authority to rescind discipline");
-        }
-
-        userService.rescindDiscipline(disciplineToRescind);
-
-        return "redirect:/manageUserDiscipline/" + disciplinedUser.getUsername();
     }
 
     /**
@@ -403,9 +375,23 @@ public class UserController {
 
         System.out.println("### in processUserDisciplineSubmission(). DTO = " + userDisciplineSubmissionDto);
 
+        User user = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
+
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+
         if (bindingResult.hasErrors()) {
+            System.out.println("### in processUserDisciplineSubmission() hasErrors case");
+
+            SortedSet<DisciplineViewDto> activeDisciplines = userService.getActiveDisciplinesForUser(user, loggedInUser);
+            SortedSet<DisciplineViewDto> inactiveDisciplines = userService.getInactiveDisciplinesForUser(user);
+
             mv = new ModelAndView("user-discipline-page", "userDisciplineSubmissionDto", userDisciplineSubmissionDto);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+
+            mv.addObject("activeDisciplines", activeDisciplines);
+            mv.addObject("inactiveDisciplines", inactiveDisciplines);
             return mv;
         }
 
@@ -458,6 +444,38 @@ public class UserController {
         userService.forceLogOut(loggedInUser, request, response);
 
         return "user-discipline-info-page";
+    }
+
+    /**
+     * Handles rescinding a discipline with the given id and associated with the user with the given username, provided
+     * the logged in user has the authority to do so.
+     */
+    @PostMapping("/rescindDiscipline/{username}/{id}")
+    public String processRescindDiscipline(@PathVariable String username, @PathVariable Long id) {
+        System.out.println("### in processRescindDiscipline. username = " + username + ", id = " + id);
+
+        User loggedInUser = userService.getLoggedInUser();
+        userService.handleDisciplinedUser(loggedInUser);
+
+        User disciplinedUser = userService.getUser(username);
+        if (disciplinedUser == null) {
+            System.out.println("Error in processRescindDiscipline. disciplinedUser is null");
+            throw new UserNotFoundException("User not found");
+        }
+
+        Discipline disciplineToRescind = userService.getDisciplineByIdAndUser(id, disciplinedUser);
+        if (disciplineToRescind == null) {
+            System.out.println("Error in processRescindDiscipline. disciplineToRescind is null");
+            throw new DisciplineNotFoundException("Discipline to rescind was not found");
+        }
+
+        if (!loggedInUser.equals(disciplineToRescind.getDiscipliningUser()) && !loggedInUser.isHigherAuthority(disciplineToRescind.getDiscipliningUser())) {
+            throw new InsufficientAuthorityException("Insufficient authority to rescind discipline");
+        }
+
+        userService.rescindDiscipline(disciplineToRescind);
+
+        return "redirect:/manageUserDiscipline/" + disciplinedUser.getUsername();
     }
 
     /**

@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
+import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
@@ -31,6 +32,7 @@ import javax.annotation.security.RunAs;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedSet;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,9 +50,17 @@ class UserServiceTest {
     private static final String TEST_USER_2_PASSWORD = TEST_USER_PASSWORD;
     private static final String TEST_USER_2_EMAIL = "user2fortesting@testemail.com";
 
+    private static final String TEST_MOD_USERNAME = "TestModerator";
+    private static final String TEST_MOD_PASSWORD = TEST_USER_PASSWORD;
+    private static final String TEST_MOD_EMAIL = "modfortesting@testemail.com";
+
     private static final String TEST_ADMIN_USERNAME = "TestAdmin";
     private static final String TEST_ADMIN_PASSWORD = TEST_USER_PASSWORD;
     private static final String TEST_ADMIN_EMAIL = "adminfortesting@testemail.com";
+
+    private static final String TEST_SUPER_ADMIN_USERNAME = "TestSuperAdmin";
+    private static final String TEST_SUPER_ADMIN_PASSWORD = TEST_USER_PASSWORD;
+    private static final String TEST_SUPER_ADMIN_EMAIL = "superadminfortesting@testemail.com";
 
     UserService userService;
 
@@ -80,12 +90,16 @@ class UserServiceTest {
 
     private User testUser;
     private User testUser2;
+    private User testModerator;
     private User testAdmin;
+    private User testSuperAdmin;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
         userDtoToUserConverter = new UserDtoToUserConverter();
+        disciplineToDisciplineViewDtoConverter = new DisciplineToDisciplineViewDtoConverter();
+
         userService =
                 new UserServiceImpl(userRepository, authenticationService, userDtoToUserConverter, passwordEncoder,
                         verificationTokenRepository, passwordResetTokenRepository, authorityRepository,
@@ -97,8 +111,14 @@ class UserServiceTest {
         testUser2 = new User(TEST_USERNAME_2, TEST_USER_2_PASSWORD, TEST_USER_2_EMAIL);
         testUser2.addAuthority(UserRole.USER);
 
+        testModerator = new User(TEST_MOD_USERNAME, TEST_MOD_PASSWORD, TEST_MOD_EMAIL);
+        testModerator.addAuthorities(UserRole.USER, UserRole.MODERATOR);
+
         testAdmin = new User(TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD, TEST_ADMIN_EMAIL);
         testAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR);
+
+        testSuperAdmin = new User(TEST_SUPER_ADMIN_USERNAME, TEST_SUPER_ADMIN_PASSWORD, TEST_SUPER_ADMIN_EMAIL);
+        testSuperAdmin.addAuthorities(UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR, UserRole.SUPER_ADMINISTRATOR);
 
         when(passwordEncoder.encode(anyString())).thenReturn(TEST_USER_PASSWORD);
     }
@@ -639,6 +659,125 @@ class UserServiceTest {
         assertDoesNotThrow(() -> {
             userService.handleDisciplinedUser(testUser);
         });
+    }
+
+    @Test
+    void getActiveDisciplinesForUser() {
+        Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        disc1.setId(1L);
+        testUser.addDiscipline(disc1);
+
+        Discipline disc2 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(120)), 3,"active suspension for testing");
+        disc2.setId(2L);
+        testUser.addDiscipline(disc2);
+
+        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
+        disc3.setId(3L);
+        testUser.addDiscipline(disc3);
+
+        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
+        disc4.setId(4L);
+        disc4.setRescinded(true);
+        testUser.addDiscipline(disc4);
+
+        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
+        disc5.setId(5L);
+        disc5.setRescinded(true);
+        testUser.addDiscipline(disc5);
+
+        SortedSet<DisciplineViewDto> activeDiscDtos = userService.getActiveDisciplinesForUser(testUser, testAdmin);
+
+        assertEquals(2, activeDiscDtos.size());
+    }
+
+    @Test
+    void getInactiveDisciplinesForUser() {
+        // Active
+        Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        disc1.setId(1L);
+        testUser.addDiscipline(disc1);
+
+        // Active
+        Discipline disc2 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(120)), 3,"active suspension for testing");
+        disc2.setId(2L);
+        testUser.addDiscipline(disc2);
+
+        // Inactive (expired)
+        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
+        disc3.setId(3L);
+        testUser.addDiscipline(disc3);
+
+        // Inactive (rescinded)
+        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
+        disc4.setId(4L);
+        disc4.setRescinded(true);
+        testUser.addDiscipline(disc4);
+
+        // Inactive (rescinded)
+        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
+        disc5.setId(5L);
+        disc5.setRescinded(true);
+        testUser.addDiscipline(disc5);
+
+        SortedSet<DisciplineViewDto> inactiveDiscDtos = userService.getInactiveDisciplinesForUser(testUser);
+
+        assertEquals(3, inactiveDiscDtos.size());
+    }
+
+    @Test
+    void getDisciplineByIdAndUser_valid() {
+        Discipline disc = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        disc.setId(1L);
+        testUser.addDiscipline(disc);
+
+        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.of(disc));
+
+        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
+
+        assertNotNull(result);
+        assertEquals(disc, result);
+
+        verify(disciplineRepository, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void getDisciplineByIdAndUser_invalidDisciplineId() {
+        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
+
+        assertNull(result);
+
+        verify(disciplineRepository, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void getDisciplineByIdAndUser_mismatchedDisciplineIdAndUser() {
+        Discipline disc = new Discipline(testUser2, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        disc.setId(1L);
+        testUser2.addDiscipline(disc);
+
+        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.of(disc));
+
+        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
+
+        assertNull(result);
+
+        verify(disciplineRepository, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void rescindDiscipline() {
+        Discipline disc = new Discipline(testUser2, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+        disc.setId(1L);
+
+        assertFalse(disc.isRescinded());
+
+        userService.rescindDiscipline(disc);
+
+        assertTrue(disc.isRescinded());
+
+        verify(disciplineRepository, times(1)).save(any());
     }
 
 }

@@ -16,14 +16,11 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 
 import javax.servlet.http.Cookie;
@@ -547,7 +544,15 @@ public class UserServiceImpl implements UserService {
         Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
             @Override
             public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
-                return o1.getDisciplinedAt().compareTo(o2.getDisciplinedAt());
+                if (o1.isBan() && o2.isBan()) {
+                    return 0;
+                } else if (o1.isBan()) {
+                    return 1;
+                } else if (o2.isBan()) {
+                    return -1;
+                } else {
+                    return o1.getDisciplinedUntil().compareTo(o2.getDisciplinedUntil());
+                }
             }
         };
 
@@ -587,7 +592,7 @@ public class UserServiceImpl implements UserService {
     public Discipline getDisciplineByIdAndUser(Long id, User user) {
         Optional<Discipline> discOpt = disciplineRepository.findById(id);
 
-        if (discOpt.isEmpty()) {
+        if (discOpt.isEmpty() || user == null) {
             return null;
         }
 

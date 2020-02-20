@@ -28,6 +28,6 @@ public class DisciplineValidator implements ConstraintValidator<ValidDiscipline,
             return true;
         }
 
-        return false;
+        return false; // Should never get here
     }
 }

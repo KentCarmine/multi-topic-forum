@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.dtos;
 import com.kentcarmine.multitopicforum.model.DisciplineType;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * DTO that contains data about a given Discipline, including if the currently logged in user can rescind that discipline.
@@ -14,7 +15,8 @@ public class DisciplineViewDto {
     private String discipliningUsername;
     private DisciplineType disciplineType;
     private String disciplinedAt;
-    private String disciplinedUntil;
+    private Date disciplinedUntil;
+    private String disciplinedUntilString;
     private String disciplineDuration;
     private String reason;
     private boolean rescinded;
@@ -35,10 +37,11 @@ public class DisciplineViewDto {
 
         if (disciplineType.equals(DisciplineType.BAN)) {
             this.disciplineDuration = "Permanent";
-            this.disciplinedUntil = "N/A";
+            this.disciplinedUntilString = "N/A";
         } else {
             this.disciplineDuration = disciplineDuration.toString();
-            this.disciplinedUntil = disciplinedUntil.toString();
+            this.disciplinedUntilString = disciplinedUntil.toString();
+            this.disciplinedUntil = disciplinedUntil;
         }
     }
 
@@ -86,12 +89,16 @@ public class DisciplineViewDto {
         this.disciplinedAt = disciplinedAt;
     }
 
-    public String getDisciplinedUntil() {
-        return disciplinedUntil;
+    public String getDisciplinedUntilString() {
+        return disciplinedUntilString;
     }
 
-    public void setDisciplinedUntil(String disciplinedUntil) {
-        this.disciplinedUntil = disciplinedUntil;
+    public void setDisciplinedUntilString(String disciplinedUntilString) {
+        this.disciplinedUntilString = disciplinedUntilString;
+    }
+
+    public Date getDisciplinedUntil() {
+        return disciplinedUntil;
     }
 
     public String getDisciplineDuration() {
@@ -135,6 +142,19 @@ public class DisciplineViewDto {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DisciplineViewDto that = (DisciplineViewDto) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
     public String toString() {
         return "DisciplineViewDto{" +
                 "id=" + id +
@@ -142,7 +162,7 @@ public class DisciplineViewDto {
                 ", discipliningUsername='" + discipliningUsername + '\'' +
                 ", disciplineType=" + disciplineType +
                 ", disciplinedAt='" + disciplinedAt + '\'' +
-                ", disciplinedUntil='" + disciplinedUntil + '\'' +
+                ", disciplinedUntil='" + disciplinedUntilString + '\'' +
                 ", disciplineDuration='" + disciplineDuration + '\'' +
                 ", reason='" + reason + '\'' +
                 ", rescinded=" + rescinded +
