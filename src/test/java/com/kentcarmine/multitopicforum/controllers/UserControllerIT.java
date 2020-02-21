@@ -149,6 +149,25 @@ class UserControllerIT {
     }
 
     /**
+     * When posting to register a user with a forbidden username while not logged in, redisplay the registration form
+     * with errors
+     */
+    @WithAnonymousUser
+    @Test
+    void processUserRegistration_forbiddenUsername() throws Exception {
+        String password = "newPassword";
+        mockMvc.perform(post("/processUserRegistration")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", "aNonYMoususEr")
+                .param("email", NON_EXISTING_USER_EMAIL)
+                .param("password", password)
+                .param("confirmPassword", password))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(view().name("user-registration-form"))
+                .andExpect(model().hasErrors());
+    }
+
+    /**
      * When posting to register a user with a duplicate username while not logged in, redisplay the registration form
      * with errors
      */

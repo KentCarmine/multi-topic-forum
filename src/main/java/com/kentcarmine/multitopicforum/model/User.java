@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.model;
 
 import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
 import com.kentcarmine.multitopicforum.annotations.ValidEmail;
+import com.kentcarmine.multitopicforum.annotations.ValidUsername;
 import com.kentcarmine.multitopicforum.helpers.ReverseDateOrderPostComparator;
 import org.hibernate.annotations.SortComparator;
 import org.hibernate.annotations.SortNatural;
@@ -21,6 +22,7 @@ public class User {
     @Id
     @Size(min = 4, message = "Username must be at least {min} characters long")
     @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters")
+    @ValidUsername
     private String username;
 
     @Size(min = 8, message = "password must be at least {min} characters long")

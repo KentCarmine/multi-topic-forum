@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.dtos;
 import com.kentcarmine.multitopicforum.annotations.PasswordMatches;
 import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
 import com.kentcarmine.multitopicforum.annotations.ValidEmail;
+import com.kentcarmine.multitopicforum.annotations.ValidUsername;
 
 import javax.validation.constraints.Size;
 
@@ -15,6 +16,7 @@ public class UserDto implements PasswordDto {
 
     @Size(min = 4, message = "Username must be at least {min} characters long")
     @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters")
+    @ValidUsername
     private String username;
 
     @ValidEmail(message = "email must be a valid email address")
