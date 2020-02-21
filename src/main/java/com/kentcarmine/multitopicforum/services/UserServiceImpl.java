@@ -439,10 +439,17 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public void disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser) {
+    public boolean disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser) {
         User disciplinedUser = getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
 
         DisciplineType disciplineType = userDisciplineSubmissionDto.isBan() ? DisciplineType.BAN : DisciplineType.SUSPENSION;
+
+        System.out.println("### in disciplineUser(). disciplinedUser.isBanned() = " + disciplinedUser.isBanned());
+        System.out.println("### in disciplineUser(). disciplineType = " + disciplineType);
+
+        if (disciplineType.equals(DisciplineType.BAN) && disciplinedUser.isBanned()) {
+            return false;
+        }
 
         Discipline discipline = new Discipline(disciplinedUser, loggedInUser, disciplineType, Date.from(Instant.now()),
                 userDisciplineSubmissionDto.getReason());
@@ -456,6 +463,8 @@ public class UserServiceImpl implements UserService {
         disciplinedUser.addDiscipline(discipline);
 
         disciplinedUser = userRepository.save(disciplinedUser);
+
+        return true;
     }
 
     /**

@@ -59,7 +59,7 @@ public interface UserService {
 
     User demoteUser(User userToDemote);
 
-    void disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser);
+    boolean disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser);
 
     void forceLogOut(User loggedInUser, HttpServletRequest httpServletRequest, HttpServletResponse res);
 

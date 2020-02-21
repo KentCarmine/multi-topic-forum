@@ -10,9 +10,15 @@
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
         <h2 th:text="${user.username} + '\'s Page'"></h2>
+
         <div th:if="${param.userDisciplined}">
             <p style="color: greenyellow">User disciplined.</p>
         </div>
+
+        <div th:if="${param.userAlreadyBanned}">
+            <p style="color: orange">User was already banned.</p>
+        </div>
+
         <p>PLACEHOLDER</p>
         <hr>
 

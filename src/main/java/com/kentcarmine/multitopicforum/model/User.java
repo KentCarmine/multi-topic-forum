@@ -289,6 +289,21 @@ public class User {
     }
 
     /**
+     * Returns true if this user is currently banned. False otherwise.
+     *
+     * @return true if this user is currently banned. False otherwise.
+     */
+    public boolean isBanned() {
+        for (Discipline disc : disciplines) {
+            if (disc.isActive() && disc.isBan()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns a set of disciplines associated with this user that are currently active.
      *
      * @return a set of disciplines associated with this user that are currently active.

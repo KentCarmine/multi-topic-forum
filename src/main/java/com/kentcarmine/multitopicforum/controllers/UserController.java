@@ -375,17 +375,17 @@ public class UserController {
 
         System.out.println("### in processUserDisciplineSubmission(). DTO = " + userDisciplineSubmissionDto);
 
-        User user = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
+        User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
 
-        if (user == null) {
+        if (disciplinedUser == null) {
             throw new UserNotFoundException();
         }
 
         if (bindingResult.hasErrors()) {
             System.out.println("### in processUserDisciplineSubmission() hasErrors case");
 
-            SortedSet<DisciplineViewDto> activeDisciplines = userService.getActiveDisciplinesForUser(user, loggedInUser);
-            SortedSet<DisciplineViewDto> inactiveDisciplines = userService.getInactiveDisciplinesForUser(user);
+            SortedSet<DisciplineViewDto> activeDisciplines = userService.getActiveDisciplinesForUser(disciplinedUser, loggedInUser);
+            SortedSet<DisciplineViewDto> inactiveDisciplines = userService.getInactiveDisciplinesForUser(disciplinedUser);
 
             mv = new ModelAndView("user-discipline-page", "userDisciplineSubmissionDto", userDisciplineSubmissionDto);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -395,11 +395,21 @@ public class UserController {
             return mv;
         }
 
-        User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
+        System.out.println("### disciplinedUser.getDisciplines() = " + disciplinedUser.getDisciplines());
 
-        userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+        boolean successfulBan = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
 
-        mv = new ModelAndView("redirect:/users/" + disciplinedUser.getUsername() + "?userDisciplined");
+        System.out.println("### successfulBan = " + successfulBan);
+
+        String url = "redirect:/users/" + disciplinedUser.getUsername();
+
+        if (successfulBan) {
+            url = url + "?userDisciplined";
+        } else {
+            url = url + "?userAlreadyBanned";
+        }
+
+        mv = new ModelAndView(url);
         return mv;
     }
 

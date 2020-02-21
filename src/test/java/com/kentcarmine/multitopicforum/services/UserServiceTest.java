@@ -607,14 +607,46 @@ class UserServiceTest {
 
         assertFalse(testUser.isBannedOrSuspended());
 
-        userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
 
+        assertTrue(result);
         assertTrue(testUser.isBannedOrSuspended());
+        assertTrue(testUser.isBanned());
         assertEquals(1, testUser.getActiveDisciplines().size());
         assertEquals(DisciplineType.BAN, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
 
         verify(userRepository, times(1)).save(any());
         verify(disciplineRepository, times(1)).save(any());
+    }
+
+    @Test
+    void disciplineUser_duplicateBan() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
+        User loggedInUser = testAdmin;
+
+        Discipline previousBan = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, java.util.Date.from(Instant.now().minusSeconds(180)), "previous ban");
+        previousBan.setId(4L);
+        testUser.addDiscipline(previousBan);
+
+        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), userDisciplineSubmissionDto.getReason());
+        discipline.setId(5L);
+
+        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
+        when(disciplineRepository.save(any())).thenReturn(discipline);
+        when(userRepository.save(eq(testUser))).thenReturn(testUser);
+
+        assertTrue(testUser.isBannedOrSuspended());
+
+        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+
+        assertFalse(result);
+        assertTrue(testUser.isBannedOrSuspended());
+        assertTrue(testUser.isBanned());
+        assertEquals(1, testUser.getActiveDisciplines().size());
+        assertEquals(DisciplineType.BAN, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
+
+        verify(userRepository, times(0)).save(any());
+        verify(disciplineRepository, times(0)).save(any());
     }
 
     @Test
@@ -631,8 +663,9 @@ class UserServiceTest {
 
         assertFalse(testUser.isBannedOrSuspended());
 
-        userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
 
+        assertTrue(result);
         assertTrue(testUser.isBannedOrSuspended());
         assertEquals(1, testUser.getActiveDisciplines().size());
         assertEquals(DisciplineType.SUSPENSION, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());

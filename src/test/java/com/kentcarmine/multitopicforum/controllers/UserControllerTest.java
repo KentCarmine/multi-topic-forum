@@ -666,6 +666,7 @@ class UserControllerTest {
 
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+        when(userService.disciplineUser(any(), any())).thenReturn(true);
 
         mockMvc.perform(post("/processCreateUserDiscipline")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -674,6 +675,27 @@ class UserControllerTest {
                 .param("reason", userDisciplineSubmissionDto.getReason()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/users/" + userDisciplineSubmissionDto.getDisciplinedUsername() + "?userDisciplined"))
+                .andExpect(model().hasNoErrors());
+
+        verify(userService, times(1)).disciplineUser(any(), any());
+    }
+
+    @Test
+    void processUserDisciplineSubmission_duplicateBan() throws Exception {
+        UserDisciplineSubmissionDto userDisciplineSubmissionDto =
+                new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
+
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+        when(userService.disciplineUser(any(), any())).thenReturn(false);
+
+        mockMvc.perform(post("/processCreateUserDiscipline")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("disciplinedUsername", userDisciplineSubmissionDto.getDisciplinedUsername())
+                .param("disciplineType", userDisciplineSubmissionDto.getDisciplineType())
+                .param("reason", userDisciplineSubmissionDto.getReason()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/users/" + userDisciplineSubmissionDto.getDisciplinedUsername() + "?userAlreadyBanned"))
                 .andExpect(model().hasNoErrors());
 
         verify(userService, times(1)).disciplineUser(any(), any());
