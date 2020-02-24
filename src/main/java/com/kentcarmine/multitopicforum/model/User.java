@@ -314,6 +314,11 @@ public class User {
         return disciplines.stream().filter(Discipline::isActive).collect(Collectors.toSet());
     }
 
+    /**
+     * Returns a set of disciplines associated with this user that are currently inactive.
+     *
+     * @return a set of disciplines associated with this user that are currently inactive.
+     */
     public Set<Discipline> getInactiveDisciplines() {
         return disciplines.stream().filter(Discipline::isOver).collect(Collectors.toSet());
     }

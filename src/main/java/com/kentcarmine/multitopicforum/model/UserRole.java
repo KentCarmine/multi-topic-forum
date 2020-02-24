@@ -81,17 +81,14 @@ public enum UserRole {
     }
 
     public static UserRole getPreviousAuthority(UserRole authority) {
-        Iterator<UserRole> iter = sortedRanks.iterator();
+        LinkedList<UserRole> llist = new LinkedList<>(sortedRanks);
         UserRole prev = null;
-        UserRole cur = iter.next();
 
-        while(iter.hasNext()) {
-            if (cur.equals(authority) && prev != null && prev.getRank() > 0) {
+        for (UserRole role : llist) {
+            if (role.equals(authority) && prev != null && prev.getRank() > 0) {
                 return prev;
             }
-
-            prev = cur;
-            cur = iter.next();
+            prev = role;
         }
 
         return null;
