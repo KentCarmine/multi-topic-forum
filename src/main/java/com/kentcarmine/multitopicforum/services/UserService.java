@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.services;
 import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
+import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.model.*;
@@ -72,5 +73,7 @@ public interface UserService {
     Discipline getDisciplineByIdAndUser(Long id, User user);
 
     void rescindDiscipline(Discipline disciplineToRescind);
+
+    UserRankAdjustmentDto getUserRankAdjustmentDtoForUser(User user, User loggedInUser);
 
 }

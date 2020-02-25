@@ -27,12 +27,12 @@
 
             <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
                 <span id="demote-user-button-container">
-                    <div th:replace="fragments/promote-demote-buttons.html :: demote-button-fragment (${user}, ${loggedInUser})">
+                    <div th:replace="fragments/promote-demote-buttons.html :: demote-button-fragment (${userRankAdjustmentDto})">
                     </div>
                 </span>
 
                 <span id="promote-user-button-container">
-                    <div th:replace="fragments/promote-demote-buttons.html :: promote-button-fragment (${user}, ${loggedInUser})">
+                    <div th:replace="fragments/promote-demote-buttons.html :: promote-button-fragment (${userRankAdjustmentDto})">
                     </div>
                 </span>
             </div>

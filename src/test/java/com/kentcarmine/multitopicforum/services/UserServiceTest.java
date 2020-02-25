@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
+import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
 import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
@@ -87,6 +88,7 @@ class UserServiceTest {
 
     private UserDtoToUserConverter userDtoToUserConverter;
     private DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
+    private UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
 
     private User testUser;
     private User testUser2;
@@ -99,11 +101,12 @@ class UserServiceTest {
         MockitoAnnotations.initMocks(this);
         userDtoToUserConverter = new UserDtoToUserConverter();
         disciplineToDisciplineViewDtoConverter = new DisciplineToDisciplineViewDtoConverter();
+        userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
         userService =
                 new UserServiceImpl(userRepository, authenticationService, userDtoToUserConverter, passwordEncoder,
                         verificationTokenRepository, passwordResetTokenRepository, authorityRepository,
-                        disciplineRepository, disciplineToDisciplineViewDtoConverter);
+                        disciplineRepository, disciplineToDisciplineViewDtoConverter, userToUserRankAdjustmentDtoConverter);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);

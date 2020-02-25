@@ -203,7 +203,7 @@ public class AjaxController {
      * Provides a promotion button for a user with the given username in an up-to-date state.
      */
     @GetMapping(value = "/demoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView demoteUserButton(@PathVariable String username) {
+    public ModelAndView demoteUserButton(@PathVariable String username, Model model) {
         System.out.println("### /demoteUserButton/" + username + " called");
         User loggedInUser = getLoggedInUserIfNotDisciplined();
         User user = userService.getUser(username);
@@ -217,10 +217,20 @@ public class AjaxController {
             return mv;
         }
 
+        UserRankAdjustmentDto userRankAdjustmentDto = userService.getUserRankAdjustmentDtoForUser(user, loggedInUser);
+        System.out.println("### userRankAdjustmentDto = " + userRankAdjustmentDto);
+
         mv = new ModelAndView("fragments/promote-demote-buttons :: demote-button-fragment");
         mv.setStatus(HttpStatus.OK);
-        mv.addObject("user", user);
-        mv.addObject("loggedInUser", loggedInUser);
+//        mv.addObject("user", user);
+//        mv.addObject("loggedInUser", loggedInUser);
+        mv.addObject("userRankAdjustmentDto", userRankAdjustmentDto);
+//        mv.getModel().put("userRankAdjustmentDto", userRankAdjustmentDto);
+//        mv.getModelMap().addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
+//        mv.getModelMap().addAttribute("userDto", userDto);
+//        mv.getModel().put("userDto", userDto);
+//        model.addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
+//        mv.addAllObjects(model.asMap());
         return mv;
     }
 
@@ -228,7 +238,7 @@ public class AjaxController {
      * Provides a promotion button for a user with the given username in an up-to-date state.
      */
     @GetMapping(value = "/promoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView promoteUserButton(@PathVariable String username) {
+    public ModelAndView promoteUserButton(@PathVariable String username, Model model) {
         User loggedInUser = getLoggedInUserIfNotDisciplined();
         User user = userService.getUser(username);
 
@@ -241,10 +251,18 @@ public class AjaxController {
             return mv;
         }
 
+        UserRankAdjustmentDto userRankAdjustmentDto = userService.getUserRankAdjustmentDtoForUser(user, loggedInUser);
+        System.out.println("### userRankAdjustmentDto = " + userRankAdjustmentDto);
+
         mv = new ModelAndView("fragments/promote-demote-buttons :: promote-button-fragment");
         mv.setStatus(HttpStatus.OK);
-        mv.addObject("user", user);
-        mv.addObject("loggedInUser", loggedInUser);
+//        mv.addObject("user", user);
+//        mv.addObject("loggedInUser", loggedInUser);
+        mv.addObject("userRankAdjustmentDto", userRankAdjustmentDto);
+//        mv.getModel().put("userRankAdjustmentDto", userRankAdjustmentDto);
+//        mv.getModelMap().addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
+//        model.addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
+//        mv.addAllObjects(model.asMap());
         return mv;
     }
 

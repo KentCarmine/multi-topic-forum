@@ -2,9 +2,11 @@ package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
+import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
 import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
+import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
@@ -44,6 +46,7 @@ public class UserServiceImpl implements UserService {
     private final AuthorityRepository authorityRepository;
     private final DisciplineRepository disciplineRepository;
     private final DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
+    private final UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
@@ -51,7 +54,8 @@ public class UserServiceImpl implements UserService {
                            VerificationTokenRepository verificationTokenRepository,
                            PasswordResetTokenRepository passwordResetTokenRepository,
                            AuthorityRepository authorityRepository, DisciplineRepository disciplineRepository,
-                           DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter) {
+                           DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter,
+                           UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter) {
         this.userRepository = userRepository;
         this.userDtoToUserConverter = userDtoToUserConverter;
         this.passwordEncoder = passwordEncoder;
@@ -61,6 +65,7 @@ public class UserServiceImpl implements UserService {
         this.authorityRepository = authorityRepository;
         this.disciplineRepository = disciplineRepository;
         this.disciplineToDisciplineViewDtoConverter = disciplineToDisciplineViewDtoConverter;
+        this.userToUserRankAdjustmentDtoConverter = userToUserRankAdjustmentDtoConverter;
     }
 
     /**
@@ -619,6 +624,22 @@ public class UserServiceImpl implements UserService {
     public void rescindDiscipline(Discipline disciplineToRescind) {
         disciplineToRescind.setRescinded(true);
         disciplineRepository.save(disciplineToRescind);
+    }
+
+    /**
+     * Generates and returns a UserRankAdjustmentDto for the given User, assuming the given loggedInUser.
+     *
+     * @param user the user to generate the DTO for
+     * @param loggedInUser the logged in user
+     * @return a UserRankAdjustmentDto for the given User, assuming the given loggedInUser
+     */
+    @Override
+    public UserRankAdjustmentDto getUserRankAdjustmentDtoForUser(User user, User loggedInUser) {
+        UserRankAdjustmentDto userRankAdjustmentDto = userToUserRankAdjustmentDtoConverter.convert(user);
+        userRankAdjustmentDto.setDemotableByLoggedInUser(user.isDemotableBy(loggedInUser));
+        userRankAdjustmentDto.setPromotableByLoggedInUser(user.isPromotableBy(loggedInUser));
+
+        return userRankAdjustmentDto;
     }
 
     /**
