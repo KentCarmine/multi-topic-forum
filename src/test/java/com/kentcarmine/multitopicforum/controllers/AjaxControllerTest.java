@@ -14,9 +14,11 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.ModelAndViewAssert;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.time.Instant;
 import java.util.Date;
@@ -648,11 +650,15 @@ class AjaxControllerTest {
         when(userService.getUser(any())).thenReturn(testUser);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
 
-        mockMvc.perform(get("/promoteUserButton/" + testUser.getUsername()))
+        MvcResult mvcResult = mockMvc.perform(get("/promoteUserButton/" + testUser.getUsername()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/promote-demote-buttons :: promote-button-fragment"))
-                .andExpect(model().attributeExists("user"))
-                .andExpect(model().attributeExists("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("user"))
+//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+        .andReturn();
+
+        ModelAndView mv = mvcResult.getModelAndView();
+        assertTrue(mv.getModel().containsKey("userRankAdjustmentDto"));
     }
 
     @Test
@@ -660,10 +666,15 @@ class AjaxControllerTest {
         when(userService.getUser(any())).thenReturn(null);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
 
-        mockMvc.perform(get("/promoteUserButton/" + TEST_USERNAME))
+        MvcResult mvcResult = mockMvc.perform(get("/promoteUserButton/" + TEST_USERNAME))
                 .andExpect(status().isInternalServerError())
-                .andExpect(model().attributeDoesNotExist("user"))
-                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("user"))
+//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"));
+                .andReturn();
+
+        ModelAndView mv = mvcResult.getModelAndView();
+        assertFalse(mv.getModel().containsKey("userRankAdjustmentDto"));
     }
 
     @Test
@@ -671,10 +682,15 @@ class AjaxControllerTest {
         when(userService.getUser(any())).thenReturn(testUser);
         when(userService.getLoggedInUser()).thenReturn(null);
 
-        mockMvc.perform(get("/promoteUserButton/" + testUser.getUsername()))
+        MvcResult mvcResult = mockMvc.perform(get("/promoteUserButton/" + testUser.getUsername()))
                 .andExpect(status().isInternalServerError())
-                .andExpect(model().attributeDoesNotExist("user"))
-                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("user"))
+//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"))
+                .andReturn();
+
+        ModelAndView mv = mvcResult.getModelAndView();
+        assertFalse(mv.getModel().containsKey("userRankAdjustmentDto"));
     }
 
     @Test
@@ -814,11 +830,16 @@ class AjaxControllerTest {
         when(userService.getUser(any())).thenReturn(testModerator);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
 
-        mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
+        MvcResult mvcResult = mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/promote-demote-buttons :: demote-button-fragment"))
-                .andExpect(model().attributeExists("user"))
-                .andExpect(model().attributeExists("loggedInUser"));
+//                .andExpect(model().attributeExists("user"))
+//                .andExpect(model().attributeExists("loggedInUser"));
+//                .andExpect(model().attributeExists("userRankAdjustmentDto"));
+                .andReturn();
+
+        ModelAndView mv = mvcResult.getModelAndView();
+        assertTrue(mv.getModel().containsKey("userRankAdjustmentDto"));
     }
 
     @Test
@@ -826,10 +847,15 @@ class AjaxControllerTest {
         when(userService.getUser(any())).thenReturn(null);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
 
-        mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
+        MvcResult mvcResult = mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
                 .andExpect(status().isInternalServerError())
-                .andExpect(model().attributeDoesNotExist("user"))
-                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("user"))
+//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"));
+                .andReturn();
+
+        ModelAndView mv = mvcResult.getModelAndView();
+        assertFalse(mv.getModel().containsKey("userRankAdjustmentDto"));
     }
 
     @Test
@@ -837,10 +863,15 @@ class AjaxControllerTest {
         when(userService.getUser(any())).thenReturn(testModerator);
         when(userService.getLoggedInUser()).thenReturn(null);
 
-        mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
+        MvcResult mvcResult = mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
                 .andExpect(status().isInternalServerError())
-                .andExpect(model().attributeDoesNotExist("user"))
-                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("user"))
+//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
+//                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"));
+                .andReturn();
+
+        ModelAndView mv = mvcResult.getModelAndView();
+        assertFalse(mv.getModel().containsKey("userRankAdjustmentDto"));
     }
 
     /**

@@ -1,7 +1,9 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserEmailDto;
+import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -82,9 +84,12 @@ class UserControllerTest {
     User testAdmin;
     User testSuperAdmin;
 
+    UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
+
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
         userController = new UserController(userService, applicationEventPublisher, messageSource, emailService);
 
@@ -175,14 +180,33 @@ class UserControllerTest {
     }
 
     @Test
-    void showUserPage_validUser() throws Exception {
+    void showUserPage_validUser_noOneLoggedIn() throws Exception {
         when(userService.usernameExists(anyString())).thenReturn(true);
         when(userService.getUser(any())).thenReturn(testUser);
 
         mockMvc.perform(get("/users/" + testUser.getUsername()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-page"))
-                .andExpect(model().attributeExists("user"));
+                .andExpect(model().attributeExists("user"))
+                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"));
+    }
+
+    @Test
+    void showUserPage_validUser_someoneLoggedIn() throws Exception {
+        UserRankAdjustmentDto userRankAdjustmentDto = userToUserRankAdjustmentDtoConverter.convert(testUser);
+        userRankAdjustmentDto.setPromotableByLoggedInUser(testUser.isPromotableBy(testAdmin));
+        userRankAdjustmentDto.setDemotableByLoggedInUser(testUser.isPromotableBy(testAdmin));
+
+        when(userService.usernameExists(anyString())).thenReturn(true);
+        when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getUserRankAdjustmentDtoForUser(any(), any())).thenReturn(userRankAdjustmentDto);
+
+        mockMvc.perform(get("/users/" + testUser.getUsername()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("user-page"))
+                .andExpect(model().attributeExists("user"))
+                .andExpect(model().attributeExists("userRankAdjustmentDto"));
     }
 
     @Test

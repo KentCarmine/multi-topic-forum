@@ -2,9 +2,11 @@ package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
+import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
 import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
+import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
@@ -87,6 +89,7 @@ class UserServiceTest {
 
     private UserDtoToUserConverter userDtoToUserConverter;
     private DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
+    private UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
 
     private User testUser;
     private User testUser2;
@@ -99,11 +102,12 @@ class UserServiceTest {
         MockitoAnnotations.initMocks(this);
         userDtoToUserConverter = new UserDtoToUserConverter();
         disciplineToDisciplineViewDtoConverter = new DisciplineToDisciplineViewDtoConverter();
+        userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
         userService =
                 new UserServiceImpl(userRepository, authenticationService, userDtoToUserConverter, passwordEncoder,
                         verificationTokenRepository, passwordResetTokenRepository, authorityRepository,
-                        disciplineRepository, disciplineToDisciplineViewDtoConverter);
+                        disciplineRepository, disciplineToDisciplineViewDtoConverter, userToUserRankAdjustmentDtoConverter);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -695,7 +699,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getActiveDisciplinesForUser() {
+    void getActiveDisciplinesForUser() throws Exception {
         Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         disc1.setId(1L);
         testUser.addDiscipline(disc1);
@@ -724,7 +728,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getInactiveDisciplinesForUser() {
+    void getInactiveDisciplinesForUser() throws Exception {
         // Active
         Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         disc1.setId(1L);
@@ -758,7 +762,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getDisciplineByIdAndUser_valid() {
+    void getDisciplineByIdAndUser_valid() throws Exception {
         Discipline disc = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         disc.setId(1L);
         testUser.addDiscipline(disc);
@@ -774,7 +778,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getDisciplineByIdAndUser_invalidDisciplineId() {
+    void getDisciplineByIdAndUser_invalidDisciplineId() throws Exception {
         when(disciplineRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
@@ -785,7 +789,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getDisciplineByIdAndUser_mismatchedDisciplineIdAndUser() {
+    void getDisciplineByIdAndUser_mismatchedDisciplineIdAndUser() throws Exception {
         Discipline disc = new Discipline(testUser2, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         disc.setId(1L);
         testUser2.addDiscipline(disc);
@@ -800,7 +804,7 @@ class UserServiceTest {
     }
 
     @Test
-    void rescindDiscipline() {
+    void rescindDiscipline() throws Exception {
         Discipline disc = new Discipline(testUser2, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         disc.setId(1L);
 
@@ -811,6 +815,18 @@ class UserServiceTest {
         assertTrue(disc.isRescinded());
 
         verify(disciplineRepository, times(1)).save(any());
+    }
+
+    @Test
+    void getUserRankAdjustmentDtoForUser() throws Exception {
+        UserRankAdjustmentDto dto = userService.getUserRankAdjustmentDtoForUser(testUser, testAdmin);
+
+        assertEquals(testUser.getUsername(), dto.getUsername());
+        assertEquals(UserRole.USER, dto.getHighestAuthority());
+        assertEquals(UserRole.MODERATOR, dto.getIncrementedRank());
+        assertNull(dto.getDecrementedRank());
+        assertTrue(dto.isPromotableByLoggedInUser());
+        assertFalse(dto.isDemotableByLoggedInUser());
     }
 
 }

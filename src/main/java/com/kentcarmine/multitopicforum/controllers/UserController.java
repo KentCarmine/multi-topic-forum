@@ -84,6 +84,10 @@ public class UserController {
 
             model.addAttribute("user", user);
             model.addAttribute("loggedInUser", loggedInUser);
+            if (loggedInUser != null) {
+                UserRankAdjustmentDto userRankAdjustmentDto = userService.getUserRankAdjustmentDtoForUser(user, loggedInUser);
+                model.addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
+            }
             return "user-page";
         } else {
             throw new UserNotFoundException("User with name " + username + " was not found");
