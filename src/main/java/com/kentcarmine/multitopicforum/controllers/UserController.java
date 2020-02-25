@@ -56,6 +56,7 @@ public class UserController {
         this.emailService = emailService;
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Display login form if no one is logged in, otherwise navigate to currently logged in user's page
      */
@@ -94,6 +95,7 @@ public class UserController {
         }
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Display the form to allow a user to register. If a user is logged in, instead go to that user's profile page
      */
@@ -111,6 +113,7 @@ public class UserController {
         return "user-registration-form";
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Handle processing when a user submits a registration form, either creating the user and sending them an email to
      * complete registration if the input is valid, or informing them of errors in their input if the input is not valid
@@ -145,6 +148,7 @@ public class UserController {
         }
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Handle finalizing registration of a user when they click the link in their registration confirmation email.
      * Creates the account and enables the user if the verification token is valid, otherwise displays an error to
@@ -186,6 +190,7 @@ public class UserController {
         return mv;
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Resends the registration email to the user upon request (ie. if the previous registration token is expired).
      * If the user already exsists and is enabled, sends them to the login page.
@@ -205,6 +210,7 @@ public class UserController {
         return "redirect:/login?regEmailSent";
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Displays a form where the user can enter their email to reset the password on the associated account
      */
@@ -214,6 +220,7 @@ public class UserController {
         return "reset-password-starter-form";
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Handles processing of the password reset form submission. If there are no errors, sends the email to the user
      * to allow them to reset their password. If the email is valid and belongs to an enabled user, sends that user
@@ -242,6 +249,7 @@ public class UserController {
         return mv;
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Displays the form for users to enter a new password after a password reset request email link is clicked.
      * If the user and token are valid, it displays the form, otherwise, it displays an error and redirects to /login.
@@ -262,6 +270,7 @@ public class UserController {
         return "change-password-form";
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Handles processing the password change when the password change form is submitted. If there are input errors or
      * and invalid user or token, display those errors. Otherwise, resets the user's password and redirects to /login
@@ -327,6 +336,7 @@ public class UserController {
         return "redirect:/users?search=" + searchText;
     }
 
+    // TODO: Refactor into DisciplineController
     /**
      * Displays the page for managing disciplinary action against the user with the given name. Allows users with
      * sufficient permissions to ban/suspend that user or reverse active bans or suspensions. Also displays the user's
@@ -364,6 +374,7 @@ public class UserController {
         return "user-discipline-page";
     }
 
+    // TODO: Refactor into DisciplineController
     /**
      * Handles processing of a user discipline submission.
      */
@@ -417,6 +428,7 @@ public class UserController {
         return mv;
     }
 
+    // TODO: Refactor into DisciplineController
     /**
      * Shows the discipline status page for the given user, informing them of their disciplinary status (if there is one
      * active), or redirecting them to their home page if there is not. If there is a disciplinary status, also forcibly
@@ -460,6 +472,7 @@ public class UserController {
         return "user-discipline-info-page";
     }
 
+    // TODO: Refactor into DisciplineController
     /**
      * Handles rescinding a discipline with the given id and associated with the user with the given username, provided
      * the logged in user has the authority to do so.
@@ -492,6 +505,7 @@ public class UserController {
         return "redirect:/manageUserDiscipline/" + disciplinedUser.getUsername();
     }
 
+    // TODO: Consider refactoring into ControllerAdvice
     /**
      * Handler method that handles displaying an error page when a UserNotFoundException occurs.
      *
@@ -517,6 +531,7 @@ public class UserController {
         return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString() + request.getContextPath();
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Helper method that sends an email to the user including a link to allow them to reset their password.
      *
@@ -533,6 +548,7 @@ public class UserController {
         emailService.sendEmail(user.getEmail(), subject, message);
     }
 
+    // TODO: Refactor into UserAccountController
     /**
      * Helper method that sends an email to the user including a link with an updated registration verification token.
      *

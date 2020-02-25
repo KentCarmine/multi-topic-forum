@@ -42,6 +42,7 @@ public class ForumController {
         this.userService = userService;
     }
 
+    // TODO: Refactor into TopicForumController (rename this class)
     /**
      * Display a page that lists all TopicForums, or a page that lists the TopicForums matching the search criteria. If
      * there are no forums that fit the criteria, informs the user. If the search was invalid, displays all TopicForums
@@ -63,6 +64,7 @@ public class ForumController {
         return "forums-list-page";
     }
 
+    // TODO: Refactor into TopicForumController (rename this class)
     /**
      * Show page with form for creating a new TopicForum. Only accessible to admin and superadmin
      */
@@ -72,6 +74,7 @@ public class ForumController {
         return "create-new-forum-page";
     }
 
+    // TODO: Refactor into TopicForumController (rename this class)
     /**
      * Process form for creating a new TopicForum. Only accessible to admin and superadmin. If input is valid, creates
      * the specified forum, otherwise displays errors to user.
@@ -93,6 +96,7 @@ public class ForumController {
         return mv;
     }
 
+    // TODO: Refactor into TopicForumController (rename this class)
     /**
      * Show the root page of the given forum, if it exists, or an error page, if it doesnt.
      */
@@ -109,6 +113,7 @@ public class ForumController {
         return "forum-page";
     }
 
+    // TODO: Refactor into TopicThreadController
     /**
      * Handles processing of searches for threads on a forum with a given name.
      * @throws UnsupportedEncodingException
@@ -131,6 +136,7 @@ public class ForumController {
         return "redirect:/searchForumThreads/" + name + searchUrl.toString();
     }
 
+    // TODO: Refactor into TopicThreadController
     /**
      * Displays the list of results of a search for forum threads within a TopicForum with a given name. Displays an
      * error if the search was invalid, and informs the user if no results matching the search were found.
@@ -159,6 +165,7 @@ public class ForumController {
         return "search-threads-results-page";
     }
 
+    // TODO: Refactor into TopicThreadController
     /**
      * Show page that allows a logged in user to create a new topic thread
      */
@@ -169,6 +176,7 @@ public class ForumController {
         return "create-thread-page";
     }
 
+    // TODO: Refactor into TopicThreadController
     /**
      * Handle processing of a form submission to create a new topic thread
      */
@@ -196,6 +204,7 @@ public class ForumController {
         return mv;
     }
 
+    // TODO: Refactor into TopicThreadController
     /**
      * Display a page that shows a given thread and all its posts
      */
@@ -231,7 +240,7 @@ public class ForumController {
         return "topic-thread-page";
     }
 
-
+    // TODO: Refactor into TopicThreadController
     /**
      * Handles processing of a request to lock the thread with the given ID
      */
@@ -264,6 +273,7 @@ public class ForumController {
         }
     }
 
+    // TODO: Refactor into TopicThreadController
     /**
      * Handles processing of a request to unlock the thread with the given ID
      */
@@ -296,6 +306,7 @@ public class ForumController {
         }
     }
 
+    // TODO: Refactor into PostController
     /**
      * Handle processing of form submission for adding a new post to the current thread
      */
@@ -332,6 +343,7 @@ public class ForumController {
         return mv;
     }
 
+    // TODO: Refactor into TopicForumController (rename this class)
     /**
      * Handles processing of submission of TopicForum search form.
      * @throws UnsupportedEncodingException
@@ -349,6 +361,7 @@ public class ForumController {
         return "redirect:/forums" + searchParams;
     }
 
+    // TODO: Consider refactoring into ControllerAdvice?
     /**
      * Exception handler that shows an error page when a forum with a given name is not found.
      */
@@ -359,6 +372,7 @@ public class ForumController {
         return "forum-not-found";
     }
 
+    // TODO: Consider refactoring into ControllerAdvice?
     /**
      * Exception handler that shows an error page when a forum with a given name is not found.
      */

@@ -33,6 +33,7 @@ public class AjaxController {
         this.userService = userService;
     }
 
+    // TODO: Refactor into PostVoteController
     /**
      * Handles processing of AJAX submission of an upvote or downvote on a post.
      */
@@ -66,6 +67,7 @@ public class AjaxController {
         }
     }
 
+    // TODO: Refactor into PostController
     /**
      * Handles processing of AJAX submission of a delete request on a post.
      */
@@ -101,6 +103,7 @@ public class AjaxController {
                 .body(new DeletePostResponseDto("Post deleted.", postToDelete.getId(), postUrl));
     }
 
+    // TODO: Refactor into PostController
     /**
      * Handles processing of AJAX submission of a restore request on a deleted post.
      */
@@ -128,6 +131,7 @@ public class AjaxController {
         }
     }
 
+    // TODO: Refactor into UserController
     /**
      * Handles processing of AJAX submission of a user promotion request.
      */
@@ -162,6 +166,7 @@ public class AjaxController {
         }
     }
 
+    // TODO: Refactor into UserController
     /**
      * Handles processing of AJAX submission of a user demotion request.
      */
@@ -199,6 +204,7 @@ public class AjaxController {
         }
     }
 
+    // TODO: Refactor into UserController
     /**
      * Provides a promotion button for a user with the given username in an up-to-date state.
      */
@@ -234,6 +240,7 @@ public class AjaxController {
         return mv;
     }
 
+    // TODO: Refactor into UserController
     /**
      * Provides a promotion button for a user with the given username in an up-to-date state.
      */
