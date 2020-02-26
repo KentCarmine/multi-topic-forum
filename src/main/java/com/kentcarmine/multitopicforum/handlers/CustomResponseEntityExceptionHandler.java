@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.handlers;
 
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.exceptions.InsufficientAuthorityException;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -19,12 +20,19 @@ import javax.servlet.http.HttpServletRequest;
 @ControllerAdvice
 public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private MessageSource messageSource;
+//    private MessageSource messageSource;
+    private MessageService messageService;
+
+//    @Autowired
+//    public CustomResponseEntityExceptionHandler(MessageSource messageSource) {
+//        super();
+//        this.messageSource = messageSource;
+//    }
 
     @Autowired
-    public CustomResponseEntityExceptionHandler(MessageSource messageSource) {
+    public CustomResponseEntityExceptionHandler(MessageService messageService) {
         super();
-        this.messageSource = messageSource;
+        this.messageService = messageService;
     }
 
     @ExceptionHandler({InsufficientAuthorityException.class})
@@ -64,7 +72,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         logger.error("500 status code", e);
 
         ModelAndView mv = new ModelAndView("registration-confirmation-error", HttpStatus.INTERNAL_SERVER_ERROR);
-        mv.getModel().put("message", messageSource.getMessage("message.email.config.error", null, request.getLocale()));
+        mv.getModel().put("message", messageService.getMessage("message.email.config.error", request.getLocale()));
         return mv;
     }
 
@@ -80,7 +88,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         logger.error("500 status code", e);
 
         ModelAndView mv = new ModelAndView("general-error-page", HttpStatus.INTERNAL_SERVER_ERROR);
-        mv.getModel().put("message", messageSource.getMessage("message.unknownError", null, request.getLocale()));
+        mv.getModel().put("message", messageService.getMessage("message.unknownError", request.getLocale()));
         return mv;
     }
 }

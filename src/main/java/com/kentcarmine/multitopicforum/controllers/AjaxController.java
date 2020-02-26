@@ -41,27 +41,20 @@ public class AjaxController {
     public ResponseEntity<PostVoteResponseDto> processVoteSubmission(@Valid @RequestBody PostVoteSubmissionDto postVoteSubmissionDto, Errors errors) {
         PostVoteResponseDto response;
 
-//        System.out.println("### PostVoteSub = " + postVoteSubmissionDto.toString());
-
-//        User loggedInUser = userService.getLoggedInUser();
         User loggedInUser = getLoggedInUserIfNotDisciplined();
 
         Post post = forumService.getPostById(postVoteSubmissionDto.getPostId());
 
         if (loggedInUser == null || post == null || errors.hasErrors()) {
-            System.out.println("### Invalid vote submission: " + loggedInUser + ", " + post + ", " + errors.toString());
             response = new PostVoteResponseDto(null,false ,false, false, 0);
             return ResponseEntity.unprocessableEntity().body(response);
         }
 
         PostVote postVote = forumService.getPostVoteByUserAndPost(loggedInUser, post);
         if (postVote == null || postVote.getPostVoteState().equals(PostVoteState.NONE)) {
-//            System.out.println("### Valid vote submission: " + postVote);
             response = forumService.handlePostVoteSubmission(loggedInUser, post, postVoteSubmissionDto);
-//            System.out.println("### Response: " + response);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } else {
-            System.out.println("### Invalid vote submission 2: " + loggedInUser + ", " + post);
             response = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());
             return ResponseEntity.badRequest().body(response);
         }
@@ -73,31 +66,22 @@ public class AjaxController {
      */
     @PostMapping(value = "/deletePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DeletePostResponseDto> processDeletePost(@RequestBody DeletePostSubmissionDto deletePostSubmissionDto) {
-//        System.out.println("DeletePostSubmissionDto = " + deletePostSubmissionDto);
         Post postToDelete = forumService.getPostById(deletePostSubmissionDto.getPostId());
-//        System.out.println("PostToDelete = " + postToDelete.toString());
 
         if (postToDelete == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new DeletePostResponseDto("Error: Post not found.", null));
         }
 
         User postingUser = postToDelete.getUser();
-//        System.out.println("### LoggedInUser: " + userService.getLoggedInUser());
-//        System.out.println("### PostingUser: " + postingUser);
         User loggedInUser = getLoggedInUserIfNotDisciplined();
 
         if (loggedInUser == null || !loggedInUser.isHigherAuthority(postingUser)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DeletePostResponseDto("Error: Insufficient permissions to delete that post.", postToDelete.getId()));
         }
 
-        String postUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
-                + "/forum/" + postToDelete.getThread().getForum().getName()
-                + "/show/" + postToDelete.getThread().getId()
-                + "#post_id_" + postToDelete.getId();
+        String postUrl = forumService.getGetDeletedPostUrl(postToDelete);
 
-        if (!postToDelete.isDeleted()) {
-            postToDelete = forumService.deletePost(postToDelete, loggedInUser);
-        }
+        postToDelete = forumService.deletePost(postToDelete, loggedInUser);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DeletePostResponseDto("Post deleted.", postToDelete.getId(), postUrl));
@@ -108,7 +92,7 @@ public class AjaxController {
      * Handles processing of AJAX submission of a restore request on a deleted post.
      */
     @PostMapping(value = "/restorePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RestorePostResponseDto> processDeletePost(@RequestBody RestorePostSubmissionDto restorePostSubmissionDto) {
+    public ResponseEntity<RestorePostResponseDto> processRestorePost(@RequestBody RestorePostSubmissionDto restorePostSubmissionDto) {
         Post postToRestore = forumService.getPostById(restorePostSubmissionDto.getPostId());
 
         if (postToRestore == null) {
@@ -117,14 +101,11 @@ public class AjaxController {
 
         User loggedInUser = getLoggedInUserIfNotDisciplined();
         boolean isValidRestoration = postToRestore.isRestorableBy(loggedInUser);
-//        System.out.println("### isValidRestoration: " + isValidRestoration);
 
         if (isValidRestoration) {
             postToRestore = forumService.restorePost(postToRestore);
-            String postUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
-                    + "/forum/" + postToRestore.getThread().getForum().getName()
-                    + "/show/" + postToRestore.getThread().getId()
-                    + "#post_id_" + postToRestore.getId();
+            String postUrl = forumService.getRestoredPostUrl(postToRestore);
+
             return ResponseEntity.status(HttpStatus.OK).body(new RestorePostResponseDto("Post restored.", postToRestore.getId(), postUrl));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RestorePostResponseDto("Error: Insufficient permissions to restore that post.", postToRestore.getId()));
@@ -151,16 +132,9 @@ public class AjaxController {
 
         if (userService.isValidPromotionRequest(loggedInUser, userToPromote, promotableRank)) {
             userToPromote = userService.promoteUser(userToPromote);
+            PromoteUserResponseDto purDto = userService.getPromoteUserResponseDtoForUser(userToPromote);
 
-            String msg = userToPromote.getUsername() + " promoted to "
-                    + userToPromote.getHighestAuthority().getDisplayRank() + ".";
-            String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
-                    + "/promoteUserButton/" + userToPromote.getUsername();
-            String newDemoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
-                    + "/demoteUserButton/" + userToPromote.getUsername();
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new PromoteUserResponseDto(msg, newPromoteButtonUrl, newDemoteButtonUrl));
+            return ResponseEntity.status(HttpStatus.OK).body(purDto);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto("Error: Insufficient permissions to promote that user."));
         }
@@ -172,7 +146,6 @@ public class AjaxController {
      */
     @PostMapping(value = "/demoteUserAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> processDemoteUser(@RequestBody DemoteUserSubmissionDto demoteUserSubmissionDto) {
-        System.out.println("### /demoteUserAjax called");
         User userToDemote = userService.getUser(demoteUserSubmissionDto.getUsername());
         User loggedInUser = getLoggedInUserIfNotDisciplined();
         UserRole demotableRank = demoteUserSubmissionDto.getDemotableRank();
@@ -186,19 +159,10 @@ public class AjaxController {
         }
 
         if (userService.isValidDemotionRequest(loggedInUser, userToDemote, demotableRank)) {
-            System.out.println("### in /demoteUserAjax, valid demotion request");
             userToDemote = userService.demoteUser(userToDemote);
-            System.out.println("### Demoted User: " + userToDemote);
+            DemoteUserResponseDto durDto = userService.getDemoteUserResponseDtoForUser(userToDemote);
 
-            String msg = userToDemote.getUsername() + " demoted to "
-                    + userToDemote.getHighestAuthority().getDisplayRank() + ".";
-            String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
-                    + "/promoteUserButton/" + userToDemote.getUsername();
-            String newDemoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
-                    + "/demoteUserButton/" + userToDemote.getUsername();
-
-            return ResponseEntity.status(HttpStatus.OK).body(new DemoteUserResponseDto(msg, newPromoteButtonUrl,
-                    newDemoteButtonUrl));
+            return ResponseEntity.status(HttpStatus.OK).body(durDto);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DemoteUserResponseDto("Error: Insufficient permissions to demote that user."));
         }
@@ -209,8 +173,7 @@ public class AjaxController {
      * Provides a promotion button for a user with the given username in an up-to-date state.
      */
     @GetMapping(value = "/demoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView demoteUserButton(@PathVariable String username, Model model) {
-        System.out.println("### /demoteUserButton/" + username + " called");
+    public ModelAndView demoteUserButton(@PathVariable String username) {
         User loggedInUser = getLoggedInUserIfNotDisciplined();
         User user = userService.getUser(username);
 
@@ -224,19 +187,10 @@ public class AjaxController {
         }
 
         UserRankAdjustmentDto userRankAdjustmentDto = userService.getUserRankAdjustmentDtoForUser(user, loggedInUser);
-        System.out.println("### userRankAdjustmentDto = " + userRankAdjustmentDto);
 
         mv = new ModelAndView("fragments/promote-demote-buttons :: demote-button-fragment");
         mv.setStatus(HttpStatus.OK);
-//        mv.addObject("user", user);
-//        mv.addObject("loggedInUser", loggedInUser);
         mv.addObject("userRankAdjustmentDto", userRankAdjustmentDto);
-//        mv.getModel().put("userRankAdjustmentDto", userRankAdjustmentDto);
-//        mv.getModelMap().addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
-//        mv.getModelMap().addAttribute("userDto", userDto);
-//        mv.getModel().put("userDto", userDto);
-//        model.addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
-//        mv.addAllObjects(model.asMap());
         return mv;
     }
 
@@ -245,7 +199,7 @@ public class AjaxController {
      * Provides a promotion button for a user with the given username in an up-to-date state.
      */
     @GetMapping(value = "/promoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView promoteUserButton(@PathVariable String username, Model model) {
+    public ModelAndView promoteUserButton(@PathVariable String username) {
         User loggedInUser = getLoggedInUserIfNotDisciplined();
         User user = userService.getUser(username);
 
@@ -259,17 +213,10 @@ public class AjaxController {
         }
 
         UserRankAdjustmentDto userRankAdjustmentDto = userService.getUserRankAdjustmentDtoForUser(user, loggedInUser);
-        System.out.println("### userRankAdjustmentDto = " + userRankAdjustmentDto);
 
         mv = new ModelAndView("fragments/promote-demote-buttons :: promote-button-fragment");
         mv.setStatus(HttpStatus.OK);
-//        mv.addObject("user", user);
-//        mv.addObject("loggedInUser", loggedInUser);
         mv.addObject("userRankAdjustmentDto", userRankAdjustmentDto);
-//        mv.getModel().put("userRankAdjustmentDto", userRankAdjustmentDto);
-//        mv.getModelMap().addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
-//        model.addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
-//        mv.addAllObjects(model.asMap());
         return mv;
     }
 

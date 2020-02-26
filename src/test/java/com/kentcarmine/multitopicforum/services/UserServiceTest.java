@@ -85,6 +85,9 @@ class UserServiceTest {
     DisciplineRepository disciplineRepository;
 
     @Mock
+    MessageService messageService;
+
+    @Mock
     PasswordEncoder passwordEncoder;
 
     private UserDtoToUserConverter userDtoToUserConverter;
@@ -107,7 +110,8 @@ class UserServiceTest {
         userService =
                 new UserServiceImpl(userRepository, authenticationService, userDtoToUserConverter, passwordEncoder,
                         verificationTokenRepository, passwordResetTokenRepository, authorityRepository,
-                        disciplineRepository, disciplineToDisciplineViewDtoConverter, userToUserRankAdjustmentDtoConverter);
+                        disciplineRepository, disciplineToDisciplineViewDtoConverter, userToUserRankAdjustmentDtoConverter,
+                        messageService);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);

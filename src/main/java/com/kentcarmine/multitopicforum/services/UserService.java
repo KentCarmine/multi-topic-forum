@@ -1,16 +1,15 @@
 package com.kentcarmine.multitopicforum.services;
 
-import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
-import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
-import com.kentcarmine.multitopicforum.dtos.UserDto;
-import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
 import com.kentcarmine.multitopicforum.model.*;
 
+import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
+import java.util.Locale;
 import java.util.SortedSet;
 
 /**
@@ -76,4 +75,21 @@ public interface UserService {
 
     UserRankAdjustmentDto getUserRankAdjustmentDtoForUser(User user, User loggedInUser);
 
+    boolean isVerificationTokenExpired(VerificationToken verificationToken);
+
+    String getExpiredAuthTokenMessage(Locale locale);
+
+    String getInvalidAuthTokenMessage(Locale locale);
+
+    String getLoggedInUserBannedInformationMessage(Discipline greatestDurationActiveDiscipline);
+
+    String getPasswordResetEmailContent(String resetUrl, Locale locale);
+
+    String getResendVerificationTokenEmailContent(String confirmationUrl, Locale locale);
+
+    String getAuthenticationFailureMessage(Exception authException, Locale locale);
+
+    PromoteUserResponseDto getPromoteUserResponseDtoForUser(User promotedUser);
+
+    DemoteUserResponseDto getDemoteUserResponseDtoForUser(User demotedUser);
 }

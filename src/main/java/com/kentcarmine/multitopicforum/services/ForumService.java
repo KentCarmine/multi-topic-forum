@@ -55,4 +55,8 @@ public interface ForumService {
     boolean lockThread(User lockingUser, TopicThread thread);
 
     boolean unlockThread(User unlockingUser, TopicThread thread);
+
+    String getGetDeletedPostUrl(Post postToDelete);
+
+    String getRestoredPostUrl(Post postToRestore);
 }

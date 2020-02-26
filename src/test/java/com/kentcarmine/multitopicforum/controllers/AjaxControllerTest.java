@@ -6,6 +6,7 @@ import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ActiveProfiles("test")
 class AjaxControllerTest {
+    private static final String ROOT_URL = "localhost:8080";
+
     private static final String TEST_USERNAME = "TestUser";
     private static final String TEST_USER_PASSWORD = "testPassword";
     private static final String TEST_USER_EMAIL = "testuser@test.com";
@@ -61,8 +64,10 @@ class AjaxControllerTest {
     @Mock
     UserService userService;
 
+//    @Mock
+//    MessageSource messageSource;
     @Mock
-    MessageSource messageSource;
+    MessageService messageService;
 
     AjaxController ajaxController;
 
@@ -83,7 +88,7 @@ class AjaxControllerTest {
         MockitoAnnotations.initMocks(this);
         ajaxController = new AjaxController(forumService, userService);
         mockMvc = MockMvcBuilders.standaloneSetup(ajaxController)
-                .setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
+                .setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -358,9 +363,15 @@ class AjaxControllerTest {
         testPost.setDeleted(true);
         DeletePostSubmissionDto req = new DeletePostSubmissionDto(testPost.getId());
 
+        String expectedPostUrl = ROOT_URL
+                + "/forum/" + testPost.getThread().getForum().getName()
+                + "/show/" + testPost.getThread().getId()
+                + "#post_id_" + testPost.getId();
+
         when(forumService.getPostById(anyLong())).thenReturn(testPost);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
         when(forumService.deletePost(any(), any())).thenReturn(testPost);
+        when(forumService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -383,16 +394,22 @@ class AjaxControllerTest {
         String reloadUrl = JsonPath.read(resStr, "$.reloadUrl");
         assertTrue(reloadUrl.endsWith(expectedReloadUrlSuffix));
 
-        verify(forumService, times(0)).deletePost(any(), any());
+        verify(forumService, times(1)).deletePost(any(), any());
     }
 
     @Test
     void processDeletePost_validDeletion() throws Exception {
         DeletePostSubmissionDto req = new DeletePostSubmissionDto(testPost.getId());
 
+        String expectedPostUrl = ROOT_URL
+                + "/forum/" + testPost.getThread().getForum().getName()
+                + "/show/" + testPost.getThread().getId()
+                + "#post_id_" + testPost.getId();
+
         when(forumService.getPostById(anyLong())).thenReturn(testPost);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
         when(forumService.deletePost(any(), any())).thenReturn(testPost);
+        when(forumService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -493,11 +510,17 @@ class AjaxControllerTest {
         testPostRestored.setDeletedBy(null);
         testPostRestored.setDeletedAt(null);
 
+        String expectedRestoredPostUrl = ROOT_URL
+                + "/forum/" + testPostRestored.getThread().getForum().getName()
+                + "/show/" + testPostRestored.getThread().getId()
+                + "#post_id_" + testPostRestored.getId();
+
         RestorePostSubmissionDto req = new RestorePostSubmissionDto(192L);
 
         when(forumService.getPostById(anyLong())).thenReturn(testPost);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(forumService.restorePost(any())).thenReturn(testPostRestored);
+        when(forumService.getRestoredPostUrl(any())).thenReturn(expectedRestoredPostUrl);
 
         MvcResult result = mockMvc.perform(post("/restorePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -530,10 +553,20 @@ class AjaxControllerTest {
                 testUser.getAuthorities());
         testUser.addAuthority(UserRole.MODERATOR);
 
+        String purDtoMsg = promotedUser.getUsername() + " promoted to "
+                + promotedUser.getHighestAuthority().getDisplayRank() + ".";
+        String purDtoNewPromoteButtonUrl = ROOT_URL
+                + "/promoteUserButton/" + promotedUser.getUsername();
+        String purDtoNewDemoteButtonUrl = ROOT_URL
+                + "/demoteUserButton/" + promotedUser.getUsername();
+
+        PromoteUserResponseDto purDto = new PromoteUserResponseDto(purDtoMsg, purDtoNewPromoteButtonUrl, purDtoNewDemoteButtonUrl);
+
         when(userService.getUser(any())).thenReturn(testUser);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.isValidPromotionRequest(any(), any(), any())).thenReturn(true);
         when(userService.promoteUser(any())).thenReturn(promotedUser);
+        when(userService.getPromoteUserResponseDtoForUser(any())).thenReturn(purDto);
 
         PromoteUserSubmissionDto req = new PromoteUserSubmissionDto(testUser.getUsername(), UserRole.MODERATOR.name());
 
@@ -694,14 +727,23 @@ class AjaxControllerTest {
     }
 
     @Test
-    void processDemoteUser_validPromotion() throws Exception {
+    void processDemoteUser_validDemotion() throws Exception {
         User demotedUser = new User(testModerator.getUsername(), testModerator.getPassword(), testModerator.getEmail(), testModerator.getAuthorities());
         demotedUser.removeAuthority(UserRole.MODERATOR);
+
+        String durMsg = testModerator.getUsername() + " demoted to " + demotedUser.getHighestAuthority().getDisplayRank()
+                + ".";
+        String expectedNewPromoteButtonUrl = ROOT_URL + "/promoteUserButton/" + demotedUser.getUsername();
+        String expectedNewDemoteButtonUrl = ROOT_URL + "/demoteUserButton/" + demotedUser.getUsername();
+
+        DemoteUserResponseDto durDto = new DemoteUserResponseDto(durMsg, expectedNewPromoteButtonUrl,
+                expectedNewDemoteButtonUrl);
 
         when(userService.getUser(anyString())).thenReturn(testModerator);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.isValidDemotionRequest(any(), any(), any())).thenReturn(true);
         when(userService.demoteUser(any())).thenReturn(demotedUser);
+        when(userService.getDemoteUserResponseDtoForUser(any())).thenReturn(durDto);
 
         DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
 

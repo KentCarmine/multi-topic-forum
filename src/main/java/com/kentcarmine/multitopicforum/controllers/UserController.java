@@ -9,6 +9,7 @@ import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.EmailService;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -44,15 +45,18 @@ public class UserController {
 
     private final UserService userService;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final MessageSource messageSource;
+//    private final MessageSource messageSource;/
+
     private final EmailService emailService;
 
     @Autowired
+//    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher,
+//                          MessageSource messageSource, EmailService emailService) {
     public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher,
-                          MessageSource messageSource, EmailService emailService) {
+                          EmailService emailService) {
         this.userService = userService;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.messageSource = messageSource;
+//        this.messageSource = messageSource;
         this.emailService = emailService;
     }
 
@@ -156,13 +160,15 @@ public class UserController {
      */
     @GetMapping("/registrationConfirm")
     public ModelAndView confirmRegistration(WebRequest request, @RequestParam("token") String token) {
+        System.out.println("### in confirmRegistration()");
         Locale locale = request.getLocale();
         VerificationToken verificationToken = userService.getVerificationToken(token);
 
         ModelAndView mv;
 
         if (verificationToken == null) {
-            String message = messageSource.getMessage("auth.message.invalidToken", null, locale);
+            System.out.println("### in confirmRegistration(), null token case");
+            String message = userService.getInvalidAuthTokenMessage(locale);
 
             mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
             mv.getModel().put("message", message);
@@ -170,21 +176,22 @@ public class UserController {
         }
 
         User user = verificationToken.getUser();
-        Calendar calendar = Calendar.getInstance();
-        if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0 && user != null && !user.isEnabled()) {
-            String messageValue = messageSource.getMessage("auth.message.expired", null, locale);
+        if (userService.isVerificationTokenExpired(verificationToken)) {
+            System.out.println("### in confirmRegistration(), isVerificationTokenExpired() case");
+            String message = userService.getExpiredAuthTokenMessage(locale);
 
             mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
-            mv.getModel().put("message", messageValue);
+            mv.getModel().put("message", message);
             mv.getModel().put("expired", true);
             mv.getModel().put("token", token);
             return mv;
         } else if (user != null && user.isEnabled()) {
+            System.out.println("### in confirmRegistration(), already registered case.");
             mv = new ModelAndView("redirect:/login");
             return mv;
         }
 
-        user.setEnabled(true);
+        System.out.println("### in confirmRegistration(), creating registration case");
         userService.saveRegisteredUser(user);
         mv = new ModelAndView("redirect:/login?registrationSuccess");
         return mv;
@@ -344,8 +351,6 @@ public class UserController {
      */
     @GetMapping("/manageUserDiscipline/{username}")
     public String showManageUserDisciplinePage(@PathVariable String username, Model model) {
-        System.out.println("### in showManageUserDisciplinePage()");
-
         User loggedInUser = userService.getLoggedInUser();
         userService.handleDisciplinedUser(loggedInUser);
 
@@ -365,8 +370,6 @@ public class UserController {
         UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto();
         userDisciplineSubmissionDto.setDisciplinedUsername(username);
 
-        System.out.println("### in showManageUserDisciplinePage(). activeDisciplines = " + activeDisciplines);
-
         model.addAttribute("userDisciplineSubmissionDto", userDisciplineSubmissionDto);
         model.addAttribute("activeDisciplines", activeDisciplines);
         model.addAttribute("inactiveDisciplines", inactiveDisciplines);
@@ -380,54 +383,49 @@ public class UserController {
      */
     @PostMapping("/processCreateUserDiscipline")
     public ModelAndView processUserDisciplineSubmission(@Valid UserDisciplineSubmissionDto userDisciplineSubmissionDto, BindingResult bindingResult) {
+        System.out.println("### in processUserDisciplineSubmission().");
         ModelAndView mv;
-//        System.out.println("### in processUserDisciplineSubmission(). UserDisciplineSubmissionDto = " + userDisciplineSubmissionDto.toString());
 
         User loggedInUser = userService.getLoggedInUser();
         userService.handleDisciplinedUser(loggedInUser);
 
         updateDisciplineSubmissionBindingResult(userDisciplineSubmissionDto, bindingResult);
 
-        System.out.println("### in processUserDisciplineSubmission(). DTO = " + userDisciplineSubmissionDto);
-
         User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
 
         if (disciplinedUser == null) {
+            System.out.println("### in processUserDisciplineSubmission(). disciplinedUser == null case");
             throw new UserNotFoundException();
         }
 
         if (bindingResult.hasErrors()) {
-            System.out.println("### in processUserDisciplineSubmission() hasErrors case");
-
+            System.out.println("### in processUserDisciplineSubmission(). bindingResult.hasErrors() case");
             SortedSet<DisciplineViewDto> activeDisciplines = userService.getActiveDisciplinesForUser(disciplinedUser, loggedInUser);
             SortedSet<DisciplineViewDto> inactiveDisciplines = userService.getInactiveDisciplinesForUser(disciplinedUser);
 
             mv = new ModelAndView("user-discipline-page", "userDisciplineSubmissionDto", userDisciplineSubmissionDto);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-
             mv.addObject("activeDisciplines", activeDisciplines);
             mv.addObject("inactiveDisciplines", inactiveDisciplines);
+
             return mv;
         }
 
-        System.out.println("### disciplinedUser.getDisciplines() = " + disciplinedUser.getDisciplines());
-
+        System.out.println("### in processUserDisciplineSubmission(). pre userService.disciplineUser() case");
         boolean successfulBan = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
 
-        System.out.println("### successfulBan = " + successfulBan);
-
         String url = "redirect:/users/" + disciplinedUser.getUsername();
-
         if (successfulBan) {
             url = url + "?userDisciplined";
         } else {
             url = url + "?userAlreadyBanned";
         }
 
+        System.out.println("### in processUserDisciplineSubmission(). Url = " + url);
         mv = new ModelAndView(url);
         return mv;
     }
-
+    
     // TODO: Refactor into DisciplineController
     /**
      * Shows the discipline status page for the given user, informing them of their disciplinary status (if there is one
@@ -452,20 +450,10 @@ public class UserController {
         }
 
         Discipline greatestDurationActiveDiscipline = loggedInUser.getGreatestDurationActiveDiscipline();
-
-        StringBuilder msgBuilder = new StringBuilder("You have been ");
-
-        if (greatestDurationActiveDiscipline.isBan()) {
-            msgBuilder.append("permanently banned.");
-        } else {
-            String endsAtStr = greatestDurationActiveDiscipline.getDisciplineEndTime().toString();
-            msgBuilder.append("suspended. Your suspension will end at: " + endsAtStr + ".");
-        }
-
-        msgBuilder.append(" The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
+        String message = userService.getLoggedInUserBannedInformationMessage(greatestDurationActiveDiscipline);
 
         model.addAttribute("username", username);
-        model.addAttribute("message", msgBuilder.toString());
+        model.addAttribute("message", message);
 
         userService.forceLogOut(loggedInUser, request, response);
 
@@ -531,7 +519,7 @@ public class UserController {
         return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString() + request.getContextPath();
     }
 
-    // TODO: Refactor into UserAccountController
+    // TODO: Refactor into UserAccountController (or EmailService? might be better)
     /**
      * Helper method that sends an email to the user including a link to allow them to reset their password.
      *
@@ -542,13 +530,13 @@ public class UserController {
      */
     private void sendPasswordResetEmail(String appUrl, Locale locale, PasswordResetToken token, User user) {
         String resetUrl = appUrl + "/changePassword?username=" + user.getUsername() + "&token=" + token.getToken();
-        String message = messageSource.getMessage("message.resetPasswordLinkPrompt", null, locale) + "\n" + resetUrl;
+        String message = userService.getPasswordResetEmailContent(resetUrl, locale);
         String subject = "Multi-Topic Forum Password Reset";
 
         emailService.sendEmail(user.getEmail(), subject, message);
     }
 
-    // TODO: Refactor into UserAccountController
+    // TODO: Refactor into UserAccountController (or EmailService? might be better)
     /**
      * Helper method that sends an email to the user including a link with an updated registration verification token.
      *
@@ -559,7 +547,7 @@ public class UserController {
      */
     private void sendResendVerificationTokenEmail(String appUrl, Locale locale, VerificationToken newToken, User user) {
         String confirmationUrl = appUrl + "/registrationConfirm?token=" + newToken.getToken();
-        String message = messageSource.getMessage("message.resendToken", null, locale) + "\n" + confirmationUrl;
+        String message = userService.getResendVerificationTokenEmailContent(confirmationUrl, locale);
         String subject = "Multi-Topic Forum Registration Confirmation : Re-sent";
 
         emailService.sendEmail(user.getEmail(), subject, message);

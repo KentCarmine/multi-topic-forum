@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHan
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,8 +63,10 @@ class ForumControllerTest {
     @Mock
     UserService userService;
 
+//    @Mock
+//    MessageSource messageSource;
     @Mock
-    MessageSource messageSource;
+    MessageService messageService;
 
     TopicForum testTopicForum;
     User testUser;
@@ -79,7 +82,7 @@ class ForumControllerTest {
 
         forumController = new ForumController(forumService, userService);
 
-        mockMvc = MockMvcBuilders.standaloneSetup(forumController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(forumController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
         testModerator = new User(TEST_MODERATOR_USERNAME, TEST_MODERATOR_PASSWORD, TEST_MODERATOR_EMAIL);
         testModerator.addAuthorities(UserRole.USER, UserRole.MODERATOR);
