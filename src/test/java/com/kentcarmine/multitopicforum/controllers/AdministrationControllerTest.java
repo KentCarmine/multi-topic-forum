@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -21,8 +22,10 @@ class AdministrationControllerTest {
 
     AdministrationController controller;
 
+//    @Mock
+//    MessageSource messageSource;
     @Mock
-    MessageSource messageSource;
+    MessageService messageService;
 
     @BeforeEach
     void setUp() {
@@ -30,7 +33,7 @@ class AdministrationControllerTest {
 
         controller = new AdministrationController();
 
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
     }
 
     @Test

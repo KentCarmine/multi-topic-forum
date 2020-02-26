@@ -3,10 +3,7 @@ package com.kentcarmine.multitopicforum.services;
 import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
 import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
-import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
-import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
-import com.kentcarmine.multitopicforum.dtos.UserDto;
-import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
@@ -23,8 +20,10 @@ import org.springframework.security.web.authentication.rememberme.AbstractRememb
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
+import javax.naming.AuthenticationException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,6 +46,7 @@ public class UserServiceImpl implements UserService {
     private final DisciplineRepository disciplineRepository;
     private final DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
     private final UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
+    private final MessageService messageService;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
@@ -55,7 +55,8 @@ public class UserServiceImpl implements UserService {
                            PasswordResetTokenRepository passwordResetTokenRepository,
                            AuthorityRepository authorityRepository, DisciplineRepository disciplineRepository,
                            DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter,
-                           UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter) {
+                           UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter,
+                           MessageService messageService) {
         this.userRepository = userRepository;
         this.userDtoToUserConverter = userDtoToUserConverter;
         this.passwordEncoder = passwordEncoder;
@@ -66,6 +67,7 @@ public class UserServiceImpl implements UserService {
         this.disciplineRepository = disciplineRepository;
         this.disciplineToDisciplineViewDtoConverter = disciplineToDisciplineViewDtoConverter;
         this.userToUserRankAdjustmentDtoConverter = userToUserRankAdjustmentDtoConverter;
+        this.messageService = messageService;
     }
 
     /**
@@ -207,6 +209,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void saveRegisteredUser(User user) {
+        user.setEnabled(true);
         userRepository.save(user);
     }
 
@@ -234,6 +237,21 @@ public class UserServiceImpl implements UserService {
         token.updateToken(UUID.randomUUID().toString());
         token = verificationTokenRepository.save(token);
         return token;
+    }
+
+    /**
+     * Checks if the given verification token is expired or invalid.
+     *
+     * @param verificationToken the token to check for expiry
+     * @return true if the token is current and valid, false otherwise
+     */
+    @Override
+    public boolean isVerificationTokenExpired(VerificationToken verificationToken) {
+        User user = verificationToken.getUser();
+        Calendar calendar = Calendar.getInstance();
+
+        return verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0
+                && user != null && !user.isEnabled();
     }
 
     /**
@@ -640,6 +658,142 @@ public class UserServiceImpl implements UserService {
         userRankAdjustmentDto.setPromotableByLoggedInUser(user.isPromotableBy(loggedInUser));
 
         return userRankAdjustmentDto;
+    }
+
+    // TODO: Refactor into UserAccountService
+    /**
+     * Returns a message in the given locale that indicates that the authentication token is invalid.
+     *
+     * @param locale the locale of the message to get
+     * @return a message in the given locale that indicates that the authentication token is invalid
+     */
+    @Override
+    public String getInvalidAuthTokenMessage(Locale locale) {
+        return messageService.getMessage("auth.message.invalidToken", locale);
+    }
+
+    // TODO: Refactor into UserAccountService
+    /**
+     * Returns a message in the given locale that indicates that the authentication token is expired or invalid.
+     *
+     * @param locale the locale of the message to get
+     * @return a message in the given locale that indicates that the authentication token is expired or invalid.
+     */
+    @Override
+    public String getExpiredAuthTokenMessage(Locale locale) {
+        return messageService.getMessage("auth.message.expired", locale);
+    }
+
+    // TODO: Refactor into DisciplineService
+    /**
+     * Returns a message that informs they user that they have been disciplined, the reason for this, and the
+     * discipline's duration.
+     *
+     * @param greatestDurationActiveDiscipline the discipline with the greatest duration for the logged in user
+     * @return a message that informs they user that they have been disciplined, the reason for this, and the
+     * discipline's duration.
+     */
+    @Override
+    public String getLoggedInUserBannedInformationMessage(Discipline greatestDurationActiveDiscipline) {
+        StringBuilder msgBuilder = new StringBuilder("You have been ");
+
+        if (greatestDurationActiveDiscipline.isBan()) {
+            msgBuilder.append("permanently banned.");
+        } else {
+            String endsAtStr = greatestDurationActiveDiscipline.getDisciplineEndTime().toString();
+            msgBuilder.append("suspended. Your suspension will end at: " + endsAtStr + ".");
+        }
+
+        msgBuilder.append(" The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
+
+        return msgBuilder.toString();
+    }
+
+    // TODO: Refactor into UserAccountService OR EmailService
+
+    /**
+     * Get the main content of the password reset email body in the given locale.
+     *
+     * @param resetUrl the reset password URL for the user to click.
+     * @param locale the locale of the message
+     * @return the main content of the password reset email body in the given locale.
+     */
+    @Override
+    public String getPasswordResetEmailContent(String resetUrl, Locale locale) {
+
+        return messageService.getMessage("message.resetPasswordLinkPrompt", locale) + "\n" + resetUrl;
+    }
+
+    // TODO: Refactor into UserAccountService OR EmailService
+    /**
+     * Get the main content of the resend verification token email in the given locale.
+     *
+     * @param confirmationUrl the confirmation URL for the user to click.
+     * @param locale the locale of the message
+     * @return the main content of the resend verification token email in the given locale.
+     */
+    @Override
+    public String getResendVerificationTokenEmailContent(String confirmationUrl, Locale locale) {
+        return messageService.getMessage("message.resendToken", locale) + "\n" + confirmationUrl;
+    }
+
+    // TODO: Refactor into UserAccountService
+
+    /**
+     * Get a message in the given locale to display to users indicating that authentication failed, and why it failed.
+     *
+     * @param authException the exception to get details about the failure from
+     * @param locale the locale of the message to display.
+     * @return a message in the given locale to display to users indicating that authentication failed, and why it
+     * failed
+     */
+    @Override
+    public String getAuthenticationFailureMessage(Exception authException, Locale locale) {
+        String errorMessage = messageService.getMessage("message.badCredentials", locale);
+
+        if (authException.getMessage().equalsIgnoreCase("User is disabled")) {
+            errorMessage = messageService.getMessage("auth.message.disabled", locale);
+        } else if (authException.getMessage().equalsIgnoreCase("User account has expired")) {
+            errorMessage = messageService.getMessage("auth.message.expired", locale);
+        }
+
+        return errorMessage;
+    }
+
+    /**
+     * Get a PromoteUserResponseDto for the given user which contains information about a successful promotion.
+     *
+     * @param promotedUser the promoted user
+     * @return the PromoteUserResponseDto for the given user which contains information about a successful promotion
+     */
+    @Override
+    public PromoteUserResponseDto getPromoteUserResponseDtoForUser(User promotedUser) {
+        String msg = promotedUser.getUsername() + " promoted to "
+                + promotedUser.getHighestAuthority().getDisplayRank() + ".";
+        String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                + "/promoteUserButton/" + promotedUser.getUsername();
+        String newDemoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                + "/demoteUserButton/" + promotedUser.getUsername();
+
+        return new PromoteUserResponseDto(msg, newPromoteButtonUrl, newDemoteButtonUrl);
+    }
+
+    /**
+     * Get a DemoteUserResponseDto for the given user which contains information about a successful demotion.
+     *
+     * @param demotedUser the promoted user
+     * @return the DemoteUserResponseDto for the given user which contains information about a successful demotion
+     */
+    @Override
+    public DemoteUserResponseDto getDemoteUserResponseDtoForUser(User demotedUser) {
+        String msg = demotedUser.getUsername() + " demoted to "
+                + demotedUser.getHighestAuthority().getDisplayRank() + ".";
+        String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                + "/promoteUserButton/" + demotedUser.getUsername();
+        String newDemoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                + "/demoteUserButton/" + demotedUser.getUsername();
+
+        return new DemoteUserResponseDto(msg, newPromoteButtonUrl, newDemoteButtonUrl);
     }
 
     /**

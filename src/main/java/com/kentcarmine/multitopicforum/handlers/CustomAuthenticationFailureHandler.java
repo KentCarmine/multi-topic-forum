@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.handlers;
 
+import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.AuthenticationException;
@@ -19,21 +20,17 @@ import java.util.Locale;
  */
 @Component
 public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-
-    private final MessageSource messageSource;
-    private final LocaleResolver localeResolver;
+    private final UserService userService;
 
     @Autowired
-    public CustomAuthenticationFailureHandler(MessageSource messageSource, LocaleResolver localeResolver) {
+    public CustomAuthenticationFailureHandler(UserService userService) {
         super();
-        this.messageSource = messageSource;
-        this.localeResolver = localeResolver;
+        this.userService = userService;
     }
 
-    public CustomAuthenticationFailureHandler(String defaultFailureUrl, MessageSource messageSource, LocaleResolver localeResolver) {
+    public CustomAuthenticationFailureHandler(String defaultFailureUrl, UserService userService) {
         super(defaultFailureUrl);
-        this.messageSource = messageSource;
-        this.localeResolver = localeResolver;
+        this.userService = userService;
     }
 
     @Override
@@ -43,15 +40,7 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
 
         super.onAuthenticationFailure(request, response, exception);
 
-        Locale locale = localeResolver.resolveLocale(request);
-
-        String errorMessage = messageSource.getMessage("message.badCredentials", null, locale);
-
-        if (exception.getMessage().equalsIgnoreCase("User is disabled")) {
-            errorMessage = messageSource.getMessage("auth.message.disabled", null, locale);
-        } else if (exception.getMessage().equalsIgnoreCase("User account has expired")) {
-            errorMessage = messageSource.getMessage("auth.message.expired", null, locale);
-        }
+        String errorMessage = userService.getAuthenticationFailureMessage(exception, request.getLocale());
 
         request.getSession().setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, errorMessage);
     }

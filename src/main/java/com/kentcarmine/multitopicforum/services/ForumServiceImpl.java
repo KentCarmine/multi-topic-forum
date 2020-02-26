@@ -13,6 +13,7 @@ import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -367,10 +368,14 @@ public class ForumServiceImpl implements ForumService {
     @Transactional
     @Override
     public Post deletePost(Post post, User deletingUser) {
-        post.setDeleted(true);
-        post.setDeletedBy(deletingUser);
-        post.setDeletedAt(java.sql.Date.from(Instant.now()));
-        return postRepository.save(post);
+        if (!post.isDeleted()) {
+            post.setDeleted(true);
+            post.setDeletedBy(deletingUser);
+            post.setDeletedAt(java.sql.Date.from(Instant.now()));
+            return postRepository.save(post);
+        } else {
+            return post;
+        }
     }
 
     /**
@@ -475,6 +480,34 @@ public class ForumServiceImpl implements ForumService {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Get the show URL of a deleted post
+     *
+     * @param postToDelete the post to display the url for
+     * @return the show URL of the deleted post
+     */
+    @Override
+    public String getGetDeletedPostUrl(Post postToDelete) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                + "/forum/" + postToDelete.getThread().getForum().getName()
+                + "/show/" + postToDelete.getThread().getId()
+                + "#post_id_" + postToDelete.getId();
+    }
+
+    /**
+     * Get the show URL of a restored post
+     *
+     * @param postToRestore the post to display the url for
+     * @return the show URL of the restored post
+     */
+    @Override
+    public String getRestoredPostUrl(Post postToRestore) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+                + "/forum/" + postToRestore.getThread().getForum().getName()
+                + "/show/" + postToRestore.getThread().getId()
+                + "#post_id_" + postToRestore.getId();
     }
 
     /**

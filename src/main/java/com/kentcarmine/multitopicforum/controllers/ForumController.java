@@ -204,6 +204,7 @@ public class ForumController {
         return mv;
     }
 
+    // TODO: Refactor attributes into TopicThreadDisplayDto
     // TODO: Refactor into TopicThreadController
     /**
      * Display a page that shows a given thread and all its posts

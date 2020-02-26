@@ -9,6 +9,7 @@ import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHan
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.EmailService;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.assertj.core.data.TemporalUnitOffset;
 import org.assertj.core.internal.bytebuddy.matcher.CollectionSizeMatcher;
@@ -73,8 +74,10 @@ class UserControllerTest {
     @Mock
     ApplicationEventPublisher applicationEventPublisher;
 
+//    @Mock
+//    MessageSource messageSource;
     @Mock
-    MessageSource messageSource;
+    MessageService messageService;
 
     @Mock
     EmailService emailService;
@@ -91,9 +94,9 @@ class UserControllerTest {
         MockitoAnnotations.initMocks(this);
         userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
-        userController = new UserController(userService, applicationEventPublisher, messageSource, emailService);
+        userController = new UserController(userService, applicationEventPublisher, emailService);
 
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageSource)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(userController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -249,6 +252,7 @@ class UserControllerTest {
         invalidToken.setExpiryDate(Date.from(Instant.EPOCH));
 
         when(userService.getVerificationToken(anyString())).thenReturn(invalidToken);
+        when(userService.isVerificationTokenExpired(any())).thenReturn(true);
 
         mockMvc.perform(get("/registrationConfirm?token=123"))
                 .andExpect(status().isNotFound())
@@ -688,6 +692,8 @@ class UserControllerTest {
         UserDisciplineSubmissionDto userDisciplineSubmissionDto =
                 new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
 
+        String expectedUrl = "redirect:/users/" + testUser.getUsername() + "?userDisciplined";
+
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
         when(userService.disciplineUser(any(), any())).thenReturn(true);
@@ -879,6 +885,7 @@ class UserControllerTest {
 
         when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getLoggedInUserBannedInformationMessage(any())).thenReturn("permaban");
 
         mockMvc.perform(get("/showDisciplineInfo/" + testAdmin.getUsername()))
                 .andExpect(status().isOk())

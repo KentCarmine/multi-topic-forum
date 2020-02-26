@@ -454,6 +454,15 @@ class ForumServiceTest {
     }
 
     @Test
+    void deletePost_alreadyDeleted() throws Exception {
+        testPost.setDeleted(true);
+
+        forumService.deletePost(testPost, testModerator);
+
+        verify(postRepository, times(0)).save(any());
+    }
+
+    @Test
     void restorePost() throws Exception {
         Date deletedAtTimestamp =  Date.from(Instant.now());
         User deletingUser = testModerator;
