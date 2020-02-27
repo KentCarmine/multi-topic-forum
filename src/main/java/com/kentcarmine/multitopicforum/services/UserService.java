@@ -92,4 +92,6 @@ public interface UserService {
     PromoteUserResponseDto getPromoteUserResponseDtoForUser(User promotedUser);
 
     DemoteUserResponseDto getDemoteUserResponseDtoForUser(User demotedUser);
+
+    User getLoggedInUserIfNotDisciplined();
 }
