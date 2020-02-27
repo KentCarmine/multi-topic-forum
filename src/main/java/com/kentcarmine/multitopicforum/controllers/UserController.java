@@ -493,21 +493,6 @@ public class UserController {
         return "redirect:/manageUserDiscipline/" + disciplinedUser.getUsername();
     }
 
-    // TODO: Consider refactoring into ControllerAdvice
-    /**
-     * Handler method that handles displaying an error page when a UserNotFoundException occurs.
-     *
-     * @param model the model to add a message to
-     * @param ex the exception to handle
-     * @return the name of the error page to display
-     */
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleUserNotFound(Model model, UserNotFoundException ex) {
-        model.addAttribute("message", ex.getMessage());
-        return "user-not-found";
-    }
-
     /**
      * Helper method that creates the app's url with current context path
      *

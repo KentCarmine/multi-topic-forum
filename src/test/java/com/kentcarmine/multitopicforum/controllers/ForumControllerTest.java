@@ -267,7 +267,8 @@ class ForumControllerTest {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("title", testTopicForumThread.getTitle())
                 .param("firstPostContent", testTopicForumThread.getPosts().first().getContent()))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
 
         verify(forumService, times(0)).createNewTopicThread(any(), any(), any());
@@ -393,7 +394,8 @@ class ForumControllerTest {
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
     }
 
@@ -455,7 +457,8 @@ class ForumControllerTest {
         mockMvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("content", content))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
 
         verify(forumService, times(0)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
@@ -748,7 +751,8 @@ class ForumControllerTest {
 //        when(forumService.lockThread(any(), any())).thenReturn(true);
 
         mockMvc.perform(post("/lockTopicThread/1"))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
 
         verify(userService, times(1)).getLoggedInUser();
@@ -846,7 +850,8 @@ class ForumControllerTest {
 //        when(forumService.unlockThread(any(), any())).thenReturn(true);
 
         mockMvc.perform(post("/unlockTopicThread/1"))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testModerator.getUsername()));
 
         verify(userService, times(1)).getLoggedInUser();

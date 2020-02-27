@@ -362,27 +362,7 @@ public class ForumController {
         return "redirect:/forums" + searchParams;
     }
 
-    // TODO: Consider refactoring into ControllerAdvice?
-    /**
-     * Exception handler that shows an error page when a forum with a given name is not found.
-     */
-    @ExceptionHandler(ForumNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleForumNotFound(Model model, ForumNotFoundException ex) {
-        model.addAttribute("message", ex.getMessage());
-        return "forum-not-found";
-    }
 
-    // TODO: Consider refactoring into ControllerAdvice?
-    /**
-     * Exception handler that shows an error page when a forum with a given name is not found.
-     */
-    @ExceptionHandler(TopicThreadNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleThreadNotFound(Model model, TopicThreadNotFoundException ex) {
-        model.addAttribute("message", ex.getMessage());
-        return "thread-not-found";
-    }
 
     /**
      * Helper method that adds error data to bindingResult if the topicForumDto describes a forum with a name that

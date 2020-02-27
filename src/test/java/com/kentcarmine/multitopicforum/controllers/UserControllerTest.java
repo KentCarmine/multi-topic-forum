@@ -158,7 +158,8 @@ class UserControllerTest {
         when(userService.getLoggedInUser()).thenReturn(testUser);
 
         mockMvc.perform(get("/registerUser"))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
     }
 
@@ -176,7 +177,8 @@ class UserControllerTest {
                 .param("username", testUser.getUsername())
                 .param("email", testUser.getEmail())
                 .param("password", testUser.getPassword()))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
 
         verify(userService, times(0)).createUserByUserDto(any());
@@ -223,7 +225,8 @@ class UserControllerTest {
         when(userService.getUser(any())).thenReturn(testUser);
 
         mockMvc.perform(get("/users/" + testUser.getUsername()))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
     }
 
@@ -671,7 +674,8 @@ class UserControllerTest {
         when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
 
         mockMvc.perform(get("/manageUserDiscipline/fakedata"))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
     }
 
@@ -681,7 +685,8 @@ class UserControllerTest {
         when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
 
         mockMvc.perform(get("/manageUserDiscipline/" + testAdmin.getUsername()))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/forbidden"))
                 .andExpect(model().attributeDoesNotExist("userDisciplineSubmissionDto", "activeDisciplines",
                         "inactiveDisciplines"));
@@ -746,7 +751,8 @@ class UserControllerTest {
                 .param("disciplinedUsername", testAdmin.getUsername())
                 .param("disciplineType", "Ban")
                 .param("reason", discipline.getReason()))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
 
         verify(userService, times(0)).disciplineUser(any(), any());
@@ -971,7 +977,8 @@ class UserControllerTest {
         doThrow(new DisciplinedUserException(testAdmin)).when(userService).handleDisciplinedUser(any());
 
         mockMvc.perform(post("/rescindDiscipline/" + testUser.getUsername() + "/" + discipline.getId()))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
 
         verify(userService, times(0)).rescindDiscipline(any());
@@ -1015,7 +1022,8 @@ class UserControllerTest {
         when(userService.getDisciplineByIdAndUser(12L, testUser)).thenReturn(discipline);
 
         mockMvc.perform(post("/rescindDiscipline/" + testUser.getUsername() + "/" + discipline.getId()))
-                .andExpect(status().is3xxRedirection())
+//                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/forbidden"));
 
         verify(userService, times(0)).rescindDiscipline(any());

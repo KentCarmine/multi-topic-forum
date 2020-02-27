@@ -1,7 +1,9 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.bootstrap.Bootstrap;
+import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.services.EmailService;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -46,10 +48,13 @@ class UserControllerIT {
     @Autowired
     Bootstrap bootstrap;
 
+    @Mock
+    MessageService messageService;
+
     @BeforeEach
     void setUp() throws Exception {
         bootstrap.run();
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
     }
 
     /**
