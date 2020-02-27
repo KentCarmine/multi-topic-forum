@@ -1,10 +1,11 @@
 package com.kentcarmine.multitopicforum.controllers;
 
-import com.kentcarmine.multitopicforum.dtos.*;
+import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
-import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
@@ -12,7 +13,6 @@ import com.kentcarmine.multitopicforum.services.ForumService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,100 +20,22 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.SortedSet;
 
-/**
- * Controller for TopicForum-related actions
- */
 @Controller
-public class ForumController {
+public class TopicThreadController {
 
     private final ForumService forumService;
     private final UserService userService;
 
     @Autowired
-    public ForumController(ForumService forumService, UserService userService) {
+    public TopicThreadController(ForumService forumService, UserService userService) {
         this.forumService = forumService;
         this.userService = userService;
     }
 
-    // TODO: Refactor into TopicForumController (rename this class)
-    /**
-     * Display a page that lists all TopicForums, or a page that lists the TopicForums matching the search criteria. If
-     * there are no forums that fit the criteria, informs the user. If the search was invalid, displays all TopicForums
-     * and informs the user the search was invalid.
-     */
-    @GetMapping("/forums")
-    public String showForumsPage(ServletRequest request, Model model, @RequestParam(required = false) String search,
-                                 @RequestParam(required = false) String searchError) throws UnsupportedEncodingException {
-        SortedSet<TopicForum> forums;
-
-        if (search == null || search.equals("") || request.getParameterMap().containsKey("searchError")) {
-            forums = forumService.getAllForums();
-        } else {
-            forums = forumService.searchTopicForums(search);
-        }
-
-        model.addAttribute("forums", forums);
-        model.addAttribute("topicForumSearchDto", new TopicForumSearchDto());
-        return "forums-list-page";
-    }
-
-    // TODO: Refactor into TopicForumController (rename this class)
-    /**
-     * Show page with form for creating a new TopicForum. Only accessible to admin and superadmin
-     */
-    @GetMapping("/createNewForum")
-    public String showCreateNewForumPage(Model model) {
-        model.addAttribute("topicForumDto", new TopicForumDto());
-        return "create-new-forum-page";
-    }
-
-    // TODO: Refactor into TopicForumController (rename this class)
-    /**
-     * Process form for creating a new TopicForum. Only accessible to admin and superadmin. If input is valid, creates
-     * the specified forum, otherwise displays errors to user.
-     */
-    @PostMapping("/processNewForumCreation")
-    public ModelAndView processNewForumCreation(@Valid @ModelAttribute TopicForumDto topicForumDto, BindingResult bindingResult) {
-        ModelAndView mv;
-
-        bindingResult = updateForumCreationBindingResult(topicForumDto, bindingResult);
-
-        if (bindingResult.hasErrors()) {
-            mv = new ModelAndView("create-new-forum-page", "topicForumDto", topicForumDto);
-            mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-            return mv;
-        }
-
-        TopicForum createdForum = forumService.createForumByDto(topicForumDto);
-        mv = new ModelAndView("redirect:/forum/" + createdForum.getName());
-        return mv;
-    }
-
-    // TODO: Refactor into TopicForumController (rename this class)
-    /**
-     * Show the root page of the given forum, if it exists, or an error page, if it doesnt.
-     */
-    @GetMapping("/forum/{name}")
-    public String showForum(Model model, @PathVariable String name) {
-        TopicForum forum = forumService.getForumByName(name);
-
-        if (forum == null) {
-            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
-        }
-
-        model.addAttribute("topicThreadSearchDto", new TopicThreadSearchDto());
-        model.addAttribute("forum", forum);
-        return "forum-page";
-    }
-
-    // TODO: Refactor into TopicThreadController
     /**
      * Handles processing of searches for threads on a forum with a given name.
      * @throws UnsupportedEncodingException
@@ -136,7 +58,6 @@ public class ForumController {
         return "redirect:/searchForumThreads/" + name + searchUrl.toString();
     }
 
-    // TODO: Refactor into TopicThreadController
     /**
      * Displays the list of results of a search for forum threads within a TopicForum with a given name. Displays an
      * error if the search was invalid, and informs the user if no results matching the search were found.
@@ -165,7 +86,6 @@ public class ForumController {
         return "search-threads-results-page";
     }
 
-    // TODO: Refactor into TopicThreadController
     /**
      * Show page that allows a logged in user to create a new topic thread
      */
@@ -176,7 +96,6 @@ public class ForumController {
         return "create-thread-page";
     }
 
-    // TODO: Refactor into TopicThreadController
     /**
      * Handle processing of a form submission to create a new topic thread
      */
@@ -204,8 +123,6 @@ public class ForumController {
         return mv;
     }
 
-    // TODO: Refactor attributes into TopicThreadDisplayDto
-    // TODO: Refactor into TopicThreadController
     /**
      * Display a page that shows a given thread and all its posts
      */
@@ -241,7 +158,6 @@ public class ForumController {
         return "topic-thread-page";
     }
 
-    // TODO: Refactor into TopicThreadController
     /**
      * Handles processing of a request to lock the thread with the given ID
      */
@@ -274,7 +190,6 @@ public class ForumController {
         }
     }
 
-    // TODO: Refactor into TopicThreadController
     /**
      * Handles processing of a request to unlock the thread with the given ID
      */
@@ -307,76 +222,4 @@ public class ForumController {
         }
     }
 
-    // TODO: Refactor into PostController
-    /**
-     * Handle processing of form submission for adding a new post to the current thread
-     */
-    @PostMapping("/forum/{forumName}/show/{threadId}/createPost")
-    public ModelAndView addPostToThread(@Valid @ModelAttribute PostCreationDto postCreationDto, BindingResult bindingResult, @PathVariable String forumName,
-                                        @PathVariable Long threadId) {
-        ModelAndView mv;
-
-        if (!forumService.isForumWithNameExists(forumName)) {
-            throw new ForumNotFoundException("Forum " + forumName + " does not exist");
-        }
-
-        TopicThread thread = forumService.getThreadByForumNameAndId(forumName, threadId);
-
-        if (thread == null) {
-            throw new TopicThreadNotFoundException("Thread was not found");
-        }
-
-        if (bindingResult.hasErrors()) {
-            mv = new ModelAndView("topic-thread-page", "postCreationDto", postCreationDto);
-            mv.addObject("forumName", forumName);
-            mv.addObject("threadTitle", thread.getTitle());
-            mv.addObject("threadId", threadId);
-            mv.addObject("posts", thread.getPosts());
-            mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-            return mv;
-        }
-        User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
-
-        forumService.addNewPostToThread(postCreationDto, loggedInUser, thread);
-
-        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId);
-        return mv;
-    }
-
-    // TODO: Refactor into TopicForumController (rename this class)
-    /**
-     * Handles processing of submission of TopicForum search form.
-     * @throws UnsupportedEncodingException
-     */
-    @PostMapping("/searchTopicForums")
-    public String processTopicForumSearch(@Valid TopicForumSearchDto topicForumSearchDto, BindingResult bindingResult)
-            throws UnsupportedEncodingException {
-
-        if (bindingResult.hasErrors()) {
-            return "redirect:/forums?searchError";
-        }
-
-        String searchParams = "?search=" + URLEncoderDecoderHelper.encode(topicForumSearchDto.getSearchText().trim());
-//        System.out.println("#### URL: " + searchParams);
-        return "redirect:/forums" + searchParams;
-    }
-
-
-
-    /**
-     * Helper method that adds error data to bindingResult if the topicForumDto describes a forum with a name that
-     * already exists
-     * @param topicForumDto the TopicForumDto to check for duplicate name
-     * @param bindingResult the binding result to update
-     * @return the updated binding result
-     */
-    private BindingResult updateForumCreationBindingResult(TopicForumDto topicForumDto, BindingResult bindingResult) {
-        if (forumService.isForumWithNameExists(topicForumDto.getName())) {
-            bindingResult.rejectValue("name", "message.forum.creation.duplicateName", "A topic forum with the name " + topicForumDto.getName()
-                    + " already exists.");
-        }
-
-        return bindingResult;
-    }
 }

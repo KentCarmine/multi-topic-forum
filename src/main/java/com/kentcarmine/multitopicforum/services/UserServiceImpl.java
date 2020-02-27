@@ -797,6 +797,21 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Get the logged in user if they are not disciplined, or null if they are.
+     *
+     * @return the logged in user if they are not disciplined, or null if they are.
+     */
+    @Override
+    public User getLoggedInUserIfNotDisciplined() {
+        User loggedInUser = getLoggedInUser();
+        if (loggedInUser == null || loggedInUser.isBannedOrSuspended()) {
+            return null;
+        }
+
+        return loggedInUser;
+    }
+
+    /**
      * Helper method that adds a given userRole to a given user and then saves that user.
      *
      * @param user the user to add the role to.
