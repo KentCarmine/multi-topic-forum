@@ -6,9 +6,7 @@ import com.kentcarmine.multitopicforum.dtos.PostVoteResponseDto;
 import com.kentcarmine.multitopicforum.dtos.PostVoteSubmissionDto;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.model.*;
-import com.kentcarmine.multitopicforum.services.ForumService;
-import com.kentcarmine.multitopicforum.services.MessageService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -67,6 +65,12 @@ class PostVoteControllerTest {
     @Mock
     MessageService messageService;
 
+    @Mock
+    PostService postService;
+
+    @Mock
+    PostVoteService postVoteService;
+
     PostVoteController postVoteController;
 
     MockMvc mockMvc;
@@ -84,7 +88,7 @@ class PostVoteControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        postVoteController = new PostVoteController(forumService, userService);
+        postVoteController = new PostVoteController(forumService, userService, postService, postVoteService);
         mockMvc = MockMvcBuilders.standaloneSetup(postVoteController)
                 .setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -118,9 +122,9 @@ class PostVoteControllerTest {
 
 //        when(userService.getLoggedInUser()).thenReturn(testUser);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testUser);
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
         PostVoteResponseDto responseDto = new PostVoteResponseDto(req.getPostId(), true, false, true, 1);
-        when(forumService.handlePostVoteSubmission(any(), any(), any())).thenReturn(responseDto);
+        when(postVoteService.handlePostVoteSubmission(any(), any(), any())).thenReturn(responseDto);
 
         MvcResult result = mockMvc.perform(post("/handleVoteAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -147,9 +151,9 @@ class PostVoteControllerTest {
         assertEquals(1, voteTotal);
 
         verify(userService, times(1)).getLoggedInUserIfNotDisciplined();
-        verify(forumService, times(1)).getPostById(anyLong());
-        verify(forumService, times(1)).getPostVoteByUserAndPost(any(), any());
-        verify(forumService, times(1)).handlePostVoteSubmission(any(), any(), any());
+        verify(postService, times(1)).getPostById(anyLong());
+        verify(postVoteService, times(1)).getPostVoteByUserAndPost(any(), any());
+        verify(postVoteService, times(1)).handlePostVoteSubmission(any(), any(), any());
     }
 
     @Test
@@ -163,8 +167,8 @@ class PostVoteControllerTest {
 
 //        when(userService.getLoggedInUser()).thenReturn(testUser);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testUser);
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
-        when(forumService.getPostVoteByUserAndPost(testUser, testPost)).thenReturn(existingVote);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
+        when(postVoteService.getPostVoteByUserAndPost(testUser, testPost)).thenReturn(existingVote);
 
         MvcResult result = mockMvc.perform(post("/handleVoteAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -191,9 +195,9 @@ class PostVoteControllerTest {
         assertEquals(1, voteTotal);
 
         verify(userService, times(1)).getLoggedInUserIfNotDisciplined();
-        verify(forumService, times(1)).getPostById(anyLong());
-        verify(forumService, times(1)).getPostVoteByUserAndPost(any(), any());
-        verify(forumService, times(0)).handlePostVoteSubmission(any(), any(), any());
+        verify(postService, times(1)).getPostById(anyLong());
+        verify(postVoteService, times(1)).getPostVoteByUserAndPost(any(), any());
+        verify(postVoteService, times(0)).handlePostVoteSubmission(any(), any(), any());
     }
 
     @Test
@@ -202,7 +206,7 @@ class PostVoteControllerTest {
 
 //        when(userService.getLoggedInUser()).thenReturn(testUser);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testUser);
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
 
         MvcResult result = mockMvc.perform(post("/handleVoteAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -229,9 +233,9 @@ class PostVoteControllerTest {
         assertEquals(0, voteTotal);
 
         verify(userService, times(1)).getLoggedInUserIfNotDisciplined();
-        verify(forumService, times(1)).getPostById(anyLong());
-        verify(forumService, times(0)).getPostVoteByUserAndPost(any(), any());
-        verify(forumService, times(0)).handlePostVoteSubmission(any(), any(), any());
+        verify(postService, times(1)).getPostById(anyLong());
+        verify(postVoteService, times(0)).getPostVoteByUserAndPost(any(), any());
+        verify(postVoteService, times(0)).handlePostVoteSubmission(any(), any(), any());
     }
 
     @Test
@@ -240,7 +244,7 @@ class PostVoteControllerTest {
 
 //        when(userService.getLoggedInUser()).thenReturn(null);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(null);
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
 
         MvcResult result = mockMvc.perform(post("/handleVoteAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -267,9 +271,9 @@ class PostVoteControllerTest {
         assertEquals(0, voteTotal);
 
         verify(userService, times(1)).getLoggedInUserIfNotDisciplined();
-        verify(forumService, times(1)).getPostById(anyLong());
-        verify(forumService, times(0)).getPostVoteByUserAndPost(any(), any());
-        verify(forumService, times(0)).handlePostVoteSubmission(any(), any(), any());
+        verify(postService, times(1)).getPostById(anyLong());
+        verify(postVoteService, times(0)).getPostVoteByUserAndPost(any(), any());
+        verify(postVoteService, times(0)).handlePostVoteSubmission(any(), any(), any());
     }
 
     @Test
@@ -278,7 +282,7 @@ class PostVoteControllerTest {
 
 //        when(userService.getLoggedInUser()).thenReturn(testUser);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testUser);
-        when(forumService.getPostById(anyLong())).thenReturn(null);
+        when(postService.getPostById(anyLong())).thenReturn(null);
 
         MvcResult result = mockMvc.perform(post("/handleVoteAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -305,9 +309,9 @@ class PostVoteControllerTest {
         assertEquals(0, voteTotal);
 
         verify(userService, times(1)).getLoggedInUserIfNotDisciplined();
-        verify(forumService, times(1)).getPostById(anyLong());
-        verify(forumService, times(0)).getPostVoteByUserAndPost(any(), any());
-        verify(forumService, times(0)).handlePostVoteSubmission(any(), any(), any());
+        verify(postService, times(1)).getPostById(anyLong());
+        verify(postVoteService, times(0)).getPostVoteByUserAndPost(any(), any());
+        verify(postVoteService, times(0)).handlePostVoteSubmission(any(), any(), any());
     }
 
     /**

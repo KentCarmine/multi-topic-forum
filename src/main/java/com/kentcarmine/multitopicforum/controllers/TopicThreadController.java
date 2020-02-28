@@ -10,6 +10,8 @@ import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.ForumService;
+import com.kentcarmine.multitopicforum.services.PostVoteService;
+import com.kentcarmine.multitopicforum.services.TopicThreadService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,11 +31,15 @@ public class TopicThreadController {
 
     private final ForumService forumService;
     private final UserService userService;
+    private final TopicThreadService topicThreadService;
+    private final PostVoteService postVoteService;
 
     @Autowired
-    public TopicThreadController(ForumService forumService, UserService userService) {
+    public TopicThreadController(ForumService forumService, UserService userService, TopicThreadService topicThreadService, PostVoteService postVoteService) {
         this.forumService = forumService;
         this.userService = userService;
+        this.topicThreadService = topicThreadService;
+        this.postVoteService = postVoteService;
     }
 
     /**
@@ -76,7 +82,7 @@ public class TopicThreadController {
         if (request.getParameterMap().containsKey("search")) {
             String searchText = URLEncoderDecoderHelper.decode(search);
 
-            SortedSet<TopicThread> threads = forumService.searchTopicThreads(name, search);
+            SortedSet<TopicThread> threads = topicThreadService.searchTopicThreads(name, search);
 
             model.addAttribute("threads", threads);
             model.addAttribute("forumName", name);
@@ -117,7 +123,8 @@ public class TopicThreadController {
         userService.handleDisciplinedUser(loggedInUser);
 
         TopicForum forum = forumService.getForumByName(name);
-        TopicThread newThread = forumService.createNewTopicThread(topicThreadCreationDto, loggedInUser, forum);
+//        TopicThread newThread = forumService.createNewTopicThread(topicThreadCreationDto, loggedInUser, forum);
+        TopicThread newThread = topicThreadService.createNewTopicThread(topicThreadCreationDto, loggedInUser, forum);
 
         mv = new ModelAndView("redirect:/forum/" + name + "/show/" + newThread.getId());
         return mv;
@@ -132,7 +139,7 @@ public class TopicThreadController {
             throw new ForumNotFoundException("Forum " + forumName + " does not exist");
         }
 
-        TopicThread thread = forumService.getThreadByForumNameAndId(forumName, threadId);
+        TopicThread thread = topicThreadService.getThreadByForumNameAndId(forumName, threadId);
 
         if (thread == null) {
             throw new TopicThreadNotFoundException("Thread was not found");
@@ -150,9 +157,9 @@ public class TopicThreadController {
         if (loggedInUser != null) {
             model.addAttribute("postCreationDto", new PostCreationDto());
             model.addAttribute("loggedInUser", loggedInUser);
-            model.addAttribute("voteMap", forumService.generateVoteMap(loggedInUser, thread));
-            model.addAttribute("canLock", forumService.canUserLockThread(loggedInUser, thread));
-            model.addAttribute("canUnlock", forumService.canUserUnlockThread(loggedInUser, thread));
+            model.addAttribute("voteMap", postVoteService.generateVoteMap(loggedInUser, thread));
+            model.addAttribute("canLock", topicThreadService.canUserLockThread(loggedInUser, thread));
+            model.addAttribute("canUnlock", topicThreadService.canUserUnlockThread(loggedInUser, thread));
         }
 
         return "topic-thread-page";
@@ -163,7 +170,7 @@ public class TopicThreadController {
      */
     @PostMapping("/lockTopicThread/{threadId}")
     public String processLockThread(@PathVariable Long threadId) {
-        TopicThread thread = forumService.getThreadById(threadId);
+        TopicThread thread = topicThreadService.getThreadById(threadId);
         TopicForum forum = thread.getForum();
 
         if (thread == null) {
@@ -181,7 +188,7 @@ public class TopicThreadController {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadLocked";
         }
 
-        boolean isLockSuccessful = forumService.lockThread(loggedInUser, thread);
+        boolean isLockSuccessful = topicThreadService.lockThread(loggedInUser, thread);
 
         if (isLockSuccessful) {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadLocked";
@@ -195,7 +202,7 @@ public class TopicThreadController {
      */
     @PostMapping("/unlockTopicThread/{threadId}")
     public String processUnlockThread(@PathVariable Long threadId) {
-        TopicThread thread = forumService.getThreadById(threadId);
+        TopicThread thread = topicThreadService.getThreadById(threadId);
         TopicForum forum = thread.getForum();
 
         if (thread == null) {
@@ -213,7 +220,7 @@ public class TopicThreadController {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadUnlocked";
         }
 
-        boolean isUnlockSuccessful = forumService.unlockThread(loggedInUser, thread);
+        boolean isUnlockSuccessful = topicThreadService.unlockThread(loggedInUser, thread);
 
         if (isUnlockSuccessful) {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadUnlocked";

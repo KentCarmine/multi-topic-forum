@@ -118,6 +118,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email);
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Creates and saves a new User object from a given UserDto
      *
@@ -131,6 +132,7 @@ public class UserServiceImpl implements UserService {
         return createUser(userDtoToUserConverter.convert(userDto));
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Saves the given user to persistent storage.
      *
@@ -180,6 +182,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username) != null;
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Get the user with the given verification token string
      *
@@ -192,6 +195,7 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Get the VerificationToken from persistent storage that has the given token string
      *
@@ -203,6 +207,7 @@ public class UserServiceImpl implements UserService {
         return verificationTokenRepository.findByToken(token);
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Saves a registered user to persistent storage
      * @param user the user to save
@@ -213,6 +218,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Creates and saves a VerificationToken with the given token string that is associated with the given User
      *
@@ -225,6 +231,7 @@ public class UserServiceImpl implements UserService {
         verificationTokenRepository.save(myToken);
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Updates an existing VerificationToken with the given existingToken string to use a new token string, and saves
      * that VerificationToken
@@ -239,6 +246,7 @@ public class UserServiceImpl implements UserService {
         return token;
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Checks if the given verification token is expired or invalid.
      *
@@ -254,6 +262,7 @@ public class UserServiceImpl implements UserService {
                 && user != null && !user.isEnabled();
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Creates and saves a PasswordResetToken associated with the given User. Also deletes all other PasswordResetTokens
      * associated with that user
@@ -273,6 +282,7 @@ public class UserServiceImpl implements UserService {
         return prToken;
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Confirms that the given User is associated with a PasswordResetToken with the given token string. Also updates
      * the given User's authority, allowing them to change their password.
@@ -305,6 +315,7 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
+    // TODO: Refactor into UserAccountService
     /**
      * Updates the given user's password to newPassword and revokes the now-unneeded password change authority.
      *
@@ -454,6 +465,7 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    // TODO: Refactor into DisciplineService
     /**
      * Creates a new discipline entry described by the UserDisciplineSubmissionDto and created by the loggedInUser.
      *
@@ -518,6 +530,7 @@ public class UserServiceImpl implements UserService {
         res.addCookie(cookie);
     }
 
+    // TODO: Refactor into DisciplineService
     /**
      * Throw a DisciplinedUserException if the given user has any active disciplines
      *
@@ -532,6 +545,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    // TODO: Refactor into DisciplineService
     /**
      * Get a SortedSet of DisciplineViewDtos for all the given user's active disciplines.
      *
@@ -565,6 +579,7 @@ public class UserServiceImpl implements UserService {
         return getSortedDisciplineViewDtos(user.getActiveDisciplines(), comparator, loggedInUser);
     }
 
+    // TODO: Refactor into DisciplineService
     /**
      * Get a SortedSet of DisciplineViewDtos for all the given user's inactive disciplines.
      *
@@ -591,6 +606,7 @@ public class UserServiceImpl implements UserService {
         return getSortedDisciplineViewDtos(user.getInactiveDisciplines(), comparator, null);
     }
 
+    // TODO: Refactor into DisciplineService
     /**
      * Helper method that converts a Set of Disciplines into a SortedSet of DisciplineViewDtos sorted by duration.
      *
@@ -612,6 +628,7 @@ public class UserServiceImpl implements UserService {
         return dtoSet;
     }
 
+    // TODO: Refactor into DisciplineService
     /**
      * Find the discipline object with the given ID and associated with the given user. Returns null if no such object
      * exists.
@@ -637,6 +654,7 @@ public class UserServiceImpl implements UserService {
         return discipline;
     }
 
+    // TODO: Refactor into DisciplineService
     @Override
     @Transactional
     public void rescindDiscipline(Discipline disciplineToRescind) {
@@ -738,7 +756,6 @@ public class UserServiceImpl implements UserService {
     }
 
     // TODO: Refactor into UserAccountService
-
     /**
      * Get a message in the given locale to display to users indicating that authentication failed, and why it failed.
      *

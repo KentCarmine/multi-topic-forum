@@ -7,9 +7,7 @@ import com.kentcarmine.multitopicforum.dtos.RestorePostSubmissionDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.model.*;
-import com.kentcarmine.multitopicforum.services.ForumService;
-import com.kentcarmine.multitopicforum.services.MessageService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -75,6 +73,12 @@ class PostControllerTest {
     @Mock
     MessageService messageService;
 
+    @Mock
+    TopicThreadService topicThreadService;
+
+    @Mock
+    PostService postService;
+
     TopicForum testTopicForum;
     TopicThread testTopicForumThread;
 
@@ -90,7 +94,7 @@ class PostControllerTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        postController = new PostController(forumService, userService);
+        postController = new PostController(forumService, userService, topicThreadService, postService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(postController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -133,7 +137,8 @@ class PostControllerTest {
     @Test
     void addPostToThread_validInput() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+//        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         final String content = "Test content";
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
@@ -144,7 +149,7 @@ class PostControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/forum/" + testTopicForumThread.getForum().getName() + "/show/1"));
 
-        verify(forumService, times(1)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
+        verify(postService, times(1)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
     }
 
     @Test
@@ -156,7 +161,8 @@ class PostControllerTest {
 
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+//        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         final String content = "Test content";
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
@@ -168,13 +174,14 @@ class PostControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
 
-        verify(forumService, times(0)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
+        verify(postService, times(0)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
     }
 
     @Test
     void addPostToThread_blankContent() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+//        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
 
@@ -189,13 +196,14 @@ class PostControllerTest {
                 .andExpect(model().attributeExists("threadId"))
                 .andExpect(model().attributeExists("posts"));
 
-        verify(forumService, times(0)).addNewPostToThread(any(), any(), any());
+        verify(postService, times(0)).addNewPostToThread(any(), any(), any());
     }
 
     @Test
     void addPostToThread_noSuchForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
-        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+//        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         final String content = "Test content";
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
@@ -207,13 +215,13 @@ class PostControllerTest {
                 .andExpect(view().name("forum-not-found"))
                 .andExpect(model().attributeExists("message"));
 
-        verify(forumService, times(0)).addNewPostToThread(any(), any(), any());
+        verify(postService, times(0)).addNewPostToThread(any(), any(), any());
     }
 
     @Test
     void addPostToThread_noSuchThreadOnGivenForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(null);
+        when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(null);
 
         final String content = "Test content";
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
@@ -225,14 +233,14 @@ class PostControllerTest {
                 .andExpect(view().name("thread-not-found"))
                 .andExpect(model().attributeExists("message"));
 
-        verify(forumService, times(0)).addNewPostToThread(any(), any(), any());
+        verify(postService, times(0)).addNewPostToThread(any(), any(), any());
     }
 
     @Test
     void processDeletePost_invalidPost() throws Exception {
         DeletePostSubmissionDto req = new DeletePostSubmissionDto(117L);
 
-        when(forumService.getPostById(anyLong())).thenReturn(null);
+        when(postService.getPostById(anyLong())).thenReturn(null);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
@@ -250,7 +258,7 @@ class PostControllerTest {
         String msg = JsonPath.read(resStr, "$.message");
         assertEquals("Error: Post not found.", msg);
 
-        verify(forumService, times(0)).deletePost(any(), any());
+        verify(postService, times(0)).deletePost(any(), any());
     }
 
     @Test
@@ -258,7 +266,7 @@ class PostControllerTest {
         testPost.setUser(testModerator2);
         DeletePostSubmissionDto req = new DeletePostSubmissionDto(testPost.getId());
 
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
 //        when(forumService.deletePost(any(), any())).thenReturn(testPost);
 
@@ -276,7 +284,7 @@ class PostControllerTest {
         String msg = JsonPath.read(resStr, "$.message");
         assertEquals("Error: Insufficient permissions to delete that post.", msg);
 
-        verify(forumService, times(0)).deletePost(any(), any());
+        verify(postService, times(0)).deletePost(any(), any());
     }
 
     @Test
@@ -289,11 +297,11 @@ class PostControllerTest {
                 + "/show/" + testPost.getThread().getId()
                 + "#post_id_" + testPost.getId();
 
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
 //        when(userService.getLoggedInUser()).thenReturn(testModerator);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testModerator);
-        when(forumService.deletePost(any(), any())).thenReturn(testPost);
-        when(forumService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
+        when(postService.deletePost(any(), any())).thenReturn(testPost);
+        when(postService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -316,7 +324,7 @@ class PostControllerTest {
         String reloadUrl = JsonPath.read(resStr, "$.reloadUrl");
         assertTrue(reloadUrl.endsWith(expectedReloadUrlSuffix));
 
-        verify(forumService, times(1)).deletePost(any(), any());
+        verify(postService, times(1)).deletePost(any(), any());
     }
 
     @Test
@@ -328,11 +336,11 @@ class PostControllerTest {
                 + "/show/" + testPost.getThread().getId()
                 + "#post_id_" + testPost.getId();
 
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
 //        when(userService.getLoggedInUser()).thenReturn(testModerator);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testModerator);
-        when(forumService.deletePost(any(), any())).thenReturn(testPost);
-        when(forumService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
+        when(postService.deletePost(any(), any())).thenReturn(testPost);
+        when(postService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -355,14 +363,14 @@ class PostControllerTest {
         String reloadUrl = JsonPath.read(resStr, "$.reloadUrl");
         assertTrue(reloadUrl.endsWith(expectedReloadUrlSuffix));
 
-        verify(forumService, times(1)).deletePost(any(), any());
+        verify(postService, times(1)).deletePost(any(), any());
     }
 
     @Test
     void processRestorePost_invalidPost() throws Exception {
         RestorePostSubmissionDto req = new RestorePostSubmissionDto(192L);
 
-        when(forumService.getPostById(anyLong())).thenReturn(null);
+        when(postService.getPostById(anyLong())).thenReturn(null);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
 
         MvcResult result = mockMvc.perform(post("/restorePostAjax")
@@ -380,7 +388,7 @@ class PostControllerTest {
         String msg = JsonPath.read(resStr, "$.message");
         assertEquals("Error: Post not found.", msg);
 
-        verify(forumService, times(0)).restorePost(any());
+        verify(postService, times(0)).restorePost(any());
     }
 
     @Test
@@ -394,7 +402,7 @@ class PostControllerTest {
 
         RestorePostSubmissionDto req = new RestorePostSubmissionDto(192L);
 
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
 
         MvcResult result = mockMvc.perform(post("/restorePostAjax")
@@ -412,7 +420,7 @@ class PostControllerTest {
         String msg = JsonPath.read(resStr, "$.message");
         assertEquals("Error: Insufficient permissions to restore that post.", msg);
 
-        verify(forumService, times(0)).restorePost(any());
+        verify(postService, times(0)).restorePost(any());
     }
 
     @Test
@@ -440,11 +448,11 @@ class PostControllerTest {
 
         RestorePostSubmissionDto req = new RestorePostSubmissionDto(192L);
 
-        when(forumService.getPostById(anyLong())).thenReturn(testPost);
+        when(postService.getPostById(anyLong())).thenReturn(testPost);
 //        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
-        when(forumService.restorePost(any())).thenReturn(testPostRestored);
-        when(forumService.getRestoredPostUrl(any())).thenReturn(expectedRestoredPostUrl);
+        when(postService.restorePost(any())).thenReturn(testPostRestored);
+        when(postService.getRestoredPostUrl(any())).thenReturn(expectedRestoredPostUrl);
 
         MvcResult result = mockMvc.perform(post("/restorePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -468,7 +476,7 @@ class PostControllerTest {
         String reloadUrl = JsonPath.read(resStr, "$.reloadUrl");
         assertTrue(reloadUrl.endsWith(expectedReloadUrlSuffix));
 
-        verify(forumService, times(1)).restorePost(any());
+        verify(postService, times(1)).restorePost(any());
     }
 
     /**

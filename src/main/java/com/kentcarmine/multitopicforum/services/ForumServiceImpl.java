@@ -33,20 +33,22 @@ public class ForumServiceImpl implements ForumService {
 
     private final TopicForumRepository topicForumRepository;
     private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
-    private final TopicThreadRepository topicThreadRepository;
-    private final PostRepository postRepository;
-    private final PostVoteRepository postVoteRepository;
+//    private final TopicThreadRepository topicThreadRepository;
+//    private final PostRepository postRepository;
+//    private final PostVoteRepository postVoteRepository;
+//    private final PostVoteService postVoteService;
 
     @Autowired
     public ForumServiceImpl(TopicForumRepository topicForumRepository,
-                            TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter,
+                            TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter/*,
                             TopicThreadRepository topicThreadRepository, PostRepository postRepository,
-                            PostVoteRepository postVoteRepository) {
+                            PostVoteRepository postVoteRepository, PostVoteService postVoteService*/) {
         this.topicForumRepository = topicForumRepository;
         this.topicForumDtoToTopicForumConverter = topicForumDtoToTopicForumConverter;
-        this.topicThreadRepository = topicThreadRepository;
-        this.postRepository = postRepository;
-        this.postVoteRepository = postVoteRepository;
+//        this.topicThreadRepository = topicThreadRepository;
+//        this.postRepository = postRepository;
+//        this.postVoteRepository = postVoteRepository;
+//        this.postVoteService = postVoteService;
     }
 
     @Override
@@ -87,62 +89,65 @@ public class ForumServiceImpl implements ForumService {
        return topicForumRepository.save(topicForum);
     }
 
-    /**
-     * Creates and saves a new TopicThread including its first post the belongs to the given TopicForum and User. The
-     * content and title of the thread will be gotten from the topicThreadCreationDto/
-     *
-     * @param topicThreadCreationDto the DTO contining the title of the thread and content of the first post
-     * @param creatingUser the user creating the thread
-     * @param owningForum the forum the thread belongs in
-     * @return the created TopicThread
-     */
-    @Transactional
-    @Override
-    public TopicThread createNewTopicThread(TopicThreadCreationDto topicThreadCreationDto, User creatingUser, TopicForum owningForum) {
-        TopicThread topicThread = new TopicThread(topicThreadCreationDto.getTitle(), owningForum);
-        topicThread = topicThreadRepository.save(topicThread);
+//    // TODO: Refactor into TopicThreadService
+//    /**
+//     * Creates and saves a new TopicThread including its first post the belongs to the given TopicForum and User. The
+//     * content and title of the thread will be gotten from the topicThreadCreationDto/
+//     *
+//     * @param topicThreadCreationDto the DTO contining the title of the thread and content of the first post
+//     * @param creatingUser the user creating the thread
+//     * @param owningForum the forum the thread belongs in
+//     * @return the created TopicThread
+//     */
+//    @Transactional
+//    @Override
+//    public TopicThread createNewTopicThread(TopicThreadCreationDto topicThreadCreationDto, User creatingUser, TopicForum owningForum) {
+//        TopicThread topicThread = new TopicThread(topicThreadCreationDto.getTitle(), owningForum);
+//        topicThread = topicThreadRepository.save(topicThread);
+//
+//        Post post = new Post(topicThreadCreationDto.getFirstPostContent(), getCurrentDate());
+//        post.setThread(topicThread);
+//        post.setUser(creatingUser);
+//        post = postRepository.save(post);
+//
+//        return topicThread;
+//    }
 
-        Post post = new Post(topicThreadCreationDto.getFirstPostContent(), getCurrentDate());
-        post.setThread(topicThread);
-        post.setUser(creatingUser);
-        post = postRepository.save(post);
+//    // TODO: Refactor into TopicThreadService
+//    /**
+//     * Gets a given TopicThread that has an ID of theadID and that belongs to the forum with the name forumName. If no
+//     * such thread exists, returns null.
+//     * @param forumName the forum the thread must belong to
+//     * @param threadId the id of the thread
+//     * @return the thread, or null if no such thread exists
+//     */
+//    @Override
+//    public TopicThread getThreadByForumNameAndId(String forumName, Long threadId) {
+//        TopicThread thread = getThreadById(threadId);
+//        if (isForumWithNameExists(forumName) && thread != null && thread.getForum().getName().equals(forumName)) {
+//            return thread;
+//        } else {
+//            return null;
+//        }
+//    }
 
-        return topicThread;
-    }
-
-    /**
-     * Gets a given TopicThread that has an ID of theadID and that belongs to the forum with the name forumName. If no
-     * such thread exists, returns null.
-     * @param forumName the forum the thread must belong to
-     * @param threadId the id of the thread
-     * @return the thread, or null if no such thread exists
-     */
-    @Override
-    public TopicThread getThreadByForumNameAndId(String forumName, Long threadId) {
-        TopicThread thread = getThreadById(threadId);
-        if (isForumWithNameExists(forumName) && thread != null && thread.getForum().getName().equals(forumName)) {
-            return thread;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Create and save a new Post with the content within the given PostCreationDto, and belonging to the given User
-     * and TopicThread.
-     * @param postCreationDto the DTO containing the post content
-     * @param creatingUser the user creating the post
-     * @param thread the thread the post should belong to
-     * @return the post
-     */
-    @Transactional
-    @Override
-    public Post addNewPostToThread(PostCreationDto postCreationDto, User creatingUser, TopicThread thread) {
-        Post post = new Post(postCreationDto.getContent(), getCurrentDate());
-        post.setUser(creatingUser);
-        post.setThread(thread);
-        return postRepository.save(post);
-    }
+//    // TODO: Refactor into PostService
+//    /**
+//     * Create and save a new Post with the content within the given PostCreationDto, and belonging to the given User
+//     * and TopicThread.
+//     * @param postCreationDto the DTO containing the post content
+//     * @param creatingUser the user creating the post
+//     * @param thread the thread the post should belong to
+//     * @return the post
+//     */
+//    @Transactional
+//    @Override
+//    public Post addNewPostToThread(PostCreationDto postCreationDto, User creatingUser, TopicThread thread) {
+//        Post post = new Post(postCreationDto.getContent(), getCurrentDate());
+//        post.setUser(creatingUser);
+//        post.setThread(thread);
+//        return postRepository.save(post);
+//    }
 
     /**
      * Return a SortedSet of all forums sorted in alphabetical order by name
@@ -213,302 +218,316 @@ public class ForumServiceImpl implements ForumService {
         return forums;
     }
 
-    /**
-     * Searches for all topic threads in a topic forum with the given forumName that have titles that contain all tokens
-     * (delimited on double quotes and spaces, but not spaces within double quotes) of the given search text. Empty
-     * search text or a search of "" returns all threads in the given forum
-     *
-     * @param forumName the name of the forum to search
-     * @param searchText The text to search for
-     * @return the set of TopicThreads (ordered reverse chronologically by creation date of the first post) that match
-     * the search terms
-     * @throws UnsupportedEncodingException
-     */
-    @Override
-    public SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText)
-            throws UnsupportedEncodingException {
-        SortedSet<TopicThread> threads = new TreeSet<>(new Comparator<TopicThread>() {
-            @Override
-            public int compare(TopicThread o1, TopicThread o2) {
-                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt()); // Newest threads first
-            }
-        });
+//    // TODO: Refactor into TopicThreadService
+//    /**
+//     * Searches for all topic threads in a topic forum with the given forumName that have titles that contain all tokens
+//     * (delimited on double quotes and spaces, but not spaces within double quotes) of the given search text. Empty
+//     * search text or a search of "" returns all threads in the given forum
+//     *
+//     * @param forumName the name of the forum to search
+//     * @param searchText The text to search for
+//     * @return the set of TopicThreads (ordered reverse chronologically by creation date of the first post) that match
+//     * the search terms
+//     * @throws UnsupportedEncodingException
+//     */
+//    @Override
+//    public SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText)
+//            throws UnsupportedEncodingException {
+//        SortedSet<TopicThread> threads = new TreeSet<>(new Comparator<TopicThread>() {
+//            @Override
+//            public int compare(TopicThread o1, TopicThread o2) {
+//                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt()); // Newest threads first
+//            }
+//        });
+//
+//        if (searchText.equals("") || searchText.equals("\"\"")) {
+//            TopicForum forum = topicForumRepository.findByName(forumName);
+//            if (forum != null) {
+//                threads.addAll(forum.getThreads());
+//            }
+//
+//            return threads;
+//        }
+//
+//        List<String> searchTerms = parseSearchText(searchText);
+//        List<List<TopicThread>> searchTermResults = new ArrayList<>();
+//        for (int i = 0; i < searchTerms.size(); i++) {
+//            searchTermResults.add(new ArrayList<TopicThread>());
+//        }
+//
+//        for(int i = 0; i < searchTerms.size(); i++) {
+//            String st = searchTerms.get(i);
+//            searchTermResults.set(i, topicThreadRepository
+//                    .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase("%" + st + "%", forumName));
+//        }
+//
+//        if (!searchTermResults.isEmpty()) {
+//            threads.addAll(searchTermResults.get(0));
+//            searchTermResults.remove(0);
+//            for (List<TopicThread> str : searchTermResults) {
+//                threads.retainAll(str);
+//            }
+//        }
+//
+//        return threads;
+//    }
 
-        if (searchText.equals("") || searchText.equals("\"\"")) {
-            TopicForum forum = topicForumRepository.findByName(forumName);
-            if (forum != null) {
-                threads.addAll(forum.getThreads());
-            }
+//    // TODO: Refactor into PostVoteService
+//    /**
+//     * Generates a map from Post IDs to votes made on those posts by the given user. Those values can be 1 (upvote),
+//     * 0 (no vote), or -1 (downvote).
+//     *
+//     * @param loggedInUser the user to check votes made by
+//     * @param thread the TopicThread to get the list of post IDs from
+//     * @return map from Post IDs to votes made on those posts by the given user
+//     */
+//    @Override
+//    public Map<Long, Integer> generateVoteMap(User loggedInUser, TopicThread thread) {
+//        Map<Long, Integer> voteMap = new HashMap<>();
+//
+//        for (Post post : thread.getPosts()) {
+//            PostVote vote = postVoteRepository.findByUserAndPost(loggedInUser, post);
+//            if (vote == null) {
+//                voteMap.put(post.getId(), PostVoteState.NONE.getValue());
+//            } else {
+//                voteMap.put(post.getId(), vote.getPostVoteState().getValue());
+//            }
+//        }
+//
+//        return voteMap;
+//    }
 
-            return threads;
-        }
+//    // TODO: Refactor into PostService
+//    @Override
+//    public Post getPostById(Long id) {
+//        Optional<Post> postOpt = postRepository.findById(id);
+//        if (postOpt.isEmpty()) {
+//            return null;
+//        } else {
+//            return postOpt.get();
+//        }
+//    }
 
-        List<String> searchTerms = parseSearchText(searchText);
-        List<List<TopicThread>> searchTermResults = new ArrayList<>();
-        for (int i = 0; i < searchTerms.size(); i++) {
-            searchTermResults.add(new ArrayList<TopicThread>());
-        }
+//    // TODO: Refactor into PostVoteService
+//    /**
+//     * Get the PostVote made by the given user on the given post, or null if no such PostVote exists.
+//     * @param user the user owning the PostVote
+//     * @param post the post owning the PostVote
+//     * @return the PostVote made by the given user on the given post, or null if no such PostVote exists.
+//     */
+//    @Override
+//    public PostVote getPostVoteByUserAndPost(User user, Post post) {
+//        return postVoteRepository.findByUserAndPost(user, post);
+//    }
 
-        for(int i = 0; i < searchTerms.size(); i++) {
-            String st = searchTerms.get(i);
-            searchTermResults.set(i, topicThreadRepository
-                    .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase("%" + st + "%", forumName));
-        }
+//    // TODO: Refactor into PostVoteService
+//    /**
+//     * Processes submission of a PostVote by the given user on the given post with vote values in the
+//     * postVoteSubmissionDto. Either creates a new vote if no vote by that user on that post exists, or updates that
+//     * user's existing vote on that post if it has a value of NONE. Then returns data to the client indicating the
+//     * current number of votes on that post and if the user's vote was saved.
+//     *
+//     * @param loggedInUser The user submitting the vote
+//     * @param post The post the vote is on
+//     * @param postVoteSubmissionDto data about the vote
+//     * @return the response object to be sent back to the client
+//     */
+//    @Transactional
+//    @Override
+//    public PostVoteResponseDto handlePostVoteSubmission(User loggedInUser, Post post, PostVoteSubmissionDto postVoteSubmissionDto) {
+//        PostVoteResponseDto postVoteResponseDto;
+//
+//        PostVote postVote = getPostVoteByUserAndPost(loggedInUser, post);
+//        if (postVote == null || postVote.getPostVoteState().equals(PostVoteState.NONE)) {
+//            if (postVote == null) {
+//                System.out.println("### Creating new vote");
+//                postVote = new PostVote(PostVoteState.NONE, loggedInUser, post);
+//            } else {
+//                System.out.println("### Updating existing vote");
+//            }
+//
+//            PostVoteState voteState;
+//            if (postVoteSubmissionDto.getVoteValue() == 1) {
+//                voteState = PostVoteState.UPVOTE;
+//            } else if (postVoteSubmissionDto.getVoteValue() == -1) {
+//                voteState = PostVoteState.DOWNVOTE;
+//            } else {
+//                voteState = PostVoteState.NONE;
+//            }
+//            postVote.setPostVoteState(voteState);
+//            postVote = postVoteRepository.save(postVote);
+//            post.addPostVote(postVote);
+//
+//            postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), true, post.getVoteCount());
+////            System.out.println("### Response: " + postVoteResponseDto);
+//        } else {
+//            System.out.println("### Invalid vote submission in handlePostVoteSubmission()");
+//            postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());
+//        }
+//
+//        return postVoteResponseDto;
+//    }
 
-        if (!searchTermResults.isEmpty()) {
-            threads.addAll(searchTermResults.get(0));
-            searchTermResults.remove(0);
-            for (List<TopicThread> str : searchTermResults) {
-                threads.retainAll(str);
-            }
-        }
+//    // TODO: Refactor into PostService
+//    /**
+//     * Flag the given post as deleted by the deleting user at the current time.
+//     *
+//     * @param post the post to flag as deleted
+//     * @param deletingUser the user deleting the post
+//     * @return the updated post after saving
+//     */
+//    @Transactional
+//    @Override
+//    public Post deletePost(Post post, User deletingUser) {
+//        if (!post.isDeleted()) {
+//            post.setDeleted(true);
+//            post.setDeletedBy(deletingUser);
+//            post.setDeletedAt(java.sql.Date.from(Instant.now()));
+//            return postRepository.save(post);
+//        } else {
+//            return post;
+//        }
+//    }
 
-        return threads;
-    }
+//    // TODO: Refactor into PostService
+//    /**
+//     * Restore the given post from deletion.
+//     *
+//     * @param post the post to restore
+//     * @return the restored post after saving
+//     */
+//    @Transactional
+//    @Override
+//    public Post restorePost(Post post) {
+//        post.setDeleted(false);
+//        post.setDeletedBy(null);
+//        post.setDeletedAt(null);
+//        return postRepository.save(post);
+//    }
 
-    /**
-     * Generates a map from Post IDs to votes made on those posts by the given user. Those values can be 1 (upvote),
-     * 0 (no vote), or -1 (downvote).
-     *
-     * @param loggedInUser the user to check votes made by
-     * @param thread the TopicThread to get the list of post IDs from
-     * @return map from Post IDs to votes made on those posts by the given user
-     */
-    @Override
-    public Map<Long, Integer> generateVoteMap(User loggedInUser, TopicThread thread) {
-        Map<Long, Integer> voteMap = new HashMap<>();
+//    // TODO: Refactor into TopicThreadService
+//    /**
+//     * Check if the given user can lock the given thread.
+//     *
+//     * @param user the user to check for permission to lock the thread
+//     * @param thread the thread to check
+//     * @return true if the user can lock the thread, false otherwise
+//     */
+//    @Override
+//    public boolean canUserLockThread(User user, TopicThread thread) {
+//        if (user == null || thread == null) {
+//            return false;
+//        }
+//
+//        boolean userOutranksThreadCreator = user.isHigherAuthority(thread.getFirstPost().getUser());
+//        boolean userHasAdministrativeRights = user.isModerator() || user.isAdmin() || user.isSuperadmin();
+//
+//        return !thread.isLocked() && userHasAdministrativeRights && userOutranksThreadCreator;
+//    }
 
-        for (Post post : thread.getPosts()) {
-            PostVote vote = postVoteRepository.findByUserAndPost(loggedInUser, post);
-            if (vote == null) {
-                voteMap.put(post.getId(), PostVoteState.NONE.getValue());
-            } else {
-                voteMap.put(post.getId(), vote.getPostVoteState().getValue());
-            }
-        }
+//    // TODO: Refactor into TopicThreadService
+//    /**
+//     * Check if the given user can unlock the given thread.
+//     *
+//     * @param user the user to check for permission to unlock the thread
+//     * @param thread the thread to check
+//     * @return true if the user can unlock the thread, false otherwise
+//     */
+//    @Override
+//    public boolean canUserUnlockThread(User user, TopicThread thread) {
+//        if (user == null || thread == null) {
+//            return false;
+//        }
+//
+//        boolean userHasAdministrativeRights = user.isModerator() || user.isAdmin() || user.isSuperadmin();
+//        boolean userOutranksThreadLocker = thread.getLockingUser() != null && (user.equals(thread.getLockingUser()) ||user.isHigherAuthority(thread.getLockingUser()));
+//
+//        return thread.isLocked() && userHasAdministrativeRights && userOutranksThreadLocker;
+//    }
 
-        return voteMap;
-    }
+//    // TODO: Refactor into TopicThreadService
+//    /**
+//     * If the given user has the permissions to lock the given thread, flags that thread as locked and returns true.
+//     * Otherwise, does nothing and returns false.
+//     * @param lockingUser the user attempting to lock the thread
+//     * @param thread the thread to lock
+//     * @return true if the user succeeded in locking the thread, false otherwise
+//     */
+//    @Override
+//    public boolean lockThread(User lockingUser, TopicThread thread) {
+//        if (canUserLockThread(lockingUser, thread)) {
+//            thread.lock(lockingUser);
+//            topicThreadRepository.save(thread);
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 
-    @Override
-    public Post getPostById(Long id) {
-        Optional<Post> postOpt = postRepository.findById(id);
-        if (postOpt.isEmpty()) {
-            return null;
-        } else {
-            return postOpt.get();
-        }
-    }
+//    // TODO: Refactor into TopicThreadService
+//    /**
+//     * If the given user has the permissions to unlock the given thread, flags that thread as unlocked and returns true.
+//     * Otherwise, does nothing and returns false.
+//     * @param unlockingUser the user attempting to unlock the thread
+//     * @param thread the thread to unlock
+//     * @return true if the user succeeded in unlocking the thread, false otherwise
+//     */
+//    @Override
+//    public boolean unlockThread(User unlockingUser, TopicThread thread){
+//        if (canUserUnlockThread(unlockingUser, thread)) {
+//            thread.unlock();
+//            topicThreadRepository.save(thread);
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 
-    /**
-     * Get the PostVote made by the given user on the given post, or null if no such PostVote exists.
-     * @param user the user owning the PostVote
-     * @param post the post owning the PostVote
-     * @return the PostVote made by the given user on the given post, or null if no such PostVote exists.
-     */
-    @Override
-    public PostVote getPostVoteByUserAndPost(User user, Post post) {
-        return postVoteRepository.findByUserAndPost(user, post);
-    }
+//    // TODO: Refactor into TopicThreadService
+//    /**
+//     * Gets a thread with the given ID, or null if no such thread exists.
+//     * @param id the id of the thread to get
+//     * @return the thread with the given id, or null if no such thread exists
+//     */
+//    public TopicThread getThreadById(Long id) {
+//        Optional<TopicThread> thOpt = topicThreadRepository.findById(id);
+//
+//        if (thOpt.isPresent()) {
+//            return thOpt.get();
+//        } else {
+//            return null;
+//        }
+//    }
 
-    /**
-     * Processes submission of a PostVote by the given user on the given post with vote values in the
-     * postVoteSubmissionDto. Either creates a new vote if no vote by that user on that post exists, or updates that
-     * user's existing vote on that post if it has a value of NONE. Then returns data to the client indicating the
-     * current number of votes on that post and if the user's vote was saved.
-     *
-     * @param loggedInUser The user submitting the vote
-     * @param post The post the vote is on
-     * @param postVoteSubmissionDto data about the vote
-     * @return the response object to be sent back to the client
-     */
-    @Transactional
-    @Override
-    public PostVoteResponseDto handlePostVoteSubmission(User loggedInUser, Post post, PostVoteSubmissionDto postVoteSubmissionDto) {
-        PostVoteResponseDto postVoteResponseDto;
+//    // TODO: Refactor into PostService
+//    /**
+//     * Get the show URL of a deleted post
+//     *
+//     * @param postToDelete the post to display the url for
+//     * @return the show URL of the deleted post
+//     */
+//    @Override
+//    public String getGetDeletedPostUrl(Post postToDelete) {
+//        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+//                + "/forum/" + postToDelete.getThread().getForum().getName()
+//                + "/show/" + postToDelete.getThread().getId()
+//                + "#post_id_" + postToDelete.getId();
+//    }
 
-        PostVote postVote = getPostVoteByUserAndPost(loggedInUser, post);
-        if (postVote == null || postVote.getPostVoteState().equals(PostVoteState.NONE)) {
-            if (postVote == null) {
-                System.out.println("### Creating new vote");
-                postVote = new PostVote(PostVoteState.NONE, loggedInUser, post);
-            } else {
-                System.out.println("### Updating existing vote");
-            }
-
-            PostVoteState voteState;
-            if (postVoteSubmissionDto.getVoteValue() == 1) {
-                voteState = PostVoteState.UPVOTE;
-            } else if (postVoteSubmissionDto.getVoteValue() == -1) {
-                voteState = PostVoteState.DOWNVOTE;
-            } else {
-                voteState = PostVoteState.NONE;
-            }
-            postVote.setPostVoteState(voteState);
-            postVote = postVoteRepository.save(postVote);
-            post.addPostVote(postVote);
-
-            postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), true, post.getVoteCount());
-//            System.out.println("### Response: " + postVoteResponseDto);
-        } else {
-            System.out.println("### Invalid vote submission in handlePostVoteSubmission()");
-            postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());
-        }
-
-        return postVoteResponseDto;
-    }
-
-    /**
-     * Flag the given post as deleted by the deleting user at the current time.
-     *
-     * @param post the post to flag as deleted
-     * @param deletingUser the user deleting the post
-     * @return the updated post after saving
-     */
-    @Transactional
-    @Override
-    public Post deletePost(Post post, User deletingUser) {
-        if (!post.isDeleted()) {
-            post.setDeleted(true);
-            post.setDeletedBy(deletingUser);
-            post.setDeletedAt(java.sql.Date.from(Instant.now()));
-            return postRepository.save(post);
-        } else {
-            return post;
-        }
-    }
-
-    /**
-     * Restore the given post from deletion.
-     *
-     * @param post the post to restore
-     * @return the restored post after saving
-     */
-    @Transactional
-    @Override
-    public Post restorePost(Post post) {
-        post.setDeleted(false);
-        post.setDeletedBy(null);
-        post.setDeletedAt(null);
-        return postRepository.save(post);
-    }
-
-    /**
-     * Check if the given user can lock the given thread.
-     *
-     * @param user the user to check for permission to lock the thread
-     * @param thread the thread to check
-     * @return true if the user can lock the thread, false otherwise
-     */
-    @Override
-    public boolean canUserLockThread(User user, TopicThread thread) {
-        if (user == null || thread == null) {
-            return false;
-        }
-
-        boolean userOutranksThreadCreator = user.isHigherAuthority(thread.getFirstPost().getUser());
-        boolean userHasAdministrativeRights = user.isModerator() || user.isAdmin() || user.isSuperadmin();
-
-        return !thread.isLocked() && userHasAdministrativeRights && userOutranksThreadCreator;
-    }
-
-    /**
-     * Check if the given user can unlock the given thread.
-     *
-     * @param user the user to check for permission to unlock the thread
-     * @param thread the thread to check
-     * @return true if the user can unlock the thread, false otherwise
-     */
-    @Override
-    public boolean canUserUnlockThread(User user, TopicThread thread) {
-        if (user == null || thread == null) {
-            return false;
-        }
-
-        boolean userHasAdministrativeRights = user.isModerator() || user.isAdmin() || user.isSuperadmin();
-        boolean userOutranksThreadLocker = thread.getLockingUser() != null && (user.equals(thread.getLockingUser()) ||user.isHigherAuthority(thread.getLockingUser()));
-
-        return thread.isLocked() && userHasAdministrativeRights && userOutranksThreadLocker;
-    }
-
-    /**
-     * If the given user has the permissions to lock the given thread, flags that thread as locked and returns true.
-     * Otherwise, does nothing and returns false.
-     * @param lockingUser the user attempting to lock the thread
-     * @param thread the thread to lock
-     * @return true if the user succeeded in locking the thread, false otherwise
-     */
-    @Override
-    public boolean lockThread(User lockingUser, TopicThread thread) {
-        if (canUserLockThread(lockingUser, thread)) {
-            thread.lock(lockingUser);
-            topicThreadRepository.save(thread);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * If the given user has the permissions to unlock the given thread, flags that thread as unlocked and returns true.
-     * Otherwise, does nothing and returns false.
-     * @param unlockingUser the user attempting to unlock the thread
-     * @param thread the thread to unlock
-     * @return true if the user succeeded in unlocking the thread, false otherwise
-     */
-    @Override
-    public boolean unlockThread(User unlockingUser, TopicThread thread){
-        if (canUserUnlockThread(unlockingUser, thread)) {
-            thread.unlock();
-            topicThreadRepository.save(thread);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Gets a thread with the given ID, or null if no such thread exists.
-     * @param id the id of the thread to get
-     * @return the thread with the given id, or null if no such thread exists
-     */
-    public TopicThread getThreadById(Long id) {
-        Optional<TopicThread> thOpt = topicThreadRepository.findById(id);
-
-        if (thOpt.isPresent()) {
-            return thOpt.get();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Get the show URL of a deleted post
-     *
-     * @param postToDelete the post to display the url for
-     * @return the show URL of the deleted post
-     */
-    @Override
-    public String getGetDeletedPostUrl(Post postToDelete) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
-                + "/forum/" + postToDelete.getThread().getForum().getName()
-                + "/show/" + postToDelete.getThread().getId()
-                + "#post_id_" + postToDelete.getId();
-    }
-
-    /**
-     * Get the show URL of a restored post
-     *
-     * @param postToRestore the post to display the url for
-     * @return the show URL of the restored post
-     */
-    @Override
-    public String getRestoredPostUrl(Post postToRestore) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
-                + "/forum/" + postToRestore.getThread().getForum().getName()
-                + "/show/" + postToRestore.getThread().getId()
-                + "#post_id_" + postToRestore.getId();
-    }
+//    // TODO: Refactor into PostService
+//    /**
+//     * Get the show URL of a restored post
+//     *
+//     * @param postToRestore the post to display the url for
+//     * @return the show URL of the restored post
+//     */
+//    @Override
+//    public String getRestoredPostUrl(Post postToRestore) {
+//        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
+//                + "/forum/" + postToRestore.getThread().getForum().getName()
+//                + "/show/" + postToRestore.getThread().getId()
+//                + "#post_id_" + postToRestore.getId();
+//    }
 
     /**
      * Helper method that parses search text.
@@ -521,14 +540,14 @@ public class ForumServiceImpl implements ForumService {
         return SearchParserHelper.parseSearchText(searchText);
     }
 
-    /**
-     * Helper method that gets the current timestamp as a Date.
-     *
-     * @return the current timestamp
-     */
-    private Date getCurrentDate() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Timestamp(calendar.getTime().getTime()));
-        return new Date(calendar.getTime().getTime());
-    }
+//    /**
+//     * Helper method that gets the current timestamp as a Date.
+//     *
+//     * @return the current timestamp
+//     */
+//    private Date getCurrentDate() {
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTime(new Timestamp(calendar.getTime().getTime()));
+//        return new Date(calendar.getTime().getTime());
+//    }
 }
