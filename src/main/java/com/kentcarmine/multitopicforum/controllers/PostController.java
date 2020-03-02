@@ -6,8 +6,7 @@ import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.services.ForumService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,16 +21,26 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
 
+/**
+ * Controller that handles requests related to Posts.
+ */
 @Controller
 public class PostController {
 
     private final ForumService forumService;
     private final UserService userService;
+    private final TopicThreadService topicThreadService;
+    private final PostService postService;
+    private final DisciplineService disciplineService;
 
     @Autowired
-    public PostController(ForumService forumService, UserService userService) {
+    public PostController(ForumService forumService, UserService userService, TopicThreadService topicThreadService,
+                          PostService postService, DisciplineService disciplineService) {
         this.forumService = forumService;
         this.userService = userService;
+        this.topicThreadService = topicThreadService;
+        this.postService = postService;
+        this.disciplineService = disciplineService;
     }
 
     /**
@@ -46,7 +55,7 @@ public class PostController {
             throw new ForumNotFoundException("Forum " + forumName + " does not exist");
         }
 
-        TopicThread thread = forumService.getThreadByForumNameAndId(forumName, threadId);
+        TopicThread thread = topicThreadService.getThreadByForumNameAndId(forumName, threadId);
 
         if (thread == null) {
             throw new TopicThreadNotFoundException("Thread was not found");
@@ -62,9 +71,9 @@ public class PostController {
             return mv;
         }
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
-        forumService.addNewPostToThread(postCreationDto, loggedInUser, thread);
+        postService.addNewPostToThread(postCreationDto, loggedInUser, thread);
 
         mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId);
         return mv;
@@ -75,7 +84,7 @@ public class PostController {
      */
     @PostMapping(value = "/deletePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DeletePostResponseDto> processDeletePost(@RequestBody DeletePostSubmissionDto deletePostSubmissionDto) {
-        Post postToDelete = forumService.getPostById(deletePostSubmissionDto.getPostId());
+        Post postToDelete = postService.getPostById(deletePostSubmissionDto.getPostId());
 
         if (postToDelete == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new DeletePostResponseDto("Error: Post not found.", null));
@@ -88,9 +97,9 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DeletePostResponseDto("Error: Insufficient permissions to delete that post.", postToDelete.getId()));
         }
 
-        String postUrl = forumService.getGetDeletedPostUrl(postToDelete);
+        String postUrl = postService.getGetDeletedPostUrl(postToDelete);
 
-        postToDelete = forumService.deletePost(postToDelete, loggedInUser);
+        postToDelete = postService.deletePost(postToDelete, loggedInUser);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DeletePostResponseDto("Post deleted.", postToDelete.getId(), postUrl));
@@ -101,7 +110,7 @@ public class PostController {
      */
     @PostMapping(value = "/restorePostAjax", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RestorePostResponseDto> processRestorePost(@RequestBody RestorePostSubmissionDto restorePostSubmissionDto) {
-        Post postToRestore = forumService.getPostById(restorePostSubmissionDto.getPostId());
+        Post postToRestore = postService.getPostById(restorePostSubmissionDto.getPostId());
 
         if (postToRestore == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RestorePostResponseDto("Error: Post not found.", null));
@@ -111,8 +120,8 @@ public class PostController {
         boolean isValidRestoration = postToRestore.isRestorableBy(loggedInUser);
 
         if (isValidRestoration) {
-            postToRestore = forumService.restorePost(postToRestore);
-            String postUrl = forumService.getRestoredPostUrl(postToRestore);
+            postToRestore = postService.restorePost(postToRestore);
+            String postUrl = postService.getRestoredPostUrl(postToRestore);
 
             return ResponseEntity.status(HttpStatus.OK).body(new RestorePostResponseDto("Post restored.", postToRestore.getId(), postUrl));
         } else {

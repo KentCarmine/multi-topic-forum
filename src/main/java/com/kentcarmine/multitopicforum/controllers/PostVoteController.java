@@ -6,7 +6,8 @@ import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.PostVote;
 import com.kentcarmine.multitopicforum.model.PostVoteState;
 import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.services.ForumService;
+import com.kentcarmine.multitopicforum.services.PostService;
+import com.kentcarmine.multitopicforum.services.PostVoteService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,17 +19,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-
+/**
+ * Controller that handles requests related to PostVotes.
+ */
 @RestController
 public class PostVoteController {
 
-    private final ForumService forumService;
     private final UserService userService;
+    private final PostService postService;
+    private final PostVoteService postVoteService;
 
     @Autowired
-    public PostVoteController(ForumService forumService, UserService userService) {
-        this.forumService = forumService;
+    public PostVoteController(UserService userService, PostService postService, PostVoteService postVoteService) {
         this.userService = userService;
+        this.postService = postService;
+        this.postVoteService = postVoteService;
     }
 
     /**
@@ -40,7 +45,7 @@ public class PostVoteController {
 
         User loggedInUser = userService.getLoggedInUserIfNotDisciplined();
 
-        Post post = forumService.getPostById(postVoteSubmissionDto.getPostId());
+        Post post = postService.getPostById(postVoteSubmissionDto.getPostId());
 
         if (loggedInUser == null || post == null || errors.hasErrors()) {
             System.out.println("### In processVoteSubmission(). Error case 1");
@@ -48,10 +53,10 @@ public class PostVoteController {
             return ResponseEntity.unprocessableEntity().body(response);
         }
 
-        PostVote postVote = forumService.getPostVoteByUserAndPost(loggedInUser, post);
+        PostVote postVote = postVoteService.getPostVoteByUserAndPost(loggedInUser, post);
         if (postVote == null || postVote.getPostVoteState().equals(PostVoteState.NONE)) {
             System.out.println("### In processVoteSubmission(). Creation case");
-            response = forumService.handlePostVoteSubmission(loggedInUser, post, postVoteSubmissionDto);
+            response = postVoteService.handlePostVoteSubmission(loggedInUser, post, postVoteSubmissionDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } else {
             System.out.println("### In processVoteSubmission(). Error case 2");

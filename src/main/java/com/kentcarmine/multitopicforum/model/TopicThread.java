@@ -6,7 +6,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.*;
+import java.util.Date;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Entity that models a topic thread, that is, a thread of one or more posts within a given topic forum.
@@ -84,6 +86,14 @@ public class TopicThread {
 
     public Post getLastPost() {
         return getPosts().last();
+    }
+
+    public Date getCreatedAt() {
+        return getFirstPost().getPostedAt();
+    }
+
+    public User getCreator() {
+        return getFirstPost().getUser();
     }
 
     public TopicForum getForum() {

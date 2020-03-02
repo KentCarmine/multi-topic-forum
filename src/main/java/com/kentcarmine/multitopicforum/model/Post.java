@@ -3,8 +3,10 @@ package com.kentcarmine.multitopicforum.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Entity that models a single forum Post within a TopicThread.
@@ -187,33 +189,23 @@ public class Post implements Comparable<Post> {
      * @return true if the given user can restore this post or if it has already been restored, false otherwise
      */
     public boolean isRestorableBy(User loggedInUser) {
-//        System.out.println("### in isRestorableBy");
         if (loggedInUser == null) {
-//            System.out.println("### loggedInUser == null. Returning false");
             return false;
         }
 
         if (!this.isDeleted() || this.getDeletedBy() == null) {
-//            System.out.println("### !this.isDeleted(): " + !this.isDeleted());
-//            System.out.println("### this.getDeletedBy() == null: " + this.getDeletedBy() == null);
-//            System.out.println("### Returning true");
             return true;
         }
 
         if (this.getDeletedBy().equals(loggedInUser) || loggedInUser.isHigherAuthority(this.getDeletedBy())) {
-//            System.out.println("### this.getDeletedBy().equals(loggedInUser): " + this.getDeletedBy().equals(loggedInUser));
-//            System.out.println("### loggedInUser.isHigherAuthority(this.getDeletedBy()): " + loggedInUser.isHigherAuthority(this.getDeletedBy()));
-//            System.out.println("### Returning true");
             return true;
         }
 
-//        System.out.println("### Else case. Returning false");
         return false;
     }
 
     @Override
     public int compareTo(Post o) {
-//        System.out.println("### In Post.compareTo. Comparing " + this + " to " + o);
         if (this.getPostedAt().getTime() > o.getPostedAt().getTime()) {
             return 1;
         } else if (this.getPostedAt().getTime() < o.getPostedAt().getTime()) {

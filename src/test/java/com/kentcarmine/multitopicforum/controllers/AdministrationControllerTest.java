@@ -22,8 +22,6 @@ class AdministrationControllerTest {
 
     AdministrationController controller;
 
-//    @Mock
-//    MessageSource messageSource;
     @Mock
     MessageService messageService;
 

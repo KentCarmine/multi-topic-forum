@@ -1,6 +1,5 @@
 package com.kentcarmine.multitopicforum.annotations;
 
-import com.kentcarmine.multitopicforum.validators.RestrictedCharacterSetValidator;
 import com.kentcarmine.multitopicforum.validators.SearchStringValidator;
 
 import javax.validation.Constraint;

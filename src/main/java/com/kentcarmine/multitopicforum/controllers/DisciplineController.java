@@ -7,6 +7,7 @@ import com.kentcarmine.multitopicforum.exceptions.InsufficientAuthorityException
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.model.Discipline;
 import com.kentcarmine.multitopicforum.model.User;
+import com.kentcarmine.multitopicforum.services.DisciplineService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,13 +24,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.SortedSet;
 
+/**
+ * Controller that handles discipline-related requests.
+ */
 @Controller
 public class DisciplineController {
     private final UserService userService;
+    private final DisciplineService disciplineService;
 
     @Autowired
-    public DisciplineController(UserService userService) {
+    public DisciplineController(UserService userService, DisciplineService disciplineService) {
         this.userService = userService;
+        this.disciplineService = disciplineService;
     }
 
     /**
@@ -40,7 +46,7 @@ public class DisciplineController {
     @GetMapping("/manageUserDiscipline/{username}")
     public String showManageUserDisciplinePage(@PathVariable String username, Model model) {
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         User user = userService.getUser(username);
 
@@ -53,8 +59,8 @@ public class DisciplineController {
                     + user.getUsername() + "'s disciplines.");
         }
 
-        SortedSet<DisciplineViewDto> activeDisciplines = userService.getActiveDisciplinesForUser(user, loggedInUser);
-        SortedSet<DisciplineViewDto> inactiveDisciplines = userService.getInactiveDisciplinesForUser(user);
+        SortedSet<DisciplineViewDto> activeDisciplines = disciplineService.getActiveDisciplinesForUser(user, loggedInUser);
+        SortedSet<DisciplineViewDto> inactiveDisciplines = disciplineService.getInactiveDisciplinesForUser(user);
         UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto();
         userDisciplineSubmissionDto.setDisciplinedUsername(username);
 
@@ -74,7 +80,7 @@ public class DisciplineController {
         ModelAndView mv;
 
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         updateDisciplineSubmissionBindingResult(userDisciplineSubmissionDto, bindingResult);
 
@@ -87,8 +93,8 @@ public class DisciplineController {
 
         if (bindingResult.hasErrors()) {
             System.out.println("### in processUserDisciplineSubmission(). bindingResult.hasErrors() case");
-            SortedSet<DisciplineViewDto> activeDisciplines = userService.getActiveDisciplinesForUser(disciplinedUser, loggedInUser);
-            SortedSet<DisciplineViewDto> inactiveDisciplines = userService.getInactiveDisciplinesForUser(disciplinedUser);
+            SortedSet<DisciplineViewDto> activeDisciplines = disciplineService.getActiveDisciplinesForUser(disciplinedUser, loggedInUser);
+            SortedSet<DisciplineViewDto> inactiveDisciplines = disciplineService.getInactiveDisciplinesForUser(disciplinedUser);
 
             mv = new ModelAndView("user-discipline-page", "userDisciplineSubmissionDto", userDisciplineSubmissionDto);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -99,7 +105,7 @@ public class DisciplineController {
         }
 
         System.out.println("### in processUserDisciplineSubmission(). pre userService.disciplineUser() case");
-        boolean successfulBan = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+        boolean successfulBan = disciplineService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
 
         String url = "redirect:/users/" + disciplinedUser.getUsername();
         if (successfulBan) {
@@ -136,7 +142,7 @@ public class DisciplineController {
         }
 
         Discipline greatestDurationActiveDiscipline = loggedInUser.getGreatestDurationActiveDiscipline();
-        String message = userService.getLoggedInUserBannedInformationMessage(greatestDurationActiveDiscipline);
+        String message = disciplineService.getLoggedInUserBannedInformationMessage(greatestDurationActiveDiscipline);
 
         model.addAttribute("username", username);
         model.addAttribute("message", message);
@@ -155,7 +161,7 @@ public class DisciplineController {
         System.out.println("### in processRescindDiscipline. username = " + username + ", id = " + id);
 
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         User disciplinedUser = userService.getUser(username);
         if (disciplinedUser == null) {
@@ -163,7 +169,7 @@ public class DisciplineController {
             throw new UserNotFoundException("User not found");
         }
 
-        Discipline disciplineToRescind = userService.getDisciplineByIdAndUser(id, disciplinedUser);
+        Discipline disciplineToRescind = disciplineService.getDisciplineByIdAndUser(id, disciplinedUser);
         if (disciplineToRescind == null) {
             System.out.println("Error in processRescindDiscipline. disciplineToRescind is null");
             throw new DisciplineNotFoundException("Discipline to rescind was not found");
@@ -173,7 +179,7 @@ public class DisciplineController {
             throw new InsufficientAuthorityException("Insufficient authority to rescind discipline");
         }
 
-        userService.rescindDiscipline(disciplineToRescind);
+        disciplineService.rescindDiscipline(disciplineToRescind);
 
         return "redirect:/manageUserDiscipline/" + disciplinedUser.getUsername();
     }

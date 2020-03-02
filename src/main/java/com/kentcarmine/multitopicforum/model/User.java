@@ -8,8 +8,12 @@ import org.hibernate.annotations.SortComparator;
 import org.hibernate.annotations.SortNatural;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
-import java.util.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -142,34 +146,12 @@ public class User {
         }
     }
 
-//    public boolean isHigherAuthority(User otherUser) {
-//        UserRole thisRank = null;
-//        for (Authority a : getAuthorities()) {
-//            if (thisRank == null || a.getAuthority().isHigherRank(thisRank)) {
-//                thisRank = a.getAuthority();
-//            }
-//        }
-//
-//        UserRole otherRank = null;
-//        for (Authority a : otherUser.getAuthorities()) {
-//            if (otherRank == null || a.getAuthority().isHigherRank(otherRank)) {
-//                otherRank = a.getAuthority();
-//            }
-//        }
-//
-//        return thisRank.isHigherRank(otherRank);
-//    }
-
     public boolean isHigherAuthority(User otherUser) {
-//        System.out.println("### in isHigherAuthority(). THIS.getHighestAuthority() = " + this.getHighestAuthority());
-//        System.out.println("### in isHigherAuthority(). otherUser = " + otherUser);
         return this.getHighestAuthority().isHigherRank(otherUser.getHighestAuthority());
     }
 
     public void removeAuthority(UserRole roleToRemove) {
-//        System.out.println("### Auth size before: " + authorities.size());
         this.authorities.removeIf((a) -> a.getAuthority().equals(roleToRemove));
-//        System.out.println("### Auth size after: " + authorities.size());
     }
 
     public boolean hasAuthority(UserRole role) {
@@ -334,7 +316,6 @@ public class User {
         Set<Discipline> activeDisciplines = getActiveDisciplines();
 
         Discipline mostSevere = null;
-//        Date now = Date.from(Instant.now());
 
         for (Discipline ad : activeDisciplines) {
             if (ad.getDisciplineType().equals(DisciplineType.BAN)) {
