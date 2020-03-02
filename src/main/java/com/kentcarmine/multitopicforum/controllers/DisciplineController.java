@@ -24,6 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.SortedSet;
 
+/**
+ * Controller that handles discipline-related requests.
+ */
 @Controller
 public class DisciplineController {
     private final UserService userService;

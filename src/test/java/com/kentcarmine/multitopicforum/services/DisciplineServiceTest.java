@@ -58,32 +58,15 @@ class DisciplineServiceTest {
     UserService userService;
 
     @Mock
-    AuthenticationService authenticationService;
-
-    @Mock
     UserRepository userRepository;
-
-    @Mock
-    VerificationTokenRepository verificationTokenRepository;
-
-    @Mock
-    PasswordResetTokenRepository passwordResetTokenRepository;
-
-    @Mock
-    AuthorityRepository authorityRepository;
 
     @Mock
     DisciplineRepository disciplineRepository;
 
     @Mock
-    MessageService messageService;
-
-    @Mock
     PasswordEncoder passwordEncoder;
 
-    private UserDtoToUserConverter userDtoToUserConverter;
     private DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
-    private UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
 
     private User testUser;
     private User testUser2;
@@ -94,11 +77,9 @@ class DisciplineServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        userDtoToUserConverter = new UserDtoToUserConverter();
         disciplineToDisciplineViewDtoConverter = new DisciplineToDisciplineViewDtoConverter();
-        userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
-        disciplineService = new DisciplineServiceImpl(userRepository, authorityRepository, disciplineRepository, disciplineToDisciplineViewDtoConverter, userService);
+        disciplineService = new DisciplineServiceImpl(userRepository, disciplineRepository, disciplineToDisciplineViewDtoConverter, userService);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -342,6 +323,5 @@ class DisciplineServiceTest {
 
         verify(disciplineRepository, times(1)).save(any());
     }
-
 
 }

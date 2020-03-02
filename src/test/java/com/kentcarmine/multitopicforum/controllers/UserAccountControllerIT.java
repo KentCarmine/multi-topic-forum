@@ -23,14 +23,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-//@ExtendWith(SpringExtension.class)
-//@EnableAutoConfiguration
-//@AutoConfigureTestDatabase
-//@Import(SecurityConfig.class)
-//@WebMvcTest(UserController.class)
+
 @ActiveProfiles("test")
 @SpringBootTest
-//@AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserAccountControllerIT {
     private static final String EXISTING_USER_NAME = "moderator2";
@@ -39,7 +34,6 @@ class UserAccountControllerIT {
     private static final String NON_EXISTING_USER_NAME = "fakeUser123";
     private static final String NON_EXISTING_USER_EMAIL = "fakeUser123@fakeTest.com";
 
-//    @Autowired
     private MockMvc mockMvc;
 
     @Autowired
@@ -303,27 +297,5 @@ class UserAccountControllerIT {
                 .andExpect(view().name("user-registration-form"))
                 .andExpect(model().hasErrors());
     }
-
-//    /**
-//     * When requesting a user's page as anonymous user, show that page.
-//     */
-//    @WithAnonymousUser
-//    @Test
-//    void showUserPage_LoggedOutUser() throws Exception {
-//        mockMvc.perform(get("/users/" + EXISTING_USER_NAME))
-//                .andExpect(status().isOk())
-//                .andExpect(view().name("user-page"));
-//    }
-//
-//    /**
-//     * When requesting a user's page as a logged in user, show that page.
-//     */
-//    @WithUserDetails(EXISTING_USER_NAME)
-//    @Test
-//    void showUserPage_LoggedInUser() throws Exception {
-//        mockMvc.perform(get("/users/" + EXISTING_USER_NAME_2))
-//                .andExpect(status().isOk())
-//                .andExpect(view().name("user-page"));
-//    }
 
 }

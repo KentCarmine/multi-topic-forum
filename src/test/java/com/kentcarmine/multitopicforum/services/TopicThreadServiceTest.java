@@ -64,9 +64,6 @@ class TopicThreadServiceTest {
     TopicThreadRepository topicThreadRepository;
 
     @Mock
-    PostVoteRepository postVoteRepository;
-
-    @Mock
     ForumService forumService;
 
     private TopicForum testTopicForum;

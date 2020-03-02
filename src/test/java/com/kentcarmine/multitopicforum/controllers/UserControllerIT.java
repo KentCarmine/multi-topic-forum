@@ -24,10 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserControllerIT {
     private static final String EXISTING_USER_NAME = "moderator2";
-//    private static final String EXISTING_USER_EMAIL = "moderator2@test.com";
     private static final String EXISTING_USER_NAME_2 = "admin2";
-//    private static final String NON_EXISTING_USER_NAME = "fakeUser123";
-//    private static final String NON_EXISTING_USER_EMAIL = "fakeUser123@fakeTest.com";
 
 
     private MockMvc mockMvc;

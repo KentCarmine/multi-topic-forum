@@ -2,7 +2,6 @@ package com.kentcarmine.multitopicforum.validators;
 
 import com.kentcarmine.multitopicforum.annotations.PasswordMatches;
 import com.kentcarmine.multitopicforum.dtos.PasswordDto;
-import com.kentcarmine.multitopicforum.dtos.UserDto;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

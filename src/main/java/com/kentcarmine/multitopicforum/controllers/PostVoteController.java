@@ -6,7 +6,6 @@ import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.PostVote;
 import com.kentcarmine.multitopicforum.model.PostVoteState;
 import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.services.ForumService;
 import com.kentcarmine.multitopicforum.services.PostService;
 import com.kentcarmine.multitopicforum.services.PostVoteService;
 import com.kentcarmine.multitopicforum.services.UserService;
@@ -20,18 +19,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-
+/**
+ * Controller that handles requests related to PostVotes.
+ */
 @RestController
 public class PostVoteController {
 
-    private final ForumService forumService;
     private final UserService userService;
     private final PostService postService;
     private final PostVoteService postVoteService;
 
     @Autowired
-    public PostVoteController(ForumService forumService, UserService userService, PostService postService, PostVoteService postVoteService) {
-        this.forumService = forumService;
+    public PostVoteController(UserService userService, PostService postService, PostVoteService postVoteService) {
         this.userService = userService;
         this.postService = postService;
         this.postVoteService = postVoteService;

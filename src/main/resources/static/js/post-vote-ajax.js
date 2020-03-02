@@ -15,7 +15,6 @@ $(document).ready(function() {
 function post_vote(event, vote_value) {
     let elem = $(event.target)[0];
     let postId = $(elem).attr("data-post-id");
-    // console.log("Post Id: " + postId);
 
     let msg = {
         postId: postId,

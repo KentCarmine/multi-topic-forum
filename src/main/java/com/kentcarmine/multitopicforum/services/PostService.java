@@ -17,6 +17,4 @@ public interface PostService {
     String getGetDeletedPostUrl(Post postToDelete);
 
     String getRestoredPostUrl(Post postToRestore);
-
-
 }

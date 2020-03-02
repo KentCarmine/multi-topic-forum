@@ -21,6 +21,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
 
+/**
+ * Controller that handles requests related to Posts.
+ */
 @Controller
 public class PostController {
 
@@ -52,7 +55,6 @@ public class PostController {
             throw new ForumNotFoundException("Forum " + forumName + " does not exist");
         }
 
-//        TopicThread thread = forumService.getThreadByForumNameAndId(forumName, threadId);
         TopicThread thread = topicThreadService.getThreadByForumNameAndId(forumName, threadId);
 
         if (thread == null) {

@@ -31,8 +31,6 @@ function deletePost(event) {
         cache: false,
         data: JSON.stringify(req)
     }).done(function (resp) {
-        // console.log("Resp:");
-        // console.log(resp);
         if (resp.reloadUrl !== null) {
             window.location.href = resp.reloadUrl;
             window.location.reload(true);

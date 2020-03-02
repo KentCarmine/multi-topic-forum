@@ -1,7 +1,5 @@
 package com.kentcarmine.multitopicforum.annotations;
 
-import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
-import com.kentcarmine.multitopicforum.validators.PasswordMatchValidator;
 import com.kentcarmine.multitopicforum.validators.UserDisciplineSubmissionValidator;
 
 import javax.validation.Constraint;

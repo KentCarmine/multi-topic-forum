@@ -140,7 +140,6 @@ class PostControllerTest {
     @Test
     void addPostToThread_validInput() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-//        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         final String content = "Test content";
@@ -164,7 +163,6 @@ class PostControllerTest {
 
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-//        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         final String content = "Test content";
@@ -173,7 +171,6 @@ class PostControllerTest {
         mockMvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("content", content))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
 
@@ -183,7 +180,6 @@ class PostControllerTest {
     @Test
     void addPostToThread_blankContent() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-//        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
@@ -205,7 +201,6 @@ class PostControllerTest {
     @Test
     void addPostToThread_noSuchForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
-//        when(forumService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         final String content = "Test content";
@@ -271,7 +266,6 @@ class PostControllerTest {
 
         when(postService.getPostById(anyLong())).thenReturn(testPost);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
-//        when(forumService.deletePost(any(), any())).thenReturn(testPost);
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -301,7 +295,6 @@ class PostControllerTest {
                 + "#post_id_" + testPost.getId();
 
         when(postService.getPostById(anyLong())).thenReturn(testPost);
-//        when(userService.getLoggedInUser()).thenReturn(testModerator);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testModerator);
         when(postService.deletePost(any(), any())).thenReturn(testPost);
         when(postService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
@@ -340,7 +333,6 @@ class PostControllerTest {
                 + "#post_id_" + testPost.getId();
 
         when(postService.getPostById(anyLong())).thenReturn(testPost);
-//        when(userService.getLoggedInUser()).thenReturn(testModerator);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testModerator);
         when(postService.deletePost(any(), any())).thenReturn(testPost);
         when(postService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
@@ -452,7 +444,6 @@ class PostControllerTest {
         RestorePostSubmissionDto req = new RestorePostSubmissionDto(192L);
 
         when(postService.getPostById(anyLong())).thenReturn(testPost);
-//        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
         when(postService.restorePost(any())).thenReturn(testPostRestored);
         when(postService.getRestoredPostUrl(any())).thenReturn(expectedRestoredPostUrl);

@@ -26,7 +26,6 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 class UserAccountServiceTest {
-
     private static final long DAY = 60 * 60 * 24;
     private static final String TEST_USERNAME = "TestUser";
     private static final String TEST_USER_PASSWORD = "testPassword";
@@ -54,9 +53,6 @@ class UserAccountServiceTest {
     UserService userService;
 
     @Mock
-    AuthenticationService authenticationService;
-
-    @Mock
     UserRepository userRepository;
 
     @Mock
@@ -69,17 +65,12 @@ class UserAccountServiceTest {
     AuthorityRepository authorityRepository;
 
     @Mock
-    DisciplineRepository disciplineRepository;
-
-    @Mock
     MessageService messageService;
 
     @Mock
     PasswordEncoder passwordEncoder;
 
     private UserDtoToUserConverter userDtoToUserConverter;
-    private DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
-    private UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
 
     private User testUser;
     private User testUser2;
@@ -91,8 +82,6 @@ class UserAccountServiceTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
         userDtoToUserConverter = new UserDtoToUserConverter();
-        disciplineToDisciplineViewDtoConverter = new DisciplineToDisciplineViewDtoConverter();
-        userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
         userAccountService = new UserAccountServiceImpl(userRepository, userDtoToUserConverter, passwordEncoder,
                 verificationTokenRepository, passwordResetTokenRepository, authorityRepository, messageService, userService);

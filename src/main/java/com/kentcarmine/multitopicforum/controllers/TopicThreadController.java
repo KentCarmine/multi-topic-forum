@@ -23,6 +23,9 @@ import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.util.SortedSet;
 
+/**
+ * Controller for TopicThread-related actions
+ */
 @Controller
 public class TopicThreadController {
 
@@ -124,7 +127,6 @@ public class TopicThreadController {
         disciplineService.handleDisciplinedUser(loggedInUser);
 
         TopicForum forum = forumService.getForumByName(name);
-//        TopicThread newThread = forumService.createNewTopicThread(topicThreadCreationDto, loggedInUser, forum);
         TopicThread newThread = topicThreadService.createNewTopicThread(topicThreadCreationDto, loggedInUser, forum);
 
         mv = new ModelAndView("redirect:/forum/" + name + "/show/" + newThread.getId());

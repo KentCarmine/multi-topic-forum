@@ -1,8 +1,6 @@
 package com.kentcarmine.multitopicforum.services;
 
-import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
-import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
 import com.kentcarmine.multitopicforum.dtos.UserDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
@@ -10,7 +8,10 @@ import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
-import com.kentcarmine.multitopicforum.repositories.*;
+import com.kentcarmine.multitopicforum.repositories.AuthorityRepository;
+import com.kentcarmine.multitopicforum.repositories.PasswordResetTokenRepository;
+import com.kentcarmine.multitopicforum.repositories.UserRepository;
+import com.kentcarmine.multitopicforum.repositories.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         this.userService = userService;
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Creates and saves a new User object from a given UserDto
      *
@@ -63,7 +63,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return createUser(userDtoToUserConverter.convert(userDto));
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Saves the given user to persistent storage.
      *
@@ -90,7 +89,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return userRepository.save(user);
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Get the user with the given verification token string
      *
@@ -103,7 +101,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return user;
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Get the VerificationToken from persistent storage that has the given token string
      *
@@ -115,7 +112,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return verificationTokenRepository.findByToken(token);
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Saves a registered user to persistent storage
      * @param user the user to save
@@ -126,7 +122,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         userRepository.save(user);
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Creates and saves a VerificationToken with the given token string that is associated with the given User
      *
@@ -139,7 +134,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         verificationTokenRepository.save(myToken);
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Updates an existing VerificationToken with the given existingToken string to use a new token string, and saves
      * that VerificationToken
@@ -154,7 +148,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return token;
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Checks if the given verification token is expired or invalid.
      *
@@ -170,7 +163,6 @@ public class UserAccountServiceImpl implements UserAccountService {
                 && user != null && !user.isEnabled();
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Creates and saves a PasswordResetToken associated with the given User. Also deletes all other PasswordResetTokens
      * associated with that user
@@ -190,7 +182,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return prToken;
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Confirms that the given User is associated with a PasswordResetToken with the given token string. Also updates
      * the given User's authority, allowing them to change their password.
@@ -223,7 +214,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return true;
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Updates the given user's password to newPassword and revokes the now-unneeded password change authority.
      *
@@ -240,7 +230,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         userRepository.save(user);
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Returns a message in the given locale that indicates that the authentication token is invalid.
      *
@@ -252,7 +241,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return messageService.getMessage("auth.message.invalidToken", locale);
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Returns a message in the given locale that indicates that the authentication token is expired or invalid.
      *
@@ -264,7 +252,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return messageService.getMessage("auth.message.expired", locale);
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Get the main content of the password reset email body in the given locale.
      *
@@ -277,7 +264,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return messageService.getMessage("message.resetPasswordLinkPrompt", locale) + "\n" + resetUrl;
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Get the main content of the resend verification token email in the given locale.
      *
@@ -290,7 +276,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return messageService.getMessage("message.resendToken", locale) + "\n" + confirmationUrl;
     }
 
-    // TODO: Refactor into UserAccountService
     /**
      * Get a message in the given locale to display to users indicating that authentication failed, and why it failed.
      *

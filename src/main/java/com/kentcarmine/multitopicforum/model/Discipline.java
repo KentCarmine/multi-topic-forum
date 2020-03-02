@@ -142,12 +142,6 @@ public class Discipline {
             endDate = Date.from(disciplinedAt.toInstant().plusSeconds(disciplineDurationHours.intValue() * SECONDS_PER_HOUR));
         }
 
-//        if (disciplineType.equals(DisciplineType.BAN)) {
-//            endDate = Date.from(Instant.MAX.minusSeconds(1));
-//        } else {
-//            endDate = Date.from(disciplinedAt.toInstant().plusSeconds(disciplineDurationHours.intValue() * SECONDS_PER_HOUR));
-//        }
-
         return endDate;
     }
 

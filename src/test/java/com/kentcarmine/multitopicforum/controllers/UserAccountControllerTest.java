@@ -75,8 +75,6 @@ class UserAccountControllerTest {
     @Mock
     ApplicationEventPublisher applicationEventPublisher;
 
-    //    @Mock
-//    MessageSource messageSource;
     @Mock
     MessageService messageService;
 
@@ -173,7 +171,6 @@ class UserAccountControllerTest {
         when(userService.getLoggedInUser()).thenReturn(testUser);
 
         mockMvc.perform(get("/registerUser"))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
     }
@@ -192,7 +189,6 @@ class UserAccountControllerTest {
                 .param("username", testUser.getUsername())
                 .param("email", testUser.getEmail())
                 .param("password", testUser.getPassword()))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
 
@@ -531,7 +527,6 @@ class UserAccountControllerTest {
         PromoteUserResponseDto purDto = new PromoteUserResponseDto(purDtoMsg, purDtoNewPromoteButtonUrl, purDtoNewDemoteButtonUrl);
 
         when(userService.getUser(any())).thenReturn(testUser);
-//        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
         when(userService.isValidPromotionRequest(any(), any(), any())).thenReturn(true);
         when(userService.promoteUser(any())).thenReturn(promotedUser);
@@ -661,7 +656,6 @@ class UserAccountControllerTest {
                 expectedNewDemoteButtonUrl);
 
         when(userService.getUser(anyString())).thenReturn(testModerator);
-//        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
         when(userService.isValidDemotionRequest(any(), any(), any())).thenReturn(true);
         when(userService.demoteUser(any())).thenReturn(demotedUser);
@@ -697,10 +691,8 @@ class UserAccountControllerTest {
         demotedUser.removeAuthority(UserRole.MODERATOR);
 
         when(userService.getUser(anyString())).thenReturn(testModerator);
-//        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
         when(userService.isValidDemotionRequest(any(), any(), any())).thenReturn(false);
-//        when(userService.demoteUser(any())).thenReturn(demotedUser);
 
         DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
 
@@ -793,15 +785,11 @@ class UserAccountControllerTest {
     @Test
     void demoteUserButton_valid() throws Exception {
         when(userService.getUser(any())).thenReturn(testModerator);
-//        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
 
         MvcResult mvcResult = mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/promote-demote-buttons :: demote-button-fragment"))
-//                .andExpect(model().attributeExists("user"))
-//                .andExpect(model().attributeExists("loggedInUser"));
-//                .andExpect(model().attributeExists("userRankAdjustmentDto"));
                 .andReturn();
 
         ModelAndView mv = mvcResult.getModelAndView();
@@ -811,14 +799,10 @@ class UserAccountControllerTest {
     @Test
     void demoteUserButton_nullUser() throws Exception {
         when(userService.getUser(any())).thenReturn(null);
-//        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
 
         MvcResult mvcResult = mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
                 .andExpect(status().isInternalServerError())
-//                .andExpect(model().attributeDoesNotExist("user"))
-//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
-//                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"));
                 .andReturn();
 
         ModelAndView mv = mvcResult.getModelAndView();
@@ -833,9 +817,6 @@ class UserAccountControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))
                 .andExpect(status().isInternalServerError())
-//                .andExpect(model().attributeDoesNotExist("user"))
-//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
-//                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"));
                 .andReturn();
 
         ModelAndView mv = mvcResult.getModelAndView();
@@ -845,14 +826,11 @@ class UserAccountControllerTest {
     @Test
     void promoteUserButton_valid() throws Exception {
         when(userService.getUser(any())).thenReturn(testUser);
-//        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
 
         MvcResult mvcResult = mockMvc.perform(get("/promoteUserButton/" + testUser.getUsername()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/promote-demote-buttons :: promote-button-fragment"))
-//                .andExpect(model().attributeDoesNotExist("user"))
-//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
                 .andReturn();
 
         ModelAndView mv = mvcResult.getModelAndView();
@@ -862,14 +840,10 @@ class UserAccountControllerTest {
     @Test
     void promoteUserButton_nullUser() throws Exception {
         when(userService.getUser(any())).thenReturn(null);
-//        when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
 
         MvcResult mvcResult = mockMvc.perform(get("/promoteUserButton/" + TEST_USERNAME))
                 .andExpect(status().isInternalServerError())
-//                .andExpect(model().attributeDoesNotExist("user"))
-//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
-//                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"));
                 .andReturn();
 
         ModelAndView mv = mvcResult.getModelAndView();
@@ -879,14 +853,10 @@ class UserAccountControllerTest {
     @Test
     void promoteUserButton_nullLoggedInUser() throws Exception {
         when(userService.getUser(any())).thenReturn(testUser);
-//        when(userService.getLoggedInUser()).thenReturn(null);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(null);
 
         MvcResult mvcResult = mockMvc.perform(get("/promoteUserButton/" + testUser.getUsername()))
                 .andExpect(status().isInternalServerError())
-//                .andExpect(model().attributeDoesNotExist("user"))
-//                .andExpect(model().attributeDoesNotExist("loggedInUser"));
-//                .andExpect(model().attributeDoesNotExist("userRankAdjustmentDto"))
                 .andReturn();
 
         ModelAndView mv = mvcResult.getModelAndView();

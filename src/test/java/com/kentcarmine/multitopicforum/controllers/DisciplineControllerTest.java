@@ -37,8 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class DisciplineControllerTest {
 
-    private static final long DAY = 60 * 60 * 24;
-
     private static final String TEST_USERNAME = "TestUser";
     private static final String TEST_USER_PASSWORD = "testPassword";
     private static final String TEST_USER_EMAIL = "testuser@test.com";
@@ -132,7 +130,6 @@ class DisciplineControllerTest {
         when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
 
         mockMvc.perform(get("/manageUserDiscipline/fakedata"))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
     }
@@ -143,7 +140,6 @@ class DisciplineControllerTest {
         when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
 
         mockMvc.perform(get("/manageUserDiscipline/" + testAdmin.getUsername()))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/forbidden"))
                 .andExpect(model().attributeDoesNotExist("userDisciplineSubmissionDto", "activeDisciplines",
@@ -209,7 +205,6 @@ class DisciplineControllerTest {
                 .param("disciplinedUsername", testAdmin.getUsername())
                 .param("disciplineType", "Ban")
                 .param("reason", discipline.getReason()))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
 
@@ -435,7 +430,6 @@ class DisciplineControllerTest {
         doThrow(new DisciplinedUserException(testAdmin)).when(disciplineService).handleDisciplinedUser(any());
 
         mockMvc.perform(post("/rescindDiscipline/" + testUser.getUsername() + "/" + discipline.getId()))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testAdmin.getUsername()));
 
@@ -480,7 +474,6 @@ class DisciplineControllerTest {
         when(disciplineService.getDisciplineByIdAndUser(12L, testUser)).thenReturn(discipline);
 
         mockMvc.perform(post("/rescindDiscipline/" + testUser.getUsername() + "/" + discipline.getId()))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/forbidden"));
 

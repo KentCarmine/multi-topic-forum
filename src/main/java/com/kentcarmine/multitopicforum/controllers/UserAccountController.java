@@ -27,6 +27,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Locale;
 
+/**
+ * Controller for actions related to a User's account (ie. registration, updating password or tokens, promotions, etc).
+ */
 @Controller
 public class UserAccountController {
 

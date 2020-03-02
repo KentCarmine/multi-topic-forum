@@ -1,7 +1,5 @@
 package com.kentcarmine.multitopicforum.services;
 
-import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
-import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.Post;
@@ -9,7 +7,6 @@ import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
-import com.kentcarmine.multitopicforum.repositories.PostVoteRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,27 +21,21 @@ import java.util.*;
 public class TopicThreadServiceImpl implements TopicThreadService {
 
     private final TopicForumRepository topicForumRepository;
-//    private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
     private final TopicThreadRepository topicThreadRepository;
     private final PostRepository postRepository;
-//    private final PostVoteRepository postVoteRepository;
     private final ForumService forumService;
 
 
     @Autowired
     public TopicThreadServiceImpl(TopicForumRepository topicForumRepository,
-//                            TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter,
-                            TopicThreadRepository topicThreadRepository, PostRepository postRepository//,
-                            /*PostVoteRepository postVoteRepository*/, ForumService forumService) {
+                                  TopicThreadRepository topicThreadRepository, PostRepository postRepository,
+                                  ForumService forumService) {
         this.topicForumRepository = topicForumRepository;
-//        this.topicForumDtoToTopicForumConverter = topicForumDtoToTopicForumConverter;
         this.topicThreadRepository = topicThreadRepository;
         this.postRepository = postRepository;
         this.forumService = forumService;
-//        this.postVoteRepository = postVoteRepository;
     }
 
-    // TODO: Refactor into TopicThreadService
     /**
      * Creates and saves a new TopicThread including its first post the belongs to the given TopicForum and User. The
      * content and title of the thread will be gotten from the topicThreadCreationDto/
@@ -68,7 +59,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         return topicThread;
     }
 
-    // TODO: Refactor into TopicThreadService
     /**
      * Gets a given TopicThread that has an ID of theadID and that belongs to the forum with the name forumName. If no
      * such thread exists, returns null.
@@ -86,7 +76,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
     }
 
-    // TODO: Refactor into TopicThreadService
     /**
      * Searches for all topic threads in a topic forum with the given forumName that have titles that contain all tokens
      * (delimited on double quotes and spaces, but not spaces within double quotes) of the given search text. Empty
@@ -140,7 +129,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         return threads;
     }
 
-    // TODO: Refactor into TopicThreadService
     /**
      * Check if the given user can lock the given thread.
      *
@@ -160,7 +148,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         return !thread.isLocked() && userHasAdministrativeRights && userOutranksThreadCreator;
     }
 
-    // TODO: Refactor into TopicThreadService
     /**
      * Check if the given user can unlock the given thread.
      *
@@ -180,7 +167,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         return thread.isLocked() && userHasAdministrativeRights && userOutranksThreadLocker;
     }
 
-    // TODO: Refactor into TopicThreadService
     /**
      * If the given user has the permissions to lock the given thread, flags that thread as locked and returns true.
      * Otherwise, does nothing and returns false.
@@ -199,7 +185,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
     }
 
-    // TODO: Refactor into TopicThreadService
     /**
      * If the given user has the permissions to unlock the given thread, flags that thread as unlocked and returns true.
      * Otherwise, does nothing and returns false.
@@ -218,7 +203,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
     }
 
-    // TODO: Refactor into TopicThreadService
     /**
      * Gets a thread with the given ID, or null if no such thread exists.
      * @param id the id of the thread to get

@@ -26,10 +26,7 @@ class PostServiceTest {
 
     private static final String TEST_TOPIC_FORUM_NAME = "TestName";
     private static final String TEST_TOPIC_FORUM_DESC = "Description of test topic forum";
-    private static final String TEST_TOPIC_FORUM_NAME_2 = "TestName2";
-    private static final String TEST_TOPIC_FORUM_DESC_2 = "Description of test topic forum 2";
     private static final String TEST_TOPIC_THREAD_NAME = "Test Thread Name";
-    private static final String TEST_TOPIC_THREAD_NAME_2 = "Test Thread Name 2";
 
     private static final String TEST_USERNAME = "TestUser";
     private static final String TEST_USER_PASSWORD = "testPassword";
@@ -48,26 +45,12 @@ class PostServiceTest {
     private static final String TEST_ADMIN_EMAIL = "testadmin@test.com";
 
     @Mock
-    TopicForumRepository topicForumRepository;
-
-    @Mock
     PostRepository postRepository;
-
-    @Mock
-    TopicThreadRepository topicThreadRepository;
-
-    @Mock
-    TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
-
-    @Mock
-    PostVoteRepository postVoteRepository;
 
     PostService postService;
 
     private TopicForum testTopicForum;
-    private TopicForum testTopicForum2;
     private TopicThread testTopicThread;
-    private TopicThread testTopicThread2;
     private Post testPost;
 
     private User testUser;
@@ -79,8 +62,7 @@ class PostServiceTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        postService = new PostServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter, topicThreadRepository, postRepository, postVoteRepository);
-//        forumService = new ForumServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter, topicThreadRepository, postRepository, postVoteRepository);
+        postService = new PostServiceImpl(postRepository);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -101,9 +83,6 @@ class PostServiceTest {
         testPost.setUser(testUser);
         testTopicThread.getPosts().add(testPost);
         testTopicForum.addThread(testTopicThread);
-
-        testTopicForum2 = new TopicForum(TEST_TOPIC_FORUM_NAME_2, TEST_TOPIC_FORUM_DESC_2);
-        testTopicThread2 = new TopicThread(TEST_TOPIC_THREAD_NAME_2, testTopicForum2);
     }
 
     @Test
@@ -191,6 +170,5 @@ class PostServiceTest {
 
         verify(postRepository, times(1)).save(any());
     }
-
 
 }

@@ -1,7 +1,5 @@
 package com.kentcarmine.multitopicforum.dtos;
 
-import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 

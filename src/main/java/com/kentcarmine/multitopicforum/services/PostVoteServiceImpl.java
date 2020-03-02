@@ -1,13 +1,9 @@
 package com.kentcarmine.multitopicforum.services;
 
-import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
 import com.kentcarmine.multitopicforum.dtos.PostVoteResponseDto;
 import com.kentcarmine.multitopicforum.dtos.PostVoteSubmissionDto;
 import com.kentcarmine.multitopicforum.model.*;
-import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.PostVoteRepository;
-import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
-import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,25 +14,14 @@ import java.util.Map;
 @Service
 public class PostVoteServiceImpl implements PostVoteService {
 
-    private final TopicForumRepository topicForumRepository;
-    private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
-    private final TopicThreadRepository topicThreadRepository;
-    private final PostRepository postRepository;
+
     private final PostVoteRepository postVoteRepository;
 
     @Autowired
-    public PostVoteServiceImpl(TopicForumRepository topicForumRepository,
-                            TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter,
-                            TopicThreadRepository topicThreadRepository, PostRepository postRepository,
-                            PostVoteRepository postVoteRepository) {
-        this.topicForumRepository = topicForumRepository;
-        this.topicForumDtoToTopicForumConverter = topicForumDtoToTopicForumConverter;
-        this.topicThreadRepository = topicThreadRepository;
-        this.postRepository = postRepository;
+    public PostVoteServiceImpl(PostVoteRepository postVoteRepository) {
         this.postVoteRepository = postVoteRepository;
     }
 
-    // TODO: Refactor into PostVoteService
     /**
      * Generates a map from Post IDs to votes made on those posts by the given user. Those values can be 1 (upvote),
      * 0 (no vote), or -1 (downvote).
@@ -61,7 +46,6 @@ public class PostVoteServiceImpl implements PostVoteService {
         return voteMap;
     }
 
-    // TODO: Refactor into PostVoteService
     /**
      * Get the PostVote made by the given user on the given post, or null if no such PostVote exists.
      * @param user the user owning the PostVote
@@ -73,7 +57,6 @@ public class PostVoteServiceImpl implements PostVoteService {
         return postVoteRepository.findByUserAndPost(user, post);
     }
 
-    // TODO: Refactor into PostVoteService
     /**
      * Processes submission of a PostVote by the given user on the given post with vote values in the
      * postVoteSubmissionDto. Either creates a new vote if no vote by that user on that post exists, or updates that

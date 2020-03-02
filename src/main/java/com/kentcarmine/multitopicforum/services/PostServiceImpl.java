@@ -1,14 +1,10 @@
 package com.kentcarmine.multitopicforum.services;
 
-import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
 import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
-import com.kentcarmine.multitopicforum.repositories.PostVoteRepository;
-import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
-import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,25 +19,13 @@ import java.util.Optional;
 @Service
 public class PostServiceImpl implements PostService {
 
-    private final TopicForumRepository topicForumRepository;
-    private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
-    private final TopicThreadRepository topicThreadRepository;
     private final PostRepository postRepository;
-    private final PostVoteRepository postVoteRepository;
 
     @Autowired
-    public PostServiceImpl(TopicForumRepository topicForumRepository,
-                            TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter,
-                            TopicThreadRepository topicThreadRepository, PostRepository postRepository,
-                            PostVoteRepository postVoteRepository) {
-        this.topicForumRepository = topicForumRepository;
-        this.topicForumDtoToTopicForumConverter = topicForumDtoToTopicForumConverter;
-        this.topicThreadRepository = topicThreadRepository;
+    public PostServiceImpl(PostRepository postRepository) {
         this.postRepository = postRepository;
-        this.postVoteRepository = postVoteRepository;
     }
 
-    // TODO: Refactor into PostService
     /**
      * Create and save a new Post with the content within the given PostCreationDto, and belonging to the given User
      * and TopicThread.
@@ -56,10 +40,10 @@ public class PostServiceImpl implements PostService {
         Post post = new Post(postCreationDto.getContent(), getCurrentDate());
         post.setUser(creatingUser);
         post.setThread(thread);
+
         return postRepository.save(post);
     }
 
-    // TODO: Refactor into PostService
     @Override
     public Post getPostById(Long id) {
         Optional<Post> postOpt = postRepository.findById(id);
@@ -70,7 +54,6 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    // TODO: Refactor into PostService
     /**
      * Flag the given post as deleted by the deleting user at the current time.
      *
@@ -91,7 +74,6 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    // TODO: Refactor into PostService
     /**
      * Restore the given post from deletion.
      *
@@ -107,7 +89,6 @@ public class PostServiceImpl implements PostService {
         return postRepository.save(post);
     }
 
-    // TODO: Refactor into PostService
     /**
      * Get the show URL of a deleted post
      *
@@ -122,7 +103,6 @@ public class PostServiceImpl implements PostService {
                 + "#post_id_" + postToDelete.getId();
     }
 
-    // TODO: Refactor into PostService
     /**
      * Get the show URL of a restored post
      *

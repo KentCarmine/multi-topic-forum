@@ -23,6 +23,4 @@ public interface DisciplineService {
     void rescindDiscipline(Discipline disciplineToRescind);
 
     String getLoggedInUserBannedInformationMessage(Discipline greatestDurationActiveDiscipline);
-
-
 }

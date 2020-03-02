@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Service that provies information about the currently authenticated user.
+ * Service that provides information about the currently authenticated user.
  */
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -69,7 +69,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(newAuth);
     }
 
-    @Override
     public void debugPrintAuthorities() {
         System.out.println("### Authorities");
         authenticationFacade.getAuthentication().getAuthorities().forEach((a) -> a.getAuthority());

@@ -1,17 +1,15 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
-import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
-import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
 import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.model.Discipline;
 import com.kentcarmine.multitopicforum.model.DisciplineType;
 import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.repositories.*;
+import com.kentcarmine.multitopicforum.repositories.DisciplineRepository;
+import com.kentcarmine.multitopicforum.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,43 +20,20 @@ import java.util.*;
 public class DisciplineServiceImpl implements DisciplineService {
 
     private final UserRepository userRepository;
-//    private final UserDtoToUserConverter userDtoToUserConverter;
-//    private final PasswordEncoder passwordEncoder;
-//    private final AuthenticationService authenticationService;
-//    private final VerificationTokenRepository verificationTokenRepository;
-//    private final PasswordResetTokenRepository passwordResetTokenRepository;
-//    private final AuthorityRepository authorityRepository;
     private final DisciplineRepository disciplineRepository;
     private final DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
-//    private final UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
-//    private final MessageService messageService;
     private final UserService userService;
 
     @Autowired
-    public DisciplineServiceImpl(UserRepository userRepository, /*AuthenticationService authenticationService,*/
-//                           UserDtoToUserConverter userDtoToUserConverter, PasswordEncoder passwordEncoder,
-//                           VerificationTokenRepository verificationTokenRepository,
-//                           PasswordResetTokenRepository passwordResetTokenRepository,
-                           AuthorityRepository authorityRepository, DisciplineRepository disciplineRepository,
+    public DisciplineServiceImpl(UserRepository userRepository, DisciplineRepository disciplineRepository,
                            DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter,
-//                           UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter,
-                           /*MessageService messageService, */UserService userService) {
+                                 UserService userService) {
         this.userRepository = userRepository;
-//        this.userDtoToUserConverter = userDtoToUserConverter;
-//        this.passwordEncoder = passwordEncoder;
-//        this.authenticationService = authenticationService;
-//        this.verificationTokenRepository = verificationTokenRepository;
-//        this.passwordResetTokenRepository = passwordResetTokenRepository;
-//        this.authorityRepository = authorityRepository;
         this.disciplineRepository = disciplineRepository;
         this.disciplineToDisciplineViewDtoConverter = disciplineToDisciplineViewDtoConverter;
-//        this.userToUserRankAdjustmentDtoConverter = userToUserRankAdjustmentDtoConverter;
-//        this.messageService = messageService;
         this.userService = userService;
     }
 
-
-    // TODO: Refactor into DisciplineService
     /**
      * Creates a new discipline entry described by the UserDisciplineSubmissionDto and created by the loggedInUser.
      *
@@ -95,7 +70,6 @@ public class DisciplineServiceImpl implements DisciplineService {
         return true;
     }
 
-    // TODO: Refactor into DisciplineService
     /**
      * Throw a DisciplinedUserException if the given user has any active disciplines
      *
@@ -110,7 +84,6 @@ public class DisciplineServiceImpl implements DisciplineService {
         }
     }
 
-    // TODO: Refactor into DisciplineService
     /**
      * Get a SortedSet of DisciplineViewDtos for all the given user's active disciplines.
      *
@@ -144,7 +117,6 @@ public class DisciplineServiceImpl implements DisciplineService {
         return getSortedDisciplineViewDtos(user.getActiveDisciplines(), comparator, loggedInUser);
     }
 
-    // TODO: Refactor into DisciplineService
     /**
      * Get a SortedSet of DisciplineViewDtos for all the given user's inactive disciplines.
      *
@@ -171,7 +143,6 @@ public class DisciplineServiceImpl implements DisciplineService {
         return getSortedDisciplineViewDtos(user.getInactiveDisciplines(), comparator, null);
     }
 
-    // TODO: Refactor into DisciplineService
     /**
      * Find the discipline object with the given ID and associated with the given user. Returns null if no such object
      * exists.
@@ -197,7 +168,6 @@ public class DisciplineServiceImpl implements DisciplineService {
         return discipline;
     }
 
-    // TODO: Refactor into DisciplineService
     @Override
     @Transactional
     public void rescindDiscipline(Discipline disciplineToRescind) {
@@ -205,31 +175,6 @@ public class DisciplineServiceImpl implements DisciplineService {
         disciplineRepository.save(disciplineToRescind);
     }
 
-
-
-    // TODO: Refactor into DisciplineService
-    /**
-     * Helper method that converts a Set of Disciplines into a SortedSet of DisciplineViewDtos sorted by duration.
-     *
-     * @param disciplines the set of Disciplines to convert
-     * @return a SortedSet of DisciplineViewDtos sorted by duration
-     */
-    private SortedSet<DisciplineViewDto> getSortedDisciplineViewDtos(Set<Discipline> disciplines, Comparator<DisciplineViewDto> comparator, User loggedInUser) {
-        SortedSet<DisciplineViewDto> dtoSet = new TreeSet<>(comparator);
-
-        for (Discipline d : disciplines) {
-            DisciplineViewDto dto = disciplineToDisciplineViewDtoConverter.convert(d);
-
-            dto.setCanRescind(loggedInUser != null && (loggedInUser.equals(d.getDiscipliningUser())
-                    || loggedInUser.isHigherAuthority(d.getDiscipliningUser())));
-
-            dtoSet.add(dto);
-        }
-
-        return dtoSet;
-    }
-
-    // TODO: Refactor into DisciplineService
     /**
      * Returns a message that informs they user that they have been disciplined, the reason for this, and the
      * discipline's duration.
@@ -252,5 +197,26 @@ public class DisciplineServiceImpl implements DisciplineService {
         msgBuilder.append(" The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
 
         return msgBuilder.toString();
+    }
+
+    /**
+     * Helper method that converts a Set of Disciplines into a SortedSet of DisciplineViewDtos sorted by duration.
+     *
+     * @param disciplines the set of Disciplines to convert
+     * @return a SortedSet of DisciplineViewDtos sorted by duration
+     */
+    private SortedSet<DisciplineViewDto> getSortedDisciplineViewDtos(Set<Discipline> disciplines, Comparator<DisciplineViewDto> comparator, User loggedInUser) {
+        SortedSet<DisciplineViewDto> dtoSet = new TreeSet<>(comparator);
+
+        for (Discipline d : disciplines) {
+            DisciplineViewDto dto = disciplineToDisciplineViewDtoConverter.convert(d);
+
+            dto.setCanRescind(loggedInUser != null && (loggedInUser.equals(d.getDiscipliningUser())
+                    || loggedInUser.isHigherAuthority(d.getDiscipliningUser())));
+
+            dtoSet.add(dto);
+        }
+
+        return dtoSet;
     }
 }
