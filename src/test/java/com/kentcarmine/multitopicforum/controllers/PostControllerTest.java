@@ -79,6 +79,9 @@ class PostControllerTest {
     @Mock
     PostService postService;
 
+    @Mock
+    DisciplineService disciplineService;
+
     TopicForum testTopicForum;
     TopicThread testTopicForumThread;
 
@@ -94,7 +97,7 @@ class PostControllerTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        postController = new PostController(forumService, userService, topicThreadService, postService);
+        postController = new PostController(forumService, userService, topicThreadService, postService, disciplineService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(postController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -157,7 +160,7 @@ class PostControllerTest {
         Discipline discipline = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         testUser.addDiscipline(discipline);
 
-        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+        doThrow(new DisciplinedUserException(testUser)).when(disciplineService).handleDisciplinedUser(any());
 
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);

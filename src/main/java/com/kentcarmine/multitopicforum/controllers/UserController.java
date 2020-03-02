@@ -8,6 +8,7 @@ import com.kentcarmine.multitopicforum.exceptions.InsufficientAuthorityException
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
+import com.kentcarmine.multitopicforum.services.DisciplineService;
 import com.kentcarmine.multitopicforum.services.EmailService;
 import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserService;
@@ -46,6 +47,7 @@ public class UserController {
     private final UserService userService;
 //    private final ApplicationEventPublisher applicationEventPublisher;
 //    private final MessageSource messageSource;
+    private final DisciplineService disciplineService;
 
     private final EmailService emailService;
 
@@ -53,11 +55,12 @@ public class UserController {
 //    public UserController(UserService userService, ApplicationEventPublisher applicationEventPublisher,
 //                          MessageSource messageSource, EmailService emailService) {
     public UserController(UserService userService, /*ApplicationEventPublisher applicationEventPublisher,*/
-                          EmailService emailService) {
+                          EmailService emailService, DisciplineService disciplineService) {
         this.userService = userService;
 //        this.applicationEventPublisher = applicationEventPublisher;
 //        this.messageSource = messageSource;
         this.emailService = emailService;
+        this.disciplineService = disciplineService;
     }
 
 //    // TODO: Refactor into UserAccountController
@@ -85,7 +88,7 @@ public class UserController {
 //            SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().forEach((a) -> System.out.println(((GrantedAuthority) a).toString()));
             User user = userService.getUser(username);
             User loggedInUser = userService.getLoggedInUser();
-            userService.handleDisciplinedUser(loggedInUser);
+            disciplineService.handleDisciplinedUser(loggedInUser);
 
             model.addAttribute("user", user);
             model.addAttribute("loggedInUser", loggedInUser);

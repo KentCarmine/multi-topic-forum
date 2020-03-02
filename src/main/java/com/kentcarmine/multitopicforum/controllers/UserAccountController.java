@@ -6,7 +6,9 @@ import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
+import com.kentcarmine.multitopicforum.services.DisciplineService;
 import com.kentcarmine.multitopicforum.services.EmailService;
+import com.kentcarmine.multitopicforum.services.UserAccountService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -31,13 +33,18 @@ public class UserAccountController {
     private final UserService userService;
     private final EmailService emailService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final UserAccountService userAccountService;
+    private final DisciplineService disciplineService;
 
     @Autowired
     public UserAccountController(UserService userService, ApplicationEventPublisher applicationEventPublisher,
-                          EmailService emailService) {
+                          EmailService emailService, UserAccountService userAccountService,
+                                 DisciplineService disciplineService) {
         this.userService = userService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.emailService = emailService;
+        this.userAccountService = userAccountService;
+        this.disciplineService = disciplineService;
     }
 
     /**
@@ -61,7 +68,7 @@ public class UserAccountController {
     @GetMapping("/registerUser")
     public String showUserRegistrationForm(Model model) {
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         if (loggedInUser != null) {
             return "redirect:/users/" + loggedInUser.getUsername();
@@ -79,7 +86,7 @@ public class UserAccountController {
     @PostMapping("/processUserRegistration")
     public ModelAndView processUserRegistration(@Valid @ModelAttribute("user") UserDto user, BindingResult bindingResult, HttpServletRequest request) {
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         if (loggedInUser != null) {
             return new ModelAndView("redirect:/users/" + loggedInUser.getUsername());
@@ -92,7 +99,7 @@ public class UserAccountController {
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
             return mv;
         } else {
-            User registeredUser = userService.createUserByUserDto(user);
+            User registeredUser = userAccountService.createUserByUserDto(user);
             try {
                 String appUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString() + request.getContextPath();
                 applicationEventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request.getLocale(), appUrl));
@@ -115,13 +122,13 @@ public class UserAccountController {
     public ModelAndView confirmRegistration(WebRequest request, @RequestParam("token") String token) {
         System.out.println("### in confirmRegistration()");
         Locale locale = request.getLocale();
-        VerificationToken verificationToken = userService.getVerificationToken(token);
+        VerificationToken verificationToken = userAccountService.getVerificationToken(token);
 
         ModelAndView mv;
 
         if (verificationToken == null) {
             System.out.println("### in confirmRegistration(), null token case");
-            String message = userService.getInvalidAuthTokenMessage(locale);
+            String message = userAccountService.getInvalidAuthTokenMessage(locale);
 
             mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
             mv.getModel().put("message", message);
@@ -129,9 +136,9 @@ public class UserAccountController {
         }
 
         User user = verificationToken.getUser();
-        if (userService.isVerificationTokenExpired(verificationToken)) {
+        if (userAccountService.isVerificationTokenExpired(verificationToken)) {
             System.out.println("### in confirmRegistration(), isVerificationTokenExpired() case");
-            String message = userService.getExpiredAuthTokenMessage(locale);
+            String message = userAccountService.getExpiredAuthTokenMessage(locale);
 
             mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
             mv.getModel().put("message", message);
@@ -145,7 +152,7 @@ public class UserAccountController {
         }
 
         System.out.println("### in confirmRegistration(), creating registration case");
-        userService.saveRegisteredUser(user);
+        userAccountService.saveRegisteredUser(user);
         mv = new ModelAndView("redirect:/login?registrationSuccess");
         return mv;
     }
@@ -156,9 +163,9 @@ public class UserAccountController {
      */
     @GetMapping("/resendRegistrationEmail")
     public String resendRegistrationEmail(HttpServletRequest request, @RequestParam("token") String existingToken) {
-        VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
+        VerificationToken newToken = userAccountService.generateNewVerificationToken(existingToken);
 
-        User user = userService.getUserByVerificationToken(newToken.getToken());
+        User user = userAccountService.getUserByVerificationToken(newToken.getToken());
 
         if (user.isEnabled()) {
             return "redirect:/login";
@@ -198,7 +205,7 @@ public class UserAccountController {
         User user = userService.getUserByEmail(userEmailDto.getEmail());
 
         if (user != null && user.isEnabled()) {
-            PasswordResetToken resetToken = userService.createPasswordResetTokenForUser(user);
+            PasswordResetToken resetToken = userAccountService.createPasswordResetTokenForUser(user);
             emailService.sendPasswordResetEmail(getAppUrl(request), request.getLocale(), resetToken, user);
         }
 
@@ -214,7 +221,7 @@ public class UserAccountController {
     public String showChangePasswordForm(Model model, @RequestParam("username") String username,
                                          @RequestParam("token") String token) {
         User user = userService.getUser(username);
-        boolean isValidResetToken = userService.validatePasswordResetToken(user, token);
+        boolean isValidResetToken = userAccountService.validatePasswordResetToken(user, token);
         if (user == null || !user.isEnabled() || !isValidResetToken) {
             if (user != null) {
             }
@@ -242,14 +249,14 @@ public class UserAccountController {
         }
 
         User user = userService.getUser(userPasswordDto.getUsername());
-        boolean isValidResetToken = userService.validatePasswordResetToken(user, userPasswordDto.getToken());
+        boolean isValidResetToken = userAccountService.validatePasswordResetToken(user, userPasswordDto.getToken());
 
         if (!isValidResetToken || !user.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE)) {
             mv = new ModelAndView("redirect:/login?passwordResetError");
             return mv;
         }
 
-        userService.changeUserPassword(user, userPasswordDto.getPassword());
+        userAccountService.changeUserPassword(user, userPasswordDto.getPassword());
 
         mv = new ModelAndView("redirect:/login?passwordUpdateSuccess");
         return mv;

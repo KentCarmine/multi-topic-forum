@@ -8,6 +8,7 @@ import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
+import com.kentcarmine.multitopicforum.services.DisciplineService;
 import com.kentcarmine.multitopicforum.services.EmailService;
 import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserService;
@@ -77,6 +78,9 @@ class UserControllerTest {
     @Mock
     EmailService emailService;
 
+    @Mock
+    DisciplineService disciplineService;
+
     User testUser;
     User testUser2;
     User testAdmin;
@@ -89,7 +93,7 @@ class UserControllerTest {
         MockitoAnnotations.initMocks(this);
         userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
-        userController = new UserController(userService, emailService);
+        userController = new UserController(userService, emailService, disciplineService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(userController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -214,7 +218,7 @@ class UserControllerTest {
         Discipline discipline = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         testUser.addDiscipline(discipline);
 
-        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+        doThrow(new DisciplinedUserException(testUser)).when(disciplineService).handleDisciplinedUser(any());
 
         when(userService.usernameExists(anyString())).thenReturn(true);
         when(userService.getUser(any())).thenReturn(testUser);

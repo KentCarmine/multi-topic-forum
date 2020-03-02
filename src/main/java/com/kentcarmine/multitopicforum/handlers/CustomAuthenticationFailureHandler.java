@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.handlers;
 
+import com.kentcarmine.multitopicforum.services.UserAccountService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -20,17 +21,17 @@ import java.util.Locale;
  */
 @Component
 public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-    private final UserService userService;
+    private final UserAccountService userAccountService;
 
     @Autowired
-    public CustomAuthenticationFailureHandler(UserService userService) {
+    public CustomAuthenticationFailureHandler(UserAccountService userAccountService) {
         super();
-        this.userService = userService;
+        this.userAccountService = userAccountService;
     }
 
-    public CustomAuthenticationFailureHandler(String defaultFailureUrl, UserService userService) {
+    public CustomAuthenticationFailureHandler(String defaultFailureUrl, UserAccountService userAccountService) {
         super(defaultFailureUrl);
-        this.userService = userService;
+        this.userAccountService = userAccountService;
     }
 
     @Override
@@ -40,7 +41,7 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
 
         super.onAuthenticationFailure(request, response, exception);
 
-        String errorMessage = userService.getAuthenticationFailureMessage(exception, request.getLocale());
+        String errorMessage = userAccountService.getAuthenticationFailureMessage(exception, request.getLocale());
 
         request.getSession().setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, errorMessage);
     }

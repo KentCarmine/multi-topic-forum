@@ -23,25 +23,25 @@ public interface UserService {
 
     User getUserByEmail(String email);
 
-    User createUserByUserDto(UserDto userDto) throws DuplicateEmailException, DuplicateUsernameException;
-
-    User createUser(User user) throws DuplicateEmailException, DuplicateUsernameException;
-
-    User getUserByVerificationToken(String token);
-
-    VerificationToken getVerificationToken(String verificationToken);
-
-    VerificationToken generateNewVerificationToken(String existingToken);
-
-    PasswordResetToken createPasswordResetTokenForUser(User user);
-
-    boolean validatePasswordResetToken(User user, String token);
-
-    void changeUserPassword(User user, String newPassword);
-
-    void saveRegisteredUser(User user);
-
-    void createVerificationToken(User user, String token);
+//    User createUserByUserDto(UserDto userDto) throws DuplicateEmailException, DuplicateUsernameException;
+//
+//    User createUser(User user) throws DuplicateEmailException, DuplicateUsernameException;
+//
+//    User getUserByVerificationToken(String token);
+//
+//    VerificationToken getVerificationToken(String verificationToken);
+//
+//    VerificationToken generateNewVerificationToken(String existingToken);
+//
+//    PasswordResetToken createPasswordResetTokenForUser(User user);
+//
+//    boolean validatePasswordResetToken(User user, String token);
+//
+//    void changeUserPassword(User user, String newPassword);
+//
+//    void saveRegisteredUser(User user);
+//
+//    void createVerificationToken(User user, String token);
 
     boolean emailExists(String email);
 
@@ -59,35 +59,35 @@ public interface UserService {
 
     User demoteUser(User userToDemote);
 
-    boolean disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser);
+//    boolean disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser);
 
     void forceLogOut(User loggedInUser, HttpServletRequest httpServletRequest, HttpServletResponse res);
 
-    void handleDisciplinedUser(User user);
+//    void handleDisciplinedUser(User user);
 
-    SortedSet<DisciplineViewDto> getActiveDisciplinesForUser(User user, User loggedInUser);
+//    SortedSet<DisciplineViewDto> getActiveDisciplinesForUser(User user, User loggedInUser);
 
-    SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user);
+//    SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user);
+//
+//    Discipline getDisciplineByIdAndUser(Long id, User user);
 
-    Discipline getDisciplineByIdAndUser(Long id, User user);
-
-    void rescindDiscipline(Discipline disciplineToRescind);
+//    void rescindDiscipline(Discipline disciplineToRescind);
 
     UserRankAdjustmentDto getUserRankAdjustmentDtoForUser(User user, User loggedInUser);
 
-    boolean isVerificationTokenExpired(VerificationToken verificationToken);
+//    boolean isVerificationTokenExpired(VerificationToken verificationToken);
+//
+//    String getExpiredAuthTokenMessage(Locale locale);
+//
+//    String getInvalidAuthTokenMessage(Locale locale);
 
-    String getExpiredAuthTokenMessage(Locale locale);
+//    String getLoggedInUserBannedInformationMessage(Discipline greatestDurationActiveDiscipline);
 
-    String getInvalidAuthTokenMessage(Locale locale);
-
-    String getLoggedInUserBannedInformationMessage(Discipline greatestDurationActiveDiscipline);
-
-    String getPasswordResetEmailContent(String resetUrl, Locale locale);
-
-    String getResendVerificationTokenEmailContent(String confirmationUrl, Locale locale);
-
-    String getAuthenticationFailureMessage(Exception authException, Locale locale);
+//    String getPasswordResetEmailContent(String resetUrl, Locale locale);
+//
+//    String getResendVerificationTokenEmailContent(String confirmationUrl, Locale locale);
+//
+//    String getAuthenticationFailureMessage(Exception authException, Locale locale);
 
     PromoteUserResponseDto getPromoteUserResponseDtoForUser(User promotedUser);
 

@@ -9,10 +9,7 @@ import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.services.ForumService;
-import com.kentcarmine.multitopicforum.services.PostVoteService;
-import com.kentcarmine.multitopicforum.services.TopicThreadService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -33,13 +30,17 @@ public class TopicThreadController {
     private final UserService userService;
     private final TopicThreadService topicThreadService;
     private final PostVoteService postVoteService;
+    private final DisciplineService disciplineService;
 
     @Autowired
-    public TopicThreadController(ForumService forumService, UserService userService, TopicThreadService topicThreadService, PostVoteService postVoteService) {
+    public TopicThreadController(ForumService forumService, UserService userService,
+                                 TopicThreadService topicThreadService, PostVoteService postVoteService,
+                                 DisciplineService disciplineService) {
         this.forumService = forumService;
         this.userService = userService;
         this.topicThreadService = topicThreadService;
         this.postVoteService = postVoteService;
+        this.disciplineService = disciplineService;
     }
 
     /**
@@ -120,7 +121,7 @@ public class TopicThreadController {
         }
 
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         TopicForum forum = forumService.getForumByName(name);
 //        TopicThread newThread = forumService.createNewTopicThread(topicThreadCreationDto, loggedInUser, forum);
@@ -152,7 +153,7 @@ public class TopicThreadController {
         model.addAttribute("posts", thread.getPosts());
 
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         if (loggedInUser != null) {
             model.addAttribute("postCreationDto", new PostCreationDto());
@@ -178,7 +179,7 @@ public class TopicThreadController {
         }
 
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         if (loggedInUser == null) {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError";
@@ -210,7 +211,7 @@ public class TopicThreadController {
         }
 
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         if (loggedInUser == null) {
             return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError";

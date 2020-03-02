@@ -6,10 +6,7 @@ import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
-import com.kentcarmine.multitopicforum.services.ForumService;
-import com.kentcarmine.multitopicforum.services.PostService;
-import com.kentcarmine.multitopicforum.services.TopicThreadService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,13 +28,16 @@ public class PostController {
     private final UserService userService;
     private final TopicThreadService topicThreadService;
     private final PostService postService;
+    private final DisciplineService disciplineService;
 
     @Autowired
-    public PostController(ForumService forumService, UserService userService, TopicThreadService topicThreadService, PostService postService) {
+    public PostController(ForumService forumService, UserService userService, TopicThreadService topicThreadService,
+                          PostService postService, DisciplineService disciplineService) {
         this.forumService = forumService;
         this.userService = userService;
         this.topicThreadService = topicThreadService;
         this.postService = postService;
+        this.disciplineService = disciplineService;
     }
 
     /**
@@ -69,7 +69,7 @@ public class PostController {
             return mv;
         }
         User loggedInUser = userService.getLoggedInUser();
-        userService.handleDisciplinedUser(loggedInUser);
+        disciplineService.handleDisciplinedUser(loggedInUser);
 
         postService.addNewPostToThread(postCreationDto, loggedInUser, thread);
 

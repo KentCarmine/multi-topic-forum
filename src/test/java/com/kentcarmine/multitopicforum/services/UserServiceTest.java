@@ -155,113 +155,113 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByUsername(anyString());
     }
 
-    @Test
-    void createUserByUserDto_validUserDto() throws Exception {
-        when(userRepository.save(any())).thenReturn(testUser);
+//    @Test
+//    void createUserByUserDto_validUserDto() throws Exception {
+//        when(userRepository.save(any())).thenReturn(testUser);
+//
+//        UserDto userDto = new UserDto();
+//        userDto.setUsername(testUser.getUsername());
+//        userDto.setPassword(testUser.getPassword());
+//        userDto.setEmail(testUser.getEmail());
+//
+//        User result = userService.createUserByUserDto(userDto);
+//        assertEquals(testUser, result);
+//
+//        verify(userRepository, times(1)).save(any());
+//    }
 
-        UserDto userDto = new UserDto();
-        userDto.setUsername(testUser.getUsername());
-        userDto.setPassword(testUser.getPassword());
-        userDto.setEmail(testUser.getEmail());
-
-        User result = userService.createUserByUserDto(userDto);
-        assertEquals(testUser, result);
-
-        verify(userRepository, times(1)).save(any());
-    }
-
-    @Test
-    void createUser_validUser() throws Exception {
-        when(userRepository.save(any())).thenReturn(testUser);
-
-        userService.createUser(testUser);
-
-        verify(userRepository, times(1)).save(any());
-    }
-
-    @Test
-    void createUser_duplicateEmail() throws Exception {
-        when(userRepository.findByEmail(anyString())).thenReturn(testUser);
-
-        assertThrows(DuplicateEmailException.class, () -> userService.createUser(testUser));
-
-        verify(userRepository, times(0)).save(any());
-    }
-
-    @Test
-    void createUser_duplicateUsername() throws Exception {
-        when(userRepository.findByUsername(anyString())).thenReturn(testUser);
-
-        assertThrows(DuplicateUsernameException.class, () -> userService.createUser(testUser));
-
-        verify(userRepository, times(0)).save(any());
-    }
-
-    @Test
-    void createUser_userNameTooShort() throws Exception {
-        testUser.setUsername("1");
-
-        User result = userService.createUser(testUser);
-
-        assertNull(result);
-
-        verify(userRepository, times(1)).save(any());
-    }
-
-    @Test
-    void createUser_userNameNull() throws Exception {
-        testUser.setUsername(null);
-
-        User result = userService.createUser(testUser);
-
-        assertNull(result);
-
-        verify(userRepository, times(1)).save(any());
-    }
-
-    @Test
-    void createUser_passwordTooShort() throws Exception {
-        testUser.setPassword("1");
-
-        User result = userService.createUser(testUser);
-
-        assertNull(result);
-
-        verify(userRepository, times(1)).save(any());
-    }
-
-    @Test
-    void createUser_passwordNull() throws Exception {
-        testUser.setPassword(null);
-
-        User result = userService.createUser(testUser);
-
-        assertNull(result);
-
-        verify(userRepository, times(1)).save(any());
-    }
-
-    @Test
-    void createUser_invalidEmail() throws Exception {
-        testUser.setEmail("broken@fakeEmail");
-
-        User result = userService.createUser(testUser);
-
-        assertNull(result);
-
-        verify(userRepository, times(1)).save(any());
-    }
-
-    @Test
-    void createUser_emailNull() throws Exception {
-        testUser.setEmail(null);
-
-        User result = userService.createUser(testUser);
-
-        assertNull(result);
-
-        verify(userRepository, times(1)).save(any());
-    }
+//    @Test
+//    void createUser_validUser() throws Exception {
+//        when(userRepository.save(any())).thenReturn(testUser);
+//
+//        userService.createUser(testUser);
+//
+//        verify(userRepository, times(1)).save(any());
+//    }
+//
+//    @Test
+//    void createUser_duplicateEmail() throws Exception {
+//        when(userRepository.findByEmail(anyString())).thenReturn(testUser);
+//
+//        assertThrows(DuplicateEmailException.class, () -> userService.createUser(testUser));
+//
+//        verify(userRepository, times(0)).save(any());
+//    }
+//
+//    @Test
+//    void createUser_duplicateUsername() throws Exception {
+//        when(userRepository.findByUsername(anyString())).thenReturn(testUser);
+//
+//        assertThrows(DuplicateUsernameException.class, () -> userService.createUser(testUser));
+//
+//        verify(userRepository, times(0)).save(any());
+//    }
+//
+//    @Test
+//    void createUser_userNameTooShort() throws Exception {
+//        testUser.setUsername("1");
+//
+//        User result = userService.createUser(testUser);
+//
+//        assertNull(result);
+//
+//        verify(userRepository, times(1)).save(any());
+//    }
+//
+//    @Test
+//    void createUser_userNameNull() throws Exception {
+//        testUser.setUsername(null);
+//
+//        User result = userService.createUser(testUser);
+//
+//        assertNull(result);
+//
+//        verify(userRepository, times(1)).save(any());
+//    }
+//
+//    @Test
+//    void createUser_passwordTooShort() throws Exception {
+//        testUser.setPassword("1");
+//
+//        User result = userService.createUser(testUser);
+//
+//        assertNull(result);
+//
+//        verify(userRepository, times(1)).save(any());
+//    }
+//
+//    @Test
+//    void createUser_passwordNull() throws Exception {
+//        testUser.setPassword(null);
+//
+//        User result = userService.createUser(testUser);
+//
+//        assertNull(result);
+//
+//        verify(userRepository, times(1)).save(any());
+//    }
+//
+//    @Test
+//    void createUser_invalidEmail() throws Exception {
+//        testUser.setEmail("broken@fakeEmail");
+//
+//        User result = userService.createUser(testUser);
+//
+//        assertNull(result);
+//
+//        verify(userRepository, times(1)).save(any());
+//    }
+//
+//    @Test
+//    void createUser_emailNull() throws Exception {
+//        testUser.setEmail(null);
+//
+//        User result = userService.createUser(testUser);
+//
+//        assertNull(result);
+//
+//        verify(userRepository, times(1)).save(any());
+//    }
 
     @Test
     void emailExists_nonExistentEmail() throws Exception {
@@ -299,98 +299,98 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByUsername(anyString());
     }
 
-    @Test
-    void createVerificationToken() throws Exception {
-        userService.createVerificationToken(testUser, "123");
+//    @Test
+//    void createVerificationToken() throws Exception {
+//        userService.createVerificationToken(testUser, "123");
+//
+//        verify(verificationTokenRepository, times(1)).save(any());
+//    }
 
-        verify(verificationTokenRepository, times(1)).save(any());
-    }
-
-    @Test
-    void validatePasswordResetToken_validToken() throws Exception {
-        testUser.setEnabled(true);
-        PasswordResetToken prToken = new PasswordResetToken();
-        prToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
-        prToken.setToken("123");
-        prToken.setUser(testUser);
-
-        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
-        boolean result = userService.validatePasswordResetToken(testUser, prToken.getToken());
-        assertTrue(result);
-        assertTrue(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
-    }
-
-    @Test
-    void validatePasswordResetToken_noSuchUser() throws Exception {
-        testUser.setEnabled(true);
-        PasswordResetToken prToken = new PasswordResetToken();
-        prToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
-        prToken.setToken("123");
-        prToken.setUser(testUser);
-
-        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
-        boolean result = userService.validatePasswordResetToken(null, prToken.getToken());
-        assertFalse(result);
-        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
-    }
-
-    @Test
-    void validatePasswordResetToken_disabledUser() throws Exception {
-        testUser.setEnabled(false);
-        PasswordResetToken prToken = new PasswordResetToken();
-        prToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
-        prToken.setToken("123");
-        prToken.setUser(testUser);
-
-        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
-        boolean result = userService.validatePasswordResetToken(testUser, prToken.getToken());
-        assertFalse(result);
-        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
-    }
-
-    @Test
-    void validatePasswordResetToken_noSuchToken() throws Exception {
-        testUser.setEnabled(true);
-
-        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(null);
-        boolean result = userService.validatePasswordResetToken(testUser, null);
-        assertFalse(result);
-        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
-    }
-
-    @Test
-    void validatePasswordResetToken_tokenDoesNotMatchUser() throws Exception {
-        testUser.setEnabled(true);
-        PasswordResetToken prToken = new PasswordResetToken();
-        prToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
-        prToken.setToken("123");
-        prToken.setUser(testUser);
-
-        User otherUser = new User();
-        otherUser.setEnabled(true);
-        otherUser.setUsername("otherUser");
-        otherUser.setEmail("otherUser@fakeemail.edu");
-
-        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
-        boolean result = userService.validatePasswordResetToken(otherUser, prToken.getToken());
-        assertFalse(result);
-        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
-        assertFalse(otherUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
-    }
-
-    @Test
-    void validatePasswordResetToken_expiredToken() throws Exception {
-        testUser.setEnabled(true);
-        PasswordResetToken prToken = new PasswordResetToken();
-        prToken.setExpiryDate(Date.from(Instant.now().minusSeconds(DAY)));
-        prToken.setToken("123");
-        prToken.setUser(testUser);
-
-        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
-        boolean result = userService.validatePasswordResetToken(testUser, prToken.getToken());
-        assertFalse(result);
-        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
-    }
+//    @Test
+//    void validatePasswordResetToken_validToken() throws Exception {
+//        testUser.setEnabled(true);
+//        PasswordResetToken prToken = new PasswordResetToken();
+//        prToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
+//        prToken.setToken("123");
+//        prToken.setUser(testUser);
+//
+//        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
+//        boolean result = userService.validatePasswordResetToken(testUser, prToken.getToken());
+//        assertTrue(result);
+//        assertTrue(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
+//    }
+//
+//    @Test
+//    void validatePasswordResetToken_noSuchUser() throws Exception {
+//        testUser.setEnabled(true);
+//        PasswordResetToken prToken = new PasswordResetToken();
+//        prToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
+//        prToken.setToken("123");
+//        prToken.setUser(testUser);
+//
+//        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
+//        boolean result = userService.validatePasswordResetToken(null, prToken.getToken());
+//        assertFalse(result);
+//        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
+//    }
+//
+//    @Test
+//    void validatePasswordResetToken_disabledUser() throws Exception {
+//        testUser.setEnabled(false);
+//        PasswordResetToken prToken = new PasswordResetToken();
+//        prToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
+//        prToken.setToken("123");
+//        prToken.setUser(testUser);
+//
+//        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
+//        boolean result = userService.validatePasswordResetToken(testUser, prToken.getToken());
+//        assertFalse(result);
+//        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
+//    }
+//
+//    @Test
+//    void validatePasswordResetToken_noSuchToken() throws Exception {
+//        testUser.setEnabled(true);
+//
+//        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(null);
+//        boolean result = userService.validatePasswordResetToken(testUser, null);
+//        assertFalse(result);
+//        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
+//    }
+//
+//    @Test
+//    void validatePasswordResetToken_tokenDoesNotMatchUser() throws Exception {
+//        testUser.setEnabled(true);
+//        PasswordResetToken prToken = new PasswordResetToken();
+//        prToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
+//        prToken.setToken("123");
+//        prToken.setUser(testUser);
+//
+//        User otherUser = new User();
+//        otherUser.setEnabled(true);
+//        otherUser.setUsername("otherUser");
+//        otherUser.setEmail("otherUser@fakeemail.edu");
+//
+//        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
+//        boolean result = userService.validatePasswordResetToken(otherUser, prToken.getToken());
+//        assertFalse(result);
+//        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
+//        assertFalse(otherUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
+//    }
+//
+//    @Test
+//    void validatePasswordResetToken_expiredToken() throws Exception {
+//        testUser.setEnabled(true);
+//        PasswordResetToken prToken = new PasswordResetToken();
+//        prToken.setExpiryDate(Date.from(Instant.now().minusSeconds(DAY)));
+//        prToken.setToken("123");
+//        prToken.setUser(testUser);
+//
+//        when(passwordResetTokenRepository.findByToken(anyString())).thenReturn(prToken);
+//        boolean result = userService.validatePasswordResetToken(testUser, prToken.getToken());
+//        assertFalse(result);
+//        assertFalse(testUser.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE));
+//    }
 
     @Test
     void searchForUsers_multipleResults() throws Exception {
@@ -601,225 +601,225 @@ class UserServiceTest {
         assertFalse(result);
     }
 
-    @Test
-    void disciplineUser_ban() throws Exception {
-        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
-        User loggedInUser = testAdmin;
+//    @Test
+//    void disciplineUser_ban() throws Exception {
+//        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
+//        User loggedInUser = testAdmin;
+//
+//        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), userDisciplineSubmissionDto.getReason());
+//        discipline.setId(5L);
+//
+//        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
+//        when(disciplineRepository.save(any())).thenReturn(discipline);
+//        when(userRepository.save(eq(testUser))).thenReturn(testUser);
+//
+//        assertFalse(testUser.isBannedOrSuspended());
+//
+//        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+//
+//        assertTrue(result);
+//        assertTrue(testUser.isBannedOrSuspended());
+//        assertTrue(testUser.isBanned());
+//        assertEquals(1, testUser.getActiveDisciplines().size());
+//        assertEquals(DisciplineType.BAN, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
+//
+//        verify(userRepository, times(1)).save(any());
+//        verify(disciplineRepository, times(1)).save(any());
+//    }
+//
+//    @Test
+//    void disciplineUser_duplicateBan() throws Exception {
+//        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
+//        User loggedInUser = testAdmin;
+//
+//        Discipline previousBan = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, java.util.Date.from(Instant.now().minusSeconds(180)), "previous ban");
+//        previousBan.setId(4L);
+//        testUser.addDiscipline(previousBan);
+//
+//        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), userDisciplineSubmissionDto.getReason());
+//        discipline.setId(5L);
+//
+//        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
+//        when(disciplineRepository.save(any())).thenReturn(discipline);
+//        when(userRepository.save(eq(testUser))).thenReturn(testUser);
+//
+//        assertTrue(testUser.isBannedOrSuspended());
+//
+//        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+//
+//        assertFalse(result);
+//        assertTrue(testUser.isBannedOrSuspended());
+//        assertTrue(testUser.isBanned());
+//        assertEquals(1, testUser.getActiveDisciplines().size());
+//        assertEquals(DisciplineType.BAN, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
+//
+//        verify(userRepository, times(0)).save(any());
+//        verify(disciplineRepository, times(0)).save(any());
+//    }
+//
+//    @Test
+//    void disciplineUser_suspension() throws Exception {
+//        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Suspension", "Suspension for testing");
+//        User loggedInUser = testAdmin;
+//
+//        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.SUSPENSION, java.util.Date.from(Instant.now()), 72, userDisciplineSubmissionDto.getReason());
+//        discipline.setId(5L);
+//
+//        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
+//        when(disciplineRepository.save(any())).thenReturn(discipline);
+//        when(userRepository.save(eq(testUser))).thenReturn(testUser);
+//
+//        assertFalse(testUser.isBannedOrSuspended());
+//
+//        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+//
+//        assertTrue(result);
+//        assertTrue(testUser.isBannedOrSuspended());
+//        assertEquals(1, testUser.getActiveDisciplines().size());
+//        assertEquals(DisciplineType.SUSPENSION, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
+//        assertEquals(72, testUser.getGreatestDurationActiveDiscipline().getDisciplineDurationHours());
+//
+//        verify(userRepository, times(1)).save(any());
+//        verify(disciplineRepository, times(1)).save(any());
+//    }
 
-        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), userDisciplineSubmissionDto.getReason());
-        discipline.setId(5L);
+//    @Test
+//    void handleDisciplinedUser_userDisciplined() throws Exception {
+//        User loggedInUser = testAdmin;
+//        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), "Ban for testing");
+//        discipline.setId(5L);
+//        testUser.addDiscipline(discipline);
+//
+//        assertThrows(DisciplinedUserException.class, () -> {
+//            userService.handleDisciplinedUser(testUser);
+//        });
+//    }
+//
+//    @Test
+//    void handleDisciplinedUser_userNotDisciplined() throws Exception {
+//        assertDoesNotThrow(() -> {
+//            userService.handleDisciplinedUser(testUser);
+//        });
+//    }
 
-        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
-        when(disciplineRepository.save(any())).thenReturn(discipline);
-        when(userRepository.save(eq(testUser))).thenReturn(testUser);
+//    @Test
+//    void getActiveDisciplinesForUser() throws Exception {
+//        Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+//        disc1.setId(1L);
+//        testUser.addDiscipline(disc1);
+//
+//        Discipline disc2 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(120)), 3,"active suspension for testing");
+//        disc2.setId(2L);
+//        testUser.addDiscipline(disc2);
+//
+//        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
+//        disc3.setId(3L);
+//        testUser.addDiscipline(disc3);
+//
+//        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
+//        disc4.setId(4L);
+//        disc4.setRescinded(true);
+//        testUser.addDiscipline(disc4);
+//
+//        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
+//        disc5.setId(5L);
+//        disc5.setRescinded(true);
+//        testUser.addDiscipline(disc5);
+//
+//        SortedSet<DisciplineViewDto> activeDiscDtos = userService.getActiveDisciplinesForUser(testUser, testAdmin);
+//
+//        assertEquals(2, activeDiscDtos.size());
+//    }
 
-        assertFalse(testUser.isBannedOrSuspended());
+//    @Test
+//    void getInactiveDisciplinesForUser() throws Exception {
+//        // Active
+//        Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+//        disc1.setId(1L);
+//        testUser.addDiscipline(disc1);
+//
+//        // Active
+//        Discipline disc2 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(120)), 3,"active suspension for testing");
+//        disc2.setId(2L);
+//        testUser.addDiscipline(disc2);
+//
+//        // Inactive (expired)
+//        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
+//        disc3.setId(3L);
+//        testUser.addDiscipline(disc3);
+//
+//        // Inactive (rescinded)
+//        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
+//        disc4.setId(4L);
+//        disc4.setRescinded(true);
+//        testUser.addDiscipline(disc4);
+//
+//        // Inactive (rescinded)
+//        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
+//        disc5.setId(5L);
+//        disc5.setRescinded(true);
+//        testUser.addDiscipline(disc5);
+//
+//        SortedSet<DisciplineViewDto> inactiveDiscDtos = userService.getInactiveDisciplinesForUser(testUser);
+//
+//        assertEquals(3, inactiveDiscDtos.size());
+//    }
 
-        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
+//    @Test
+//    void getDisciplineByIdAndUser_valid() throws Exception {
+//        Discipline disc = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+//        disc.setId(1L);
+//        testUser.addDiscipline(disc);
+//
+//        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.of(disc));
+//
+//        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
+//
+//        assertNotNull(result);
+//        assertEquals(disc, result);
+//
+//        verify(disciplineRepository, times(1)).findById(anyLong());
+//    }
+//
+//    @Test
+//    void getDisciplineByIdAndUser_invalidDisciplineId() throws Exception {
+//        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.empty());
+//
+//        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
+//
+//        assertNull(result);
+//
+//        verify(disciplineRepository, times(1)).findById(anyLong());
+//    }
+//
+//    @Test
+//    void getDisciplineByIdAndUser_mismatchedDisciplineIdAndUser() throws Exception {
+//        Discipline disc = new Discipline(testUser2, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+//        disc.setId(1L);
+//        testUser2.addDiscipline(disc);
+//
+//        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.of(disc));
+//
+//        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
+//
+//        assertNull(result);
+//
+//        verify(disciplineRepository, times(1)).findById(anyLong());
+//    }
 
-        assertTrue(result);
-        assertTrue(testUser.isBannedOrSuspended());
-        assertTrue(testUser.isBanned());
-        assertEquals(1, testUser.getActiveDisciplines().size());
-        assertEquals(DisciplineType.BAN, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
-
-        verify(userRepository, times(1)).save(any());
-        verify(disciplineRepository, times(1)).save(any());
-    }
-
-    @Test
-    void disciplineUser_duplicateBan() throws Exception {
-        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Ban", "ban for testing");
-        User loggedInUser = testAdmin;
-
-        Discipline previousBan = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, java.util.Date.from(Instant.now().minusSeconds(180)), "previous ban");
-        previousBan.setId(4L);
-        testUser.addDiscipline(previousBan);
-
-        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), userDisciplineSubmissionDto.getReason());
-        discipline.setId(5L);
-
-        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
-        when(disciplineRepository.save(any())).thenReturn(discipline);
-        when(userRepository.save(eq(testUser))).thenReturn(testUser);
-
-        assertTrue(testUser.isBannedOrSuspended());
-
-        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
-
-        assertFalse(result);
-        assertTrue(testUser.isBannedOrSuspended());
-        assertTrue(testUser.isBanned());
-        assertEquals(1, testUser.getActiveDisciplines().size());
-        assertEquals(DisciplineType.BAN, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
-
-        verify(userRepository, times(0)).save(any());
-        verify(disciplineRepository, times(0)).save(any());
-    }
-
-    @Test
-    void disciplineUser_suspension() throws Exception {
-        UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto(testUser.getUsername(), "Suspension", "Suspension for testing");
-        User loggedInUser = testAdmin;
-
-        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.SUSPENSION, java.util.Date.from(Instant.now()), 72, userDisciplineSubmissionDto.getReason());
-        discipline.setId(5L);
-
-        when(userRepository.findByUsername(eq(userDisciplineSubmissionDto.getDisciplinedUsername()))).thenReturn(testUser);
-        when(disciplineRepository.save(any())).thenReturn(discipline);
-        when(userRepository.save(eq(testUser))).thenReturn(testUser);
-
-        assertFalse(testUser.isBannedOrSuspended());
-
-        boolean result = userService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
-
-        assertTrue(result);
-        assertTrue(testUser.isBannedOrSuspended());
-        assertEquals(1, testUser.getActiveDisciplines().size());
-        assertEquals(DisciplineType.SUSPENSION, testUser.getGreatestDurationActiveDiscipline().getDisciplineType());
-        assertEquals(72, testUser.getGreatestDurationActiveDiscipline().getDisciplineDurationHours());
-
-        verify(userRepository, times(1)).save(any());
-        verify(disciplineRepository, times(1)).save(any());
-    }
-
-    @Test
-    void handleDisciplinedUser_userDisciplined() throws Exception {
-        User loggedInUser = testAdmin;
-        Discipline discipline = new Discipline(testUser, loggedInUser, DisciplineType.BAN, java.util.Date.from(Instant.now()), "Ban for testing");
-        discipline.setId(5L);
-        testUser.addDiscipline(discipline);
-
-        assertThrows(DisciplinedUserException.class, () -> {
-            userService.handleDisciplinedUser(testUser);
-        });
-    }
-
-    @Test
-    void handleDisciplinedUser_userNotDisciplined() throws Exception {
-        assertDoesNotThrow(() -> {
-            userService.handleDisciplinedUser(testUser);
-        });
-    }
-
-    @Test
-    void getActiveDisciplinesForUser() throws Exception {
-        Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
-        disc1.setId(1L);
-        testUser.addDiscipline(disc1);
-
-        Discipline disc2 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(120)), 3,"active suspension for testing");
-        disc2.setId(2L);
-        testUser.addDiscipline(disc2);
-
-        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
-        disc3.setId(3L);
-        testUser.addDiscipline(disc3);
-
-        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
-        disc4.setId(4L);
-        disc4.setRescinded(true);
-        testUser.addDiscipline(disc4);
-
-        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
-        disc5.setId(5L);
-        disc5.setRescinded(true);
-        testUser.addDiscipline(disc5);
-
-        SortedSet<DisciplineViewDto> activeDiscDtos = userService.getActiveDisciplinesForUser(testUser, testAdmin);
-
-        assertEquals(2, activeDiscDtos.size());
-    }
-
-    @Test
-    void getInactiveDisciplinesForUser() throws Exception {
-        // Active
-        Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
-        disc1.setId(1L);
-        testUser.addDiscipline(disc1);
-
-        // Active
-        Discipline disc2 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(120)), 3,"active suspension for testing");
-        disc2.setId(2L);
-        testUser.addDiscipline(disc2);
-
-        // Inactive (expired)
-        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
-        disc3.setId(3L);
-        testUser.addDiscipline(disc3);
-
-        // Inactive (rescinded)
-        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
-        disc4.setId(4L);
-        disc4.setRescinded(true);
-        testUser.addDiscipline(disc4);
-
-        // Inactive (rescinded)
-        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
-        disc5.setId(5L);
-        disc5.setRescinded(true);
-        testUser.addDiscipline(disc5);
-
-        SortedSet<DisciplineViewDto> inactiveDiscDtos = userService.getInactiveDisciplinesForUser(testUser);
-
-        assertEquals(3, inactiveDiscDtos.size());
-    }
-
-    @Test
-    void getDisciplineByIdAndUser_valid() throws Exception {
-        Discipline disc = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
-        disc.setId(1L);
-        testUser.addDiscipline(disc);
-
-        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.of(disc));
-
-        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
-
-        assertNotNull(result);
-        assertEquals(disc, result);
-
-        verify(disciplineRepository, times(1)).findById(anyLong());
-    }
-
-    @Test
-    void getDisciplineByIdAndUser_invalidDisciplineId() throws Exception {
-        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
-
-        assertNull(result);
-
-        verify(disciplineRepository, times(1)).findById(anyLong());
-    }
-
-    @Test
-    void getDisciplineByIdAndUser_mismatchedDisciplineIdAndUser() throws Exception {
-        Discipline disc = new Discipline(testUser2, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
-        disc.setId(1L);
-        testUser2.addDiscipline(disc);
-
-        when(disciplineRepository.findById(anyLong())).thenReturn(Optional.of(disc));
-
-        Discipline result = userService.getDisciplineByIdAndUser(1L, testUser);
-
-        assertNull(result);
-
-        verify(disciplineRepository, times(1)).findById(anyLong());
-    }
-
-    @Test
-    void rescindDiscipline() throws Exception {
-        Discipline disc = new Discipline(testUser2, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
-        disc.setId(1L);
-
-        assertFalse(disc.isRescinded());
-
-        userService.rescindDiscipline(disc);
-
-        assertTrue(disc.isRescinded());
-
-        verify(disciplineRepository, times(1)).save(any());
-    }
+//    @Test
+//    void rescindDiscipline() throws Exception {
+//        Discipline disc = new Discipline(testUser2, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
+//        disc.setId(1L);
+//
+//        assertFalse(disc.isRescinded());
+//
+//        userService.rescindDiscipline(disc);
+//
+//        assertTrue(disc.isRescinded());
+//
+//        verify(disciplineRepository, times(1)).save(any());
+//    }
 
     @Test
     void getUserRankAdjustmentDtoForUser() throws Exception {

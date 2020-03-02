@@ -10,9 +10,7 @@ import com.kentcarmine.multitopicforum.dtos.PromoteUserSubmissionDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.model.*;
-import com.kentcarmine.multitopicforum.services.EmailService;
-import com.kentcarmine.multitopicforum.services.MessageService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -83,7 +81,13 @@ class UserAccountControllerTest {
     MessageService messageService;
 
     @Mock
+    UserAccountService userAccountService;
+
+    @Mock
     EmailService emailService;
+
+    @Mock
+    DisciplineService disciplineService;
 
     User testUser;
     User testUser2;
@@ -99,7 +103,7 @@ class UserAccountControllerTest {
         MockitoAnnotations.initMocks(this);
         userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
-        userAccountController = new UserAccountController(userService, applicationEventPublisher, emailService);
+        userAccountController = new UserAccountController(userService, applicationEventPublisher, emailService, userAccountService, disciplineService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(userAccountController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -164,7 +168,7 @@ class UserAccountControllerTest {
         Discipline discipline = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         testUser.addDiscipline(discipline);
 
-        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+        doThrow(new DisciplinedUserException(testUser)).when(disciplineService).handleDisciplinedUser(any());
 
         when(userService.getLoggedInUser()).thenReturn(testUser);
 
@@ -179,7 +183,7 @@ class UserAccountControllerTest {
         Discipline discipline = new Discipline(testUser, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         testUser.addDiscipline(discipline);
 
-        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+        doThrow(new DisciplinedUserException(testUser)).when(disciplineService).handleDisciplinedUser(any());
 
         when(userService.getLoggedInUser()).thenReturn(testUser);
 
@@ -192,12 +196,12 @@ class UserAccountControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testUser.getUsername()));
 
-        verify(userService, times(0)).createUserByUserDto(any());
+        verify(userAccountService, times(0)).createUserByUserDto(any());
     }
 
     @Test
     void confirmRegistration_invalidToken() throws Exception {
-        when(userService.getVerificationToken(anyString())).thenReturn(null);
+        when(userAccountService.getVerificationToken(anyString())).thenReturn(null);
 
         mockMvc.perform(get("/registrationConfirm?token=123"))
                 .andExpect(status().isNotFound())
@@ -209,8 +213,8 @@ class UserAccountControllerTest {
         VerificationToken invalidToken = new VerificationToken("123", testUser);
         invalidToken.setExpiryDate(Date.from(Instant.EPOCH));
 
-        when(userService.getVerificationToken(anyString())).thenReturn(invalidToken);
-        when(userService.isVerificationTokenExpired(any())).thenReturn(true);
+        when(userAccountService.getVerificationToken(anyString())).thenReturn(invalidToken);
+        when(userAccountService.isVerificationTokenExpired(any())).thenReturn(true);
 
         mockMvc.perform(get("/registrationConfirm?token=123"))
                 .andExpect(status().isNotFound())
@@ -223,7 +227,7 @@ class UserAccountControllerTest {
         VerificationToken validToken = new VerificationToken("123", testUser);
         validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
 
-        when(userService.getVerificationToken(anyString())).thenReturn(validToken);
+        when(userAccountService.getVerificationToken(anyString())).thenReturn(validToken);
 
         mockMvc.perform(get("/registrationConfirm?token=123"))
                 .andExpect(status().is3xxRedirection())
@@ -236,7 +240,7 @@ class UserAccountControllerTest {
         VerificationToken validToken = new VerificationToken("123", testUser);
         validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
 
-        when(userService.getVerificationToken(anyString())).thenReturn(validToken);
+        when(userAccountService.getVerificationToken(anyString())).thenReturn(validToken);
 
         mockMvc.perform(get("/registrationConfirm?token=123"))
                 .andExpect(status().is3xxRedirection())
@@ -247,8 +251,8 @@ class UserAccountControllerTest {
     void resendRegistrationEmail_validToken() throws Exception {
         VerificationToken validToken = new VerificationToken("123", testUser);
         validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
-        when(userService.generateNewVerificationToken(anyString())).thenReturn(validToken);
-        when(userService.getUserByVerificationToken(anyString())).thenReturn(testUser);
+        when(userAccountService.generateNewVerificationToken(anyString())).thenReturn(validToken);
+        when(userAccountService.getUserByVerificationToken(anyString())).thenReturn(testUser);
 
         mockMvc.perform(get("/resendRegistrationEmail?token=123"))
                 .andExpect(status().is3xxRedirection())
@@ -257,7 +261,7 @@ class UserAccountControllerTest {
 
     @Test
     void resendRegistrationEmail_invalidToken() throws Exception {
-        when(userService.generateNewVerificationToken(anyString())).thenReturn(null);
+        when(userAccountService.generateNewVerificationToken(anyString())).thenReturn(null);
 
         mockMvc.perform(get("/resendRegistrationEmail?token=123"))
                 .andExpect(status().isInternalServerError())
@@ -269,8 +273,8 @@ class UserAccountControllerTest {
         testUser.setEnabled(true);
         VerificationToken validToken = new VerificationToken("123", testUser);
         validToken.setExpiryDate(Date.from(Instant.now().plusSeconds(DAY)));
-        when(userService.generateNewVerificationToken(anyString())).thenReturn(validToken);
-        when(userService.getUserByVerificationToken(anyString())).thenReturn(testUser);
+        when(userAccountService.generateNewVerificationToken(anyString())).thenReturn(validToken);
+        when(userAccountService.getUserByVerificationToken(anyString())).thenReturn(testUser);
 
         mockMvc.perform(get("/resendRegistrationEmail?token=123"))
                 .andExpect(status().is3xxRedirection())
@@ -305,7 +309,7 @@ class UserAccountControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"));
 
-        verify(userService, times(0)).createPasswordResetTokenForUser(any());
+        verify(userAccountService, times(0)).createPasswordResetTokenForUser(any());
         verify(emailService, times(0)).sendEmail(anyString(), anyString(), anyString());
     }
 
@@ -313,7 +317,7 @@ class UserAccountControllerTest {
     void processResetPasswordStarterForm_isDisabledUser() throws Exception {
         testUser.setEnabled(false);
         when(userService.getUserByEmail(anyString())).thenReturn(testUser);
-        when(userService.createPasswordResetTokenForUser(any())).thenReturn(new PasswordResetToken());
+        when(userAccountService.createPasswordResetTokenForUser(any())).thenReturn(new PasswordResetToken());
 
         mockMvc.perform(post("/processResetPasswordStarterForm")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -321,7 +325,7 @@ class UserAccountControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"));
 
-        verify(userService, times(0)).createPasswordResetTokenForUser(any());
+        verify(userAccountService, times(0)).createPasswordResetTokenForUser(any());
         verify(emailService, times(0)).sendEmail(anyString(), anyString(), anyString());
     }
 
@@ -329,7 +333,7 @@ class UserAccountControllerTest {
     void processResetPasswordStarterForm_validInput() throws Exception {
         testUser.setEnabled(true);
         when(userService.getUserByEmail(anyString())).thenReturn(testUser);
-        when(userService.createPasswordResetTokenForUser(any())).thenReturn(new PasswordResetToken());
+        when(userAccountService.createPasswordResetTokenForUser(any())).thenReturn(new PasswordResetToken());
 
         mockMvc.perform(post("/processResetPasswordStarterForm")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -337,7 +341,7 @@ class UserAccountControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"));
 
-        verify(userService, times(1)).createPasswordResetTokenForUser(any());
+        verify(userAccountService, times(1)).createPasswordResetTokenForUser(any());
     }
 
     @Test
@@ -346,7 +350,7 @@ class UserAccountControllerTest {
         String url = "/changePassword?username=" + testUser.getUsername() + "&token=123";
 
         when(userService.getUser(anyString())).thenReturn(testUser);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
 
         mockMvc.perform(get(url))
                 .andExpect(status().isOk())
@@ -360,7 +364,7 @@ class UserAccountControllerTest {
         String url = "/changePassword?username=madeupuser&token=123";
 
         when(userService.getUser(anyString())).thenReturn(null);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
 
         mockMvc.perform(get(url))
                 .andExpect(status().is3xxRedirection())
@@ -374,7 +378,7 @@ class UserAccountControllerTest {
         String url = "/changePassword?username=" + testUser.getUsername() + "&token=123";
 
         when(userService.getUser(anyString())).thenReturn(testUser);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
 
         mockMvc.perform(get(url))
                 .andExpect(status().is3xxRedirection())
@@ -388,7 +392,7 @@ class UserAccountControllerTest {
         String url = "/changePassword?username=" + testUser.getUsername() + "&token=123";
 
         when(userService.getUser(anyString())).thenReturn(testUser);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(false);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(false);
 
         mockMvc.perform(get(url))
                 .andExpect(status().is3xxRedirection())
@@ -406,7 +410,7 @@ class UserAccountControllerTest {
         testUser.addAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE);
 
         when(userService.getUser(anyString())).thenReturn(testUser);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
 
         mockMvc.perform(post("/processChangePassword")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -417,7 +421,7 @@ class UserAccountControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/login?passwordUpdateSuccess"));
 
-        verify(userService, times(1)).changeUserPassword(any(), anyString());
+        verify(userAccountService, times(1)).changeUserPassword(any(), anyString());
     }
 
     @Test
@@ -428,7 +432,7 @@ class UserAccountControllerTest {
         String confirmPassword = "testPassword2";
 
         when(userService.getUser(anyString())).thenReturn(testUser);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
 
         mockMvc.perform(post("/processChangePassword")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -440,7 +444,7 @@ class UserAccountControllerTest {
                 .andExpect(view().name("change-password-form"))
                 .andExpect(model().hasErrors());
 
-        verify(userService, times(0)).changeUserPassword(any(), anyString());
+        verify(userAccountService, times(0)).changeUserPassword(any(), anyString());
     }
 
     @Test
@@ -451,7 +455,7 @@ class UserAccountControllerTest {
         String confirmPassword = "testPassword2";
 
         when(userService.getUser(anyString())).thenReturn(testUser);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
 
         mockMvc.perform(post("/processChangePassword")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -463,7 +467,7 @@ class UserAccountControllerTest {
                 .andExpect(view().name("change-password-form"))
                 .andExpect(model().hasErrors());
 
-        verify(userService, times(0)).changeUserPassword(any(), anyString());
+        verify(userAccountService, times(0)).changeUserPassword(any(), anyString());
     }
 
     @Test
@@ -474,7 +478,7 @@ class UserAccountControllerTest {
         String confirmPassword = "a";
 
         when(userService.getUser(anyString())).thenReturn(testUser);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(true);
 
         mockMvc.perform(post("/processChangePassword")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -486,7 +490,7 @@ class UserAccountControllerTest {
                 .andExpect(view().name("change-password-form"))
                 .andExpect(model().hasErrors());
 
-        verify(userService, times(0)).changeUserPassword(any(), anyString());
+        verify(userAccountService, times(0)).changeUserPassword(any(), anyString());
     }
 
     @Test
@@ -497,7 +501,7 @@ class UserAccountControllerTest {
         String confirmPassword = "testPassword";
 
         when(userService.getUser(anyString())).thenReturn(testUser);
-        when(userService.validatePasswordResetToken(any(), anyString())).thenReturn(false);
+        when(userAccountService.validatePasswordResetToken(any(), anyString())).thenReturn(false);
 
         mockMvc.perform(post("/processChangePassword")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -508,7 +512,7 @@ class UserAccountControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/login?passwordResetError"));
 
-        verify(userService, times(0)).changeUserPassword(any(), anyString());
+        verify(userAccountService, times(0)).changeUserPassword(any(), anyString());
     }
 
     @Test

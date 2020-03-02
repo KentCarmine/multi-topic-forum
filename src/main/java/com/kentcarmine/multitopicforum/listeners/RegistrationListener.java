@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.listeners;
 import com.kentcarmine.multitopicforum.events.OnRegistrationCompleteEvent;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.EmailService;
+import com.kentcarmine.multitopicforum.services.UserAccountService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -20,7 +21,8 @@ import java.util.UUID;
 @Component
 public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {
 
-    private final UserService userService;
+//    private final UserService userService;
+    private final UserAccountService userAccountService;
 
     private final MessageSource messageSource;
 
@@ -28,8 +30,9 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 
 
     @Autowired
-    public RegistrationListener(UserService userService, MessageSource messageSource, EmailService emailService) {
-        this.userService = userService;
+    public RegistrationListener(/*UserService userService*/ UserAccountService userAccountService, MessageSource messageSource, EmailService emailService) {
+//        this.userService = userService;
+        this.userAccountService = userAccountService;
         this.messageSource = messageSource;
         this.emailService = emailService;
     }
@@ -47,7 +50,7 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
     private void confirmRegistration(OnRegistrationCompleteEvent event) {
         User user = event.getUser();
         String token = UUID.randomUUID().toString();
-        userService.createVerificationToken(user, token);
+        userAccountService.createVerificationToken(user, token);
 
         String recipientEmail = user.getEmail();
         String subject = "Multi-Topic Forum Registration Confirmation";

@@ -118,46 +118,46 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email);
     }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Creates and saves a new User object from a given UserDto
-     *
-     * @param userDto the UserDto to convert and save
-     * @return the created User object
-     * @throws DuplicateEmailException if a user already exists with the given email
-     * @throws DuplicateUsernameException if a user already exists with the given username
-     */
-    @Override
-    public User createUserByUserDto(UserDto userDto) throws DuplicateEmailException, DuplicateUsernameException {
-        return createUser(userDtoToUserConverter.convert(userDto));
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Creates and saves a new User object from a given UserDto
+//     *
+//     * @param userDto the UserDto to convert and save
+//     * @return the created User object
+//     * @throws DuplicateEmailException if a user already exists with the given email
+//     * @throws DuplicateUsernameException if a user already exists with the given username
+//     */
+//    @Override
+//    public User createUserByUserDto(UserDto userDto) throws DuplicateEmailException, DuplicateUsernameException {
+//        return createUser(userDtoToUserConverter.convert(userDto));
+//    }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Saves the given user to persistent storage.
-     *
-     * @param user the user to save
-     * @return the created User object
-     * @throws DuplicateEmailException if a user already exists with the given email
-     * @throws DuplicateUsernameException if a user already exists with the given username
-     */
-    @Transactional
-    @Override
-    public User createUser(User user) throws DuplicateEmailException, DuplicateUsernameException {
-        if (usernameExists(user.getUsername())) {
-            throw new DuplicateUsernameException("The username "+ user.getUsername() + " is taken.");
-        }
-
-        if (emailExists(user.getEmail())) {
-            throw new DuplicateEmailException("Account with email address " + user.getEmail() + " already exists.");
-        }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        user.addAuthority(UserRole.USER);
-
-        return userRepository.save(user);
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Saves the given user to persistent storage.
+//     *
+//     * @param user the user to save
+//     * @return the created User object
+//     * @throws DuplicateEmailException if a user already exists with the given email
+//     * @throws DuplicateUsernameException if a user already exists with the given username
+//     */
+//    @Transactional
+//    @Override
+//    public User createUser(User user) throws DuplicateEmailException, DuplicateUsernameException {
+//        if (usernameExists(user.getUsername())) {
+//            throw new DuplicateUsernameException("The username "+ user.getUsername() + " is taken.");
+//        }
+//
+//        if (emailExists(user.getEmail())) {
+//            throw new DuplicateEmailException("Account with email address " + user.getEmail() + " already exists.");
+//        }
+//
+//        user.setPassword(passwordEncoder.encode(user.getPassword()));
+//
+//        user.addAuthority(UserRole.USER);
+//
+//        return userRepository.save(user);
+//    }
 
     /**
      * Check if any user with the given email exists in persistent storage.
@@ -182,155 +182,155 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username) != null;
     }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Get the user with the given verification token string
-     *
-     * @param verificationToken the verification token string to get the User for
-     * @return the user with the given verification token, or null if no such user exists
-     */
-    @Override
-    public User getUserByVerificationToken(String verificationToken) {
-        User user = verificationTokenRepository.findByToken(verificationToken).getUser();
-        return user;
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Get the user with the given verification token string
+//     *
+//     * @param verificationToken the verification token string to get the User for
+//     * @return the user with the given verification token, or null if no such user exists
+//     */
+//    @Override
+//    public User getUserByVerificationToken(String verificationToken) {
+//        User user = verificationTokenRepository.findByToken(verificationToken).getUser();
+//        return user;
+//    }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Get the VerificationToken from persistent storage that has the given token string
-     *
-     * @param token the token string to get the VerificationToken for
-     * @return the VerificationToken with the given token string, or null if no such VerificationToken exists
-     */
-    @Override
-    public VerificationToken getVerificationToken(String token) {
-        return verificationTokenRepository.findByToken(token);
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Get the VerificationToken from persistent storage that has the given token string
+//     *
+//     * @param token the token string to get the VerificationToken for
+//     * @return the VerificationToken with the given token string, or null if no such VerificationToken exists
+//     */
+//    @Override
+//    public VerificationToken getVerificationToken(String token) {
+//        return verificationTokenRepository.findByToken(token);
+//    }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Saves a registered user to persistent storage
-     * @param user the user to save
-     */
-    @Override
-    public void saveRegisteredUser(User user) {
-        user.setEnabled(true);
-        userRepository.save(user);
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Saves a registered user to persistent storage
+//     * @param user the user to save
+//     */
+//    @Override
+//    public void saveRegisteredUser(User user) {
+//        user.setEnabled(true);
+//        userRepository.save(user);
+//    }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Creates and saves a VerificationToken with the given token string that is associated with the given User
-     *
-     * @param user the user to associate the token with
-     * @param token the token string to use
-     */
-    @Override
-    public void createVerificationToken(User user, String token) {
-        VerificationToken myToken = new VerificationToken(token, user);
-        verificationTokenRepository.save(myToken);
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Creates and saves a VerificationToken with the given token string that is associated with the given User
+//     *
+//     * @param user the user to associate the token with
+//     * @param token the token string to use
+//     */
+//    @Override
+//    public void createVerificationToken(User user, String token) {
+//        VerificationToken myToken = new VerificationToken(token, user);
+//        verificationTokenRepository.save(myToken);
+//    }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Updates an existing VerificationToken with the given existingToken string to use a new token string, and saves
-     * that VerificationToken
-     * @param existingToken the existing token string to find the VerificationToken for
-     * @return the updated VerificationToken
-     */
-    @Override
-    public VerificationToken generateNewVerificationToken(String existingToken) {
-        VerificationToken token = verificationTokenRepository.findByToken(existingToken);
-        token.updateToken(UUID.randomUUID().toString());
-        token = verificationTokenRepository.save(token);
-        return token;
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Updates an existing VerificationToken with the given existingToken string to use a new token string, and saves
+//     * that VerificationToken
+//     * @param existingToken the existing token string to find the VerificationToken for
+//     * @return the updated VerificationToken
+//     */
+//    @Override
+//    public VerificationToken generateNewVerificationToken(String existingToken) {
+//        VerificationToken token = verificationTokenRepository.findByToken(existingToken);
+//        token.updateToken(UUID.randomUUID().toString());
+//        token = verificationTokenRepository.save(token);
+//        return token;
+//    }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Checks if the given verification token is expired or invalid.
-     *
-     * @param verificationToken the token to check for expiry
-     * @return true if the token is current and valid, false otherwise
-     */
-    @Override
-    public boolean isVerificationTokenExpired(VerificationToken verificationToken) {
-        User user = verificationToken.getUser();
-        Calendar calendar = Calendar.getInstance();
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Checks if the given verification token is expired or invalid.
+//     *
+//     * @param verificationToken the token to check for expiry
+//     * @return true if the token is current and valid, false otherwise
+//     */
+//    @Override
+//    public boolean isVerificationTokenExpired(VerificationToken verificationToken) {
+//        User user = verificationToken.getUser();
+//        Calendar calendar = Calendar.getInstance();
+//
+//        return verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0
+//                && user != null && !user.isEnabled();
+//    }
 
-        return verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0
-                && user != null && !user.isEnabled();
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Creates and saves a PasswordResetToken associated with the given User. Also deletes all other PasswordResetTokens
+//     * associated with that user
+//     *
+//     * @param user the user to associate the PasswordResetToken with
+//     * @return a PasswordResetToken associated with the given User
+//     */
+//    @Transactional
+//    @Override
+//    public PasswordResetToken createPasswordResetTokenForUser(User user) {
+//        passwordResetTokenRepository.deleteByUser(user);
+//        authorityRepository.deleteByUserAndAuthority(user, UserRole.CHANGE_PASSWORD_PRIVILEGE);
+//        String tokenStr = UUID.randomUUID().toString();
+//        PasswordResetToken prToken = new PasswordResetToken(tokenStr, user);
+//        prToken = passwordResetTokenRepository.save(prToken);
+//
+//        return prToken;
+//    }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Creates and saves a PasswordResetToken associated with the given User. Also deletes all other PasswordResetTokens
-     * associated with that user
-     *
-     * @param user the user to associate the PasswordResetToken with
-     * @return a PasswordResetToken associated with the given User
-     */
-    @Transactional
-    @Override
-    public PasswordResetToken createPasswordResetTokenForUser(User user) {
-        passwordResetTokenRepository.deleteByUser(user);
-        authorityRepository.deleteByUserAndAuthority(user, UserRole.CHANGE_PASSWORD_PRIVILEGE);
-        String tokenStr = UUID.randomUUID().toString();
-        PasswordResetToken prToken = new PasswordResetToken(tokenStr, user);
-        prToken = passwordResetTokenRepository.save(prToken);
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Confirms that the given User is associated with a PasswordResetToken with the given token string. Also updates
+//     * the given User's authority, allowing them to change their password.
+//     *
+//     * @param user the user to validate
+//     * @param token the token string to find a PasswordResetToken for
+//     * @return true if the User has the authority to reset their password, false otherwise
+//     */
+//    @Override
+//    public boolean validatePasswordResetToken(User user, String token) {
+//        if (user == null || !user.isEnabled()) {
+//            return false;
+//        }
+//
+//        // Invalid username or token
+//        PasswordResetToken prToken = passwordResetTokenRepository.findByToken(token);
+//        if (prToken == null || !prToken.getUser().getUsername().equals(user.getUsername())) {
+//            return false;
+//        }
+//
+//        // Expired token
+//        Calendar calendar = Calendar.getInstance();
+//        if (prToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0) {
+//            return false;
+//        }
+//
+//        // Valid username and token
+//        addAuthorityToUser(user, UserRole.CHANGE_PASSWORD_PRIVILEGE);
+//
+//        return true;
+//    }
 
-        return prToken;
-    }
-
-    // TODO: Refactor into UserAccountService
-    /**
-     * Confirms that the given User is associated with a PasswordResetToken with the given token string. Also updates
-     * the given User's authority, allowing them to change their password.
-     *
-     * @param user the user to validate
-     * @param token the token string to find a PasswordResetToken for
-     * @return true if the User has the authority to reset their password, false otherwise
-     */
-    @Override
-    public boolean validatePasswordResetToken(User user, String token) {
-        if (user == null || !user.isEnabled()) {
-            return false;
-        }
-
-        // Invalid username or token
-        PasswordResetToken prToken = passwordResetTokenRepository.findByToken(token);
-        if (prToken == null || !prToken.getUser().getUsername().equals(user.getUsername())) {
-            return false;
-        }
-
-        // Expired token
-        Calendar calendar = Calendar.getInstance();
-        if (prToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0) {
-            return false;
-        }
-
-        // Valid username and token
-        addAuthorityToUser(user, UserRole.CHANGE_PASSWORD_PRIVILEGE);
-
-        return true;
-    }
-
-    // TODO: Refactor into UserAccountService
-    /**
-     * Updates the given user's password to newPassword and revokes the now-unneeded password change authority.
-     *
-     * @param user the user to update
-     * @param newPassword the new password for that user
-     */
-    @Transactional
-    @Override
-    public void changeUserPassword(User user, String newPassword) {
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.removeAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE);
-        authorityRepository.deleteByUserAndAuthority(user, UserRole.CHANGE_PASSWORD_PRIVILEGE);
-        passwordResetTokenRepository.deleteByUser(user);
-        userRepository.save(user);
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Updates the given user's password to newPassword and revokes the now-unneeded password change authority.
+//     *
+//     * @param user the user to update
+//     * @param newPassword the new password for that user
+//     */
+//    @Transactional
+//    @Override
+//    public void changeUserPassword(User user, String newPassword) {
+//        user.setPassword(passwordEncoder.encode(newPassword));
+//        user.removeAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE);
+//        authorityRepository.deleteByUserAndAuthority(user, UserRole.CHANGE_PASSWORD_PRIVILEGE);
+//        passwordResetTokenRepository.deleteByUser(user);
+//        userRepository.save(user);
+//    }
 
     /**
      * Searches for the names of all Users that have names that contain all tokens (delimited on double quotes and
@@ -465,42 +465,42 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
-    // TODO: Refactor into DisciplineService
-    /**
-     * Creates a new discipline entry described by the UserDisciplineSubmissionDto and created by the loggedInUser.
-     *
-     * @param userDisciplineSubmissionDto describes the discipinary action taken and against which user
-     * @param loggedInUser the logged in user
-     */
-    @Override
-    @Transactional
-    public boolean disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser) {
-        User disciplinedUser = getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
-
-        DisciplineType disciplineType = userDisciplineSubmissionDto.isBan() ? DisciplineType.BAN : DisciplineType.SUSPENSION;
-
-        System.out.println("### in disciplineUser(). disciplinedUser.isBanned() = " + disciplinedUser.isBanned());
-        System.out.println("### in disciplineUser(). disciplineType = " + disciplineType);
-
-        if (disciplineType.equals(DisciplineType.BAN) && disciplinedUser.isBanned()) {
-            return false;
-        }
-
-        Discipline discipline = new Discipline(disciplinedUser, loggedInUser, disciplineType, Date.from(Instant.now()),
-                userDisciplineSubmissionDto.getReason());
-
-        if (disciplineType.equals(DisciplineType.SUSPENSION)) {
-            discipline.setDisciplineDurationHours(Integer.parseInt(userDisciplineSubmissionDto.getSuspensionHours()));
-        }
-
-        discipline = disciplineRepository.save(discipline);
-
-        disciplinedUser.addDiscipline(discipline);
-
-        disciplinedUser = userRepository.save(disciplinedUser);
-
-        return true;
-    }
+//    // TODO: Refactor into DisciplineService
+//    /**
+//     * Creates a new discipline entry described by the UserDisciplineSubmissionDto and created by the loggedInUser.
+//     *
+//     * @param userDisciplineSubmissionDto describes the discipinary action taken and against which user
+//     * @param loggedInUser the logged in user
+//     */
+//    @Override
+//    @Transactional
+//    public boolean disciplineUser(UserDisciplineSubmissionDto userDisciplineSubmissionDto, User loggedInUser) {
+//        User disciplinedUser = getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
+//
+//        DisciplineType disciplineType = userDisciplineSubmissionDto.isBan() ? DisciplineType.BAN : DisciplineType.SUSPENSION;
+//
+//        System.out.println("### in disciplineUser(). disciplinedUser.isBanned() = " + disciplinedUser.isBanned());
+//        System.out.println("### in disciplineUser(). disciplineType = " + disciplineType);
+//
+//        if (disciplineType.equals(DisciplineType.BAN) && disciplinedUser.isBanned()) {
+//            return false;
+//        }
+//
+//        Discipline discipline = new Discipline(disciplinedUser, loggedInUser, disciplineType, Date.from(Instant.now()),
+//                userDisciplineSubmissionDto.getReason());
+//
+//        if (disciplineType.equals(DisciplineType.SUSPENSION)) {
+//            discipline.setDisciplineDurationHours(Integer.parseInt(userDisciplineSubmissionDto.getSuspensionHours()));
+//        }
+//
+//        discipline = disciplineRepository.save(discipline);
+//
+//        disciplinedUser.addDiscipline(discipline);
+//
+//        disciplinedUser = userRepository.save(disciplinedUser);
+//
+//        return true;
+//    }
 
     /**
      * Forcibly logs out the currently logged in user and clears their remember me cookie
@@ -530,137 +530,137 @@ public class UserServiceImpl implements UserService {
         res.addCookie(cookie);
     }
 
-    // TODO: Refactor into DisciplineService
-    /**
-     * Throw a DisciplinedUserException if the given user has any active disciplines
-     *
-     * @param user the user to check for active disiciplines
-     * @throws DisciplinedUserException if the given user has active disciplines
-     */
-    @Override
-    public void handleDisciplinedUser(User user) throws DisciplinedUserException {
-        if (user != null && user.isBannedOrSuspended()) {
-            System.out.println("### in handleDisciplinedUser() fire exception case for " + user);
-            throw new DisciplinedUserException(user);
-        }
-    }
+//    // TODO: Refactor into DisciplineService
+//    /**
+//     * Throw a DisciplinedUserException if the given user has any active disciplines
+//     *
+//     * @param user the user to check for active disiciplines
+//     * @throws DisciplinedUserException if the given user has active disciplines
+//     */
+//    @Override
+//    public void handleDisciplinedUser(User user) throws DisciplinedUserException {
+//        if (user != null && user.isBannedOrSuspended()) {
+//            System.out.println("### in handleDisciplinedUser() fire exception case for " + user);
+//            throw new DisciplinedUserException(user);
+//        }
+//    }
 
-    // TODO: Refactor into DisciplineService
-    /**
-     * Get a SortedSet of DisciplineViewDtos for all the given user's active disciplines.
-     *
-     * @param user the user to get active disciplines for
-     * @param loggedInUser the logged in user
-     * @return  SortedSet of DisciplineViewDtos for all the given user's active disciplines
-     */
-    @Override
-    public SortedSet<DisciplineViewDto> getActiveDisciplinesForUser(User user, User loggedInUser) {
-        Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
-            @Override
-            public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
-                if (o1.isBan() && o2.isBan()) {
-                    return 0;
-                } else if (o1.isBan()) {
-                    return 1;
-                } else if (o2.isBan()) {
-                    return -1;
-                }
+//    // TODO: Refactor into DisciplineService
+//    /**
+//     * Get a SortedSet of DisciplineViewDtos for all the given user's active disciplines.
+//     *
+//     * @param user the user to get active disciplines for
+//     * @param loggedInUser the logged in user
+//     * @return  SortedSet of DisciplineViewDtos for all the given user's active disciplines
+//     */
+//    @Override
+//    public SortedSet<DisciplineViewDto> getActiveDisciplinesForUser(User user, User loggedInUser) {
+//        Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
+//            @Override
+//            public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
+//                if (o1.isBan() && o2.isBan()) {
+//                    return 0;
+//                } else if (o1.isBan()) {
+//                    return 1;
+//                } else if (o2.isBan()) {
+//                    return -1;
+//                }
+//
+//                if (Integer.parseInt(o1.getDisciplineDuration()) > Integer.parseInt(o2.getDisciplineDuration())) {
+//                    return 1;
+//                } else if (Integer.parseInt(o2.getDisciplineDuration()) > Integer.parseInt(o1.getDisciplineDuration())) {
+//                    return -1;
+//                } else {
+//                    return 0;
+//                }
+//            }
+//        };
+//
+//        return getSortedDisciplineViewDtos(user.getActiveDisciplines(), comparator, loggedInUser);
+//    }
 
-                if (Integer.parseInt(o1.getDisciplineDuration()) > Integer.parseInt(o2.getDisciplineDuration())) {
-                    return 1;
-                } else if (Integer.parseInt(o2.getDisciplineDuration()) > Integer.parseInt(o1.getDisciplineDuration())) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        };
+//    // TODO: Refactor into DisciplineService
+//    /**
+//     * Get a SortedSet of DisciplineViewDtos for all the given user's inactive disciplines.
+//     *
+//     * @param user the user to get inactive disciplines for
+//     * @return  SortedSet of DisciplineViewDtos for all the given user's inactive disciplines
+//     */
+//    @Override
+//    public SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user) {
+//        Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
+//            @Override
+//            public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
+//                if (o1.isBan() && o2.isBan()) {
+//                    return 0;
+//                } else if (o1.isBan()) {
+//                    return 1;
+//                } else if (o2.isBan()) {
+//                    return -1;
+//                } else {
+//                    return o1.getDisciplinedUntil().compareTo(o2.getDisciplinedUntil());
+//                }
+//            }
+//        };
+//
+//        return getSortedDisciplineViewDtos(user.getInactiveDisciplines(), comparator, null);
+//    }
 
-        return getSortedDisciplineViewDtos(user.getActiveDisciplines(), comparator, loggedInUser);
-    }
+//    // TODO: Refactor into DisciplineService
+//    /**
+//     * Helper method that converts a Set of Disciplines into a SortedSet of DisciplineViewDtos sorted by duration.
+//     *
+//     * @param disciplines the set of Disciplines to convert
+//     * @return a SortedSet of DisciplineViewDtos sorted by duration
+//     */
+//    private SortedSet<DisciplineViewDto> getSortedDisciplineViewDtos(Set<Discipline> disciplines, Comparator<DisciplineViewDto> comparator, User loggedInUser) {
+//        SortedSet<DisciplineViewDto> dtoSet = new TreeSet<>(comparator);
+//
+//        for (Discipline d : disciplines) {
+//            DisciplineViewDto dto = disciplineToDisciplineViewDtoConverter.convert(d);
+//
+//            dto.setCanRescind(loggedInUser != null && (loggedInUser.equals(d.getDiscipliningUser())
+//                    || loggedInUser.isHigherAuthority(d.getDiscipliningUser())));
+//
+//            dtoSet.add(dto);
+//        }
+//
+//        return dtoSet;
+//    }
 
-    // TODO: Refactor into DisciplineService
-    /**
-     * Get a SortedSet of DisciplineViewDtos for all the given user's inactive disciplines.
-     *
-     * @param user the user to get inactive disciplines for
-     * @return  SortedSet of DisciplineViewDtos for all the given user's inactive disciplines
-     */
-    @Override
-    public SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user) {
-        Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
-            @Override
-            public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
-                if (o1.isBan() && o2.isBan()) {
-                    return 0;
-                } else if (o1.isBan()) {
-                    return 1;
-                } else if (o2.isBan()) {
-                    return -1;
-                } else {
-                    return o1.getDisciplinedUntil().compareTo(o2.getDisciplinedUntil());
-                }
-            }
-        };
+//    // TODO: Refactor into DisciplineService
+//    /**
+//     * Find the discipline object with the given ID and associated with the given user. Returns null if no such object
+//     * exists.
+//     *
+//     * @param id the id of the Discipline object to find
+//     * @param user the user being Disciplined by the object with the given id
+//     * @return the Discipline object, or null
+//     */
+//    @Override
+//    public Discipline getDisciplineByIdAndUser(Long id, User user) {
+//        Optional<Discipline> discOpt = disciplineRepository.findById(id);
+//
+//        if (discOpt.isEmpty() || user == null) {
+//            return null;
+//        }
+//
+//        Discipline discipline = discOpt.get();
+//
+//        if (!discipline.getDisciplinedUser().equals(user)) {
+//            return null;
+//        }
+//
+//        return discipline;
+//    }
 
-        return getSortedDisciplineViewDtos(user.getInactiveDisciplines(), comparator, null);
-    }
-
-    // TODO: Refactor into DisciplineService
-    /**
-     * Helper method that converts a Set of Disciplines into a SortedSet of DisciplineViewDtos sorted by duration.
-     *
-     * @param disciplines the set of Disciplines to convert
-     * @return a SortedSet of DisciplineViewDtos sorted by duration
-     */
-    private SortedSet<DisciplineViewDto> getSortedDisciplineViewDtos(Set<Discipline> disciplines, Comparator<DisciplineViewDto> comparator, User loggedInUser) {
-        SortedSet<DisciplineViewDto> dtoSet = new TreeSet<>(comparator);
-
-        for (Discipline d : disciplines) {
-            DisciplineViewDto dto = disciplineToDisciplineViewDtoConverter.convert(d);
-
-            dto.setCanRescind(loggedInUser != null && (loggedInUser.equals(d.getDiscipliningUser())
-                    || loggedInUser.isHigherAuthority(d.getDiscipliningUser())));
-
-            dtoSet.add(dto);
-        }
-
-        return dtoSet;
-    }
-
-    // TODO: Refactor into DisciplineService
-    /**
-     * Find the discipline object with the given ID and associated with the given user. Returns null if no such object
-     * exists.
-     *
-     * @param id the id of the Discipline object to find
-     * @param user the user being Disciplined by the object with the given id
-     * @return the Discipline object, or null
-     */
-    @Override
-    public Discipline getDisciplineByIdAndUser(Long id, User user) {
-        Optional<Discipline> discOpt = disciplineRepository.findById(id);
-
-        if (discOpt.isEmpty() || user == null) {
-            return null;
-        }
-
-        Discipline discipline = discOpt.get();
-
-        if (!discipline.getDisciplinedUser().equals(user)) {
-            return null;
-        }
-
-        return discipline;
-    }
-
-    // TODO: Refactor into DisciplineService
-    @Override
-    @Transactional
-    public void rescindDiscipline(Discipline disciplineToRescind) {
-        disciplineToRescind.setRescinded(true);
-        disciplineRepository.save(disciplineToRescind);
-    }
+//    // TODO: Refactor into DisciplineService
+//    @Override
+//    @Transactional
+//    public void rescindDiscipline(Discipline disciplineToRescind) {
+//        disciplineToRescind.setRescinded(true);
+//        disciplineRepository.save(disciplineToRescind);
+//    }
 
     /**
      * Generates and returns a UserRankAdjustmentDto for the given User, assuming the given loggedInUser.
@@ -678,104 +678,102 @@ public class UserServiceImpl implements UserService {
         return userRankAdjustmentDto;
     }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Returns a message in the given locale that indicates that the authentication token is invalid.
-     *
-     * @param locale the locale of the message to get
-     * @return a message in the given locale that indicates that the authentication token is invalid
-     */
-    @Override
-    public String getInvalidAuthTokenMessage(Locale locale) {
-        return messageService.getMessage("auth.message.invalidToken", locale);
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Returns a message in the given locale that indicates that the authentication token is invalid.
+//     *
+//     * @param locale the locale of the message to get
+//     * @return a message in the given locale that indicates that the authentication token is invalid
+//     */
+//    @Override
+//    public String getInvalidAuthTokenMessage(Locale locale) {
+//        return messageService.getMessage("auth.message.invalidToken", locale);
+//    }
 
-    // TODO: Refactor into UserAccountService
-    /**
-     * Returns a message in the given locale that indicates that the authentication token is expired or invalid.
-     *
-     * @param locale the locale of the message to get
-     * @return a message in the given locale that indicates that the authentication token is expired or invalid.
-     */
-    @Override
-    public String getExpiredAuthTokenMessage(Locale locale) {
-        return messageService.getMessage("auth.message.expired", locale);
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Returns a message in the given locale that indicates that the authentication token is expired or invalid.
+//     *
+//     * @param locale the locale of the message to get
+//     * @return a message in the given locale that indicates that the authentication token is expired or invalid.
+//     */
+//    @Override
+//    public String getExpiredAuthTokenMessage(Locale locale) {
+//        return messageService.getMessage("auth.message.expired", locale);
+//    }
 
-    // TODO: Refactor into DisciplineService
-    /**
-     * Returns a message that informs they user that they have been disciplined, the reason for this, and the
-     * discipline's duration.
-     *
-     * @param greatestDurationActiveDiscipline the discipline with the greatest duration for the logged in user
-     * @return a message that informs they user that they have been disciplined, the reason for this, and the
-     * discipline's duration.
-     */
-    @Override
-    public String getLoggedInUserBannedInformationMessage(Discipline greatestDurationActiveDiscipline) {
-        StringBuilder msgBuilder = new StringBuilder("You have been ");
+//    // TODO: Refactor into DisciplineService
+//    /**
+//     * Returns a message that informs they user that they have been disciplined, the reason for this, and the
+//     * discipline's duration.
+//     *
+//     * @param greatestDurationActiveDiscipline the discipline with the greatest duration for the logged in user
+//     * @return a message that informs they user that they have been disciplined, the reason for this, and the
+//     * discipline's duration.
+//     */
+//    @Override
+//    public String getLoggedInUserBannedInformationMessage(Discipline greatestDurationActiveDiscipline) {
+//        StringBuilder msgBuilder = new StringBuilder("You have been ");
+//
+//        if (greatestDurationActiveDiscipline.isBan()) {
+//            msgBuilder.append("permanently banned.");
+//        } else {
+//            String endsAtStr = greatestDurationActiveDiscipline.getDisciplineEndTime().toString();
+//            msgBuilder.append("suspended. Your suspension will end at: " + endsAtStr + ".");
+//        }
+//
+//        msgBuilder.append(" The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
+//
+//        return msgBuilder.toString();
+//    }
 
-        if (greatestDurationActiveDiscipline.isBan()) {
-            msgBuilder.append("permanently banned.");
-        } else {
-            String endsAtStr = greatestDurationActiveDiscipline.getDisciplineEndTime().toString();
-            msgBuilder.append("suspended. Your suspension will end at: " + endsAtStr + ".");
-        }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Get the main content of the password reset email body in the given locale.
+//     *
+//     * @param resetUrl the reset password URL for the user to click.
+//     * @param locale the locale of the message
+//     * @return the main content of the password reset email body in the given locale.
+//     */
+//    @Override
+//    public String getPasswordResetEmailContent(String resetUrl, Locale locale) {
+//        return messageService.getMessage("message.resetPasswordLinkPrompt", locale) + "\n" + resetUrl;
+//    }
 
-        msgBuilder.append(" The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Get the main content of the resend verification token email in the given locale.
+//     *
+//     * @param confirmationUrl the confirmation URL for the user to click.
+//     * @param locale the locale of the message
+//     * @return the main content of the resend verification token email in the given locale.
+//     */
+//    @Override
+//    public String getResendVerificationTokenEmailContent(String confirmationUrl, Locale locale) {
+//        return messageService.getMessage("message.resendToken", locale) + "\n" + confirmationUrl;
+//    }
 
-        return msgBuilder.toString();
-    }
-
-    // TODO: Refactor into UserAccountService OR EmailService
-
-    /**
-     * Get the main content of the password reset email body in the given locale.
-     *
-     * @param resetUrl the reset password URL for the user to click.
-     * @param locale the locale of the message
-     * @return the main content of the password reset email body in the given locale.
-     */
-    @Override
-    public String getPasswordResetEmailContent(String resetUrl, Locale locale) {
-
-        return messageService.getMessage("message.resetPasswordLinkPrompt", locale) + "\n" + resetUrl;
-    }
-
-    // TODO: Refactor into UserAccountService OR EmailService
-    /**
-     * Get the main content of the resend verification token email in the given locale.
-     *
-     * @param confirmationUrl the confirmation URL for the user to click.
-     * @param locale the locale of the message
-     * @return the main content of the resend verification token email in the given locale.
-     */
-    @Override
-    public String getResendVerificationTokenEmailContent(String confirmationUrl, Locale locale) {
-        return messageService.getMessage("message.resendToken", locale) + "\n" + confirmationUrl;
-    }
-
-    // TODO: Refactor into UserAccountService
-    /**
-     * Get a message in the given locale to display to users indicating that authentication failed, and why it failed.
-     *
-     * @param authException the exception to get details about the failure from
-     * @param locale the locale of the message to display.
-     * @return a message in the given locale to display to users indicating that authentication failed, and why it
-     * failed
-     */
-    @Override
-    public String getAuthenticationFailureMessage(Exception authException, Locale locale) {
-        String errorMessage = messageService.getMessage("message.badCredentials", locale);
-
-        if (authException.getMessage().equalsIgnoreCase("User is disabled")) {
-            errorMessage = messageService.getMessage("auth.message.disabled", locale);
-        } else if (authException.getMessage().equalsIgnoreCase("User account has expired")) {
-            errorMessage = messageService.getMessage("auth.message.expired", locale);
-        }
-
-        return errorMessage;
-    }
+//    // TODO: Refactor into UserAccountService
+//    /**
+//     * Get a message in the given locale to display to users indicating that authentication failed, and why it failed.
+//     *
+//     * @param authException the exception to get details about the failure from
+//     * @param locale the locale of the message to display.
+//     * @return a message in the given locale to display to users indicating that authentication failed, and why it
+//     * failed
+//     */
+//    @Override
+//    public String getAuthenticationFailureMessage(Exception authException, Locale locale) {
+//        String errorMessage = messageService.getMessage("message.badCredentials", locale);
+//
+//        if (authException.getMessage().equalsIgnoreCase("User is disabled")) {
+//            errorMessage = messageService.getMessage("auth.message.disabled", locale);
+//        } else if (authException.getMessage().equalsIgnoreCase("User account has expired")) {
+//            errorMessage = messageService.getMessage("auth.message.expired", locale);
+//        }
+//
+//        return errorMessage;
+//    }
 
     /**
      * Get a PromoteUserResponseDto for the given user which contains information about a successful promotion.

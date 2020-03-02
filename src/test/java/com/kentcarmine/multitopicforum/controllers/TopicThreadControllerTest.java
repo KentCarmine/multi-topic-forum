@@ -70,6 +70,9 @@ class TopicThreadControllerTest {
     @Mock
     PostVoteService postVoteService;
 
+    @Mock
+    DisciplineService disciplineService;
+
     TopicForum testTopicForum;
     User testUser;
     private User testModerator;
@@ -82,7 +85,8 @@ class TopicThreadControllerTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        topicThreadController = new TopicThreadController(forumService, userService, topicThreadService, postVoteService);
+        topicThreadController = new TopicThreadController(forumService, userService, topicThreadService,
+                postVoteService, disciplineService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(topicThreadController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -270,7 +274,7 @@ class TopicThreadControllerTest {
         Discipline discipline = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         testUser.addDiscipline(discipline);
 
-        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+        doThrow(new DisciplinedUserException(testUser)).when(disciplineService).handleDisciplinedUser(any());
 
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(userService.getLoggedInUser()).thenReturn(testUser);
@@ -405,7 +409,7 @@ class TopicThreadControllerTest {
         Discipline discipline = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         testUser.addDiscipline(discipline);
 
-        doThrow(new DisciplinedUserException(testUser)).when(userService).handleDisciplinedUser(any());
+        doThrow(new DisciplinedUserException(testUser)).when(disciplineService).handleDisciplinedUser(any());
 
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
@@ -462,7 +466,7 @@ class TopicThreadControllerTest {
         Discipline discipline = new Discipline(testAdmin, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         testAdmin.addDiscipline(discipline);
 
-        doThrow(new DisciplinedUserException(testAdmin)).when(userService).handleDisciplinedUser(any());
+        doThrow(new DisciplinedUserException(testAdmin)).when(disciplineService).handleDisciplinedUser(any());
 
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(topicThreadService.getThreadById(anyLong())).thenReturn(testTopicForumThread);
@@ -559,7 +563,7 @@ class TopicThreadControllerTest {
         Discipline discipline = new Discipline(testModerator, testSuperAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         testModerator.addDiscipline(discipline);
 
-        doThrow(new DisciplinedUserException(testModerator)).when(userService).handleDisciplinedUser(any());
+        doThrow(new DisciplinedUserException(testModerator)).when(disciplineService).handleDisciplinedUser(any());
 
         testTopicForumThread.lock(testModerator);
 

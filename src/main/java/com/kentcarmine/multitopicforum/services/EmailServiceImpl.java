@@ -22,13 +22,16 @@ public class EmailServiceImpl implements EmailService {
 
     private JavaMailSender mailSender;
     private UserService userService;
+    private UserAccountService userAccountService;
 
     @Autowired
     public EmailServiceImpl(@Value("${spring.mail.host}") String mailHost, @Value("${spring.mail.port}") int mailPort,
                             @Value("${spring.mail.username}") String mailUserName,
-                            @Value("${spring.mail.password}") String mailPassword, UserService userService) {
+                            @Value("${spring.mail.password}") String mailPassword, UserService userService,
+                            UserAccountService userAccountService) {
         mailSender = initMailSender(mailHost, mailPort, mailUserName, mailPassword);
         this.userService = userService;
+        this.userAccountService = userAccountService;
     }
 
     private JavaMailSender initMailSender(String mailHost, int mailPort, String mailUserName, String mailPassword) {
@@ -61,7 +64,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendPasswordResetEmail(String appUrl, Locale locale, PasswordResetToken token, User user) {
         String resetUrl = appUrl + "/changePassword?username=" + user.getUsername() + "&token=" + token.getToken();
-        String message = userService.getPasswordResetEmailContent(resetUrl, locale);
+        String message = userAccountService.getPasswordResetEmailContent(resetUrl, locale);
         String subject = "Multi-Topic Forum Password Reset";
 
         sendEmail(user.getEmail(), subject, message);
@@ -78,7 +81,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendResendVerificationTokenEmail(String appUrl, Locale locale, VerificationToken newToken, User user) {
         String confirmationUrl = appUrl + "/registrationConfirm?token=" + newToken.getToken();
-        String message = userService.getResendVerificationTokenEmailContent(confirmationUrl, locale);
+        String message = userAccountService.getResendVerificationTokenEmailContent(confirmationUrl, locale);
         String subject = "Multi-Topic Forum Registration Confirmation : Re-sent";
 
         sendEmail(user.getEmail(), subject, message);
