@@ -80,6 +80,9 @@ class PostControllerTest {
     PostService postService;
 
     @Mock
+    PostVoteService postVoteService;
+
+    @Mock
     DisciplineService disciplineService;
 
     TopicForum testTopicForum;
@@ -97,7 +100,7 @@ class PostControllerTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        postController = new PostController(forumService, userService, topicThreadService, postService, disciplineService);
+        postController = new PostController(forumService, userService, topicThreadService, postService, postVoteService, disciplineService, messageService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(postController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -202,6 +205,7 @@ class PostControllerTest {
     void addPostToThread_noSuchForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(messageService.getMessage(eq("Exception.forum.notfound"))).thenReturn("Forum was not found.");
 
         final String content = "Test content";
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
@@ -220,6 +224,7 @@ class PostControllerTest {
     void addPostToThread_noSuchThreadOnGivenForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(null);
+        when(messageService.getMessage(anyString())).thenReturn("Thread was not found.");
 
         final String content = "Test content";
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
@@ -240,6 +245,7 @@ class PostControllerTest {
 
         when(postService.getPostById(anyLong())).thenReturn(null);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
+        when(messageService.getMessage(anyString())).thenReturn("Post was not found.");
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -254,7 +260,8 @@ class PostControllerTest {
         assertNull(postIdStr);
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: Post not found.", msg);
+//        assertEquals("Error: Post not found.", msg);
+        assertEquals("Post was not found.", msg);
 
         verify(postService, times(0)).deletePost(any(), any());
     }
@@ -266,6 +273,7 @@ class PostControllerTest {
 
         when(postService.getPostById(anyLong())).thenReturn(testPost);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
+        when(messageService.getMessage(any())).thenReturn("You do not have the authority to perform that action.");
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -279,7 +287,8 @@ class PostControllerTest {
         assertEquals(testPost.getId(), postId);
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: Insufficient permissions to delete that post.", msg);
+//        assertEquals("Error: Insufficient permissions to delete that post.", msg);
+        assertEquals("You do not have the authority to perform that action.", msg);
 
         verify(postService, times(0)).deletePost(any(), any());
     }
@@ -298,6 +307,7 @@ class PostControllerTest {
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testModerator);
         when(postService.deletePost(any(), any())).thenReturn(testPost);
         when(postService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
+        when(messageService.getMessage("Post.deleted.success")).thenReturn("Post deleted.");
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -336,6 +346,7 @@ class PostControllerTest {
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testModerator);
         when(postService.deletePost(any(), any())).thenReturn(testPost);
         when(postService.getGetDeletedPostUrl(any())).thenReturn(expectedPostUrl);
+        when(messageService.getMessage(eq("Post.deleted.success"))).thenReturn("Post deleted.");
 
         MvcResult result = mockMvc.perform(post("/deletePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -399,6 +410,7 @@ class PostControllerTest {
 
         when(postService.getPostById(anyLong())).thenReturn(testPost);
         when(userService.getLoggedInUser()).thenReturn(testModerator);
+        when(messageService.getMessage(eq("Exception.authority.insufficient"))).thenReturn("You do not have the authority to perform that action.");
 
         MvcResult result = mockMvc.perform(post("/restorePostAjax")
                 .accept(MediaType.APPLICATION_JSON)
@@ -413,7 +425,7 @@ class PostControllerTest {
         assertEquals(testPost.getId(), postId);
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: Insufficient permissions to restore that post.", msg);
+        assertEquals("You do not have the authority to perform that action.", msg);
 
         verify(postService, times(0)).restorePost(any());
     }
@@ -447,6 +459,7 @@ class PostControllerTest {
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
         when(postService.restorePost(any())).thenReturn(testPostRestored);
         when(postService.getRestoredPostUrl(any())).thenReturn(expectedRestoredPostUrl);
+        when(messageService.getMessage(eq("Post.restored.success"))).thenReturn("Post restored.");
 
         MvcResult result = mockMvc.perform(post("/restorePostAjax")
                 .accept(MediaType.APPLICATION_JSON)

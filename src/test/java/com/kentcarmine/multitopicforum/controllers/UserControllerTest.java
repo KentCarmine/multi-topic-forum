@@ -152,6 +152,7 @@ class UserControllerTest {
     @Test
     void showUserPage_invalidUser() throws Exception {
         when(userService.usernameExists(anyString())).thenReturn(false);
+        when(messageService.getMessage(anyString(), anyString())).thenReturn("User was not found.");
 
         mockMvc.perform(get("/users/doesNotExistUsername"))
                 .andExpect(status().isNotFound())

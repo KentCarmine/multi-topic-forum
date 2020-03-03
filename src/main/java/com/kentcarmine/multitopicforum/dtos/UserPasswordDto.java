@@ -12,12 +12,12 @@ import javax.validation.constraints.Size;
 @PasswordMatches
 public class UserPasswordDto implements PasswordDto {
 
-    @Size(min = 8, message = "password must be at least {min} characters long")
+    @Size(min = 8, message = "{User.password.length}")
     private String password;
 
     private String confirmPassword;
 
-    @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters")
+    @ValidCharacters(message = "{User.username.validChars}")
     private String username;
 
     private String token;

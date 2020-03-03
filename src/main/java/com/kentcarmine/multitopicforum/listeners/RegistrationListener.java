@@ -23,8 +23,7 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
     private final MessageSource messageSource;
 
     private final EmailService emailService;
-
-
+    
     @Autowired
     public RegistrationListener(UserAccountService userAccountService, MessageSource messageSource, EmailService emailService) {
         this.userAccountService = userAccountService;

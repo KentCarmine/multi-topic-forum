@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.annotations;
 
 import com.kentcarmine.multitopicforum.validators.PasswordMatchValidator;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

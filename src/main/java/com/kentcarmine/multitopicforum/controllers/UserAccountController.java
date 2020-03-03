@@ -6,10 +6,7 @@ import com.kentcarmine.multitopicforum.model.PasswordResetToken;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.model.VerificationToken;
-import com.kentcarmine.multitopicforum.services.DisciplineService;
-import com.kentcarmine.multitopicforum.services.EmailService;
-import com.kentcarmine.multitopicforum.services.UserAccountService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -38,16 +35,18 @@ public class UserAccountController {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final UserAccountService userAccountService;
     private final DisciplineService disciplineService;
+    private final MessageService messageService;
 
     @Autowired
     public UserAccountController(UserService userService, ApplicationEventPublisher applicationEventPublisher,
-                          EmailService emailService, UserAccountService userAccountService,
-                                 DisciplineService disciplineService) {
+                                 EmailService emailService, UserAccountService userAccountService,
+                                 DisciplineService disciplineService, MessageService messageService) {
         this.userService = userService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.emailService = emailService;
         this.userAccountService = userAccountService;
         this.disciplineService = disciplineService;
+        this.messageService = messageService;
     }
 
     /**
@@ -107,7 +106,7 @@ public class UserAccountController {
                 String appUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString() + request.getContextPath();
                 applicationEventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request.getLocale(), appUrl));
             } catch (Exception ex) {
-                System.out.println("### Error occurred completing registration ###");
+//                System.out.println("### Error occurred completing registration ###");
                 ex.printStackTrace();
                 return new ModelAndView("registration-email-error");
             }
@@ -123,14 +122,14 @@ public class UserAccountController {
      */
     @GetMapping("/registrationConfirm")
     public ModelAndView confirmRegistration(WebRequest request, @RequestParam("token") String token) {
-        System.out.println("### in confirmRegistration()");
+//        System.out.println("### in confirmRegistration()");
         Locale locale = request.getLocale();
         VerificationToken verificationToken = userAccountService.getVerificationToken(token);
 
         ModelAndView mv;
 
         if (verificationToken == null) {
-            System.out.println("### in confirmRegistration(), null token case");
+//            System.out.println("### in confirmRegistration(), null token case");
             String message = userAccountService.getInvalidAuthTokenMessage(locale);
 
             mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
@@ -140,7 +139,7 @@ public class UserAccountController {
 
         User user = verificationToken.getUser();
         if (userAccountService.isVerificationTokenExpired(verificationToken)) {
-            System.out.println("### in confirmRegistration(), isVerificationTokenExpired() case");
+//            System.out.println("### in confirmRegistration(), isVerificationTokenExpired() case");
             String message = userAccountService.getExpiredAuthTokenMessage(locale);
 
             mv = new ModelAndView("registration-confirmation-error", HttpStatus.NOT_FOUND);
@@ -149,12 +148,12 @@ public class UserAccountController {
             mv.getModel().put("token", token);
             return mv;
         } else if (user != null && user.isEnabled()) {
-            System.out.println("### in confirmRegistration(), already registered case.");
+//            System.out.println("### in confirmRegistration(), already registered case.");
             mv = new ModelAndView("redirect:/login");
             return mv;
         }
 
-        System.out.println("### in confirmRegistration(), creating registration case");
+//        System.out.println("### in confirmRegistration(), creating registration case");
         userAccountService.saveRegisteredUser(user);
         mv = new ModelAndView("redirect:/login?registrationSuccess");
         return mv;
@@ -275,11 +274,13 @@ public class UserAccountController {
         UserRole promotableRank = promoteUserSubmissionDto.getPromotableRank();
 
         if (userToPromote == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PromoteUserResponseDto("Error: User not found"));
+            String msg = messageService.getMessage("Exception.user.notfound", promoteUserSubmissionDto.getUsername());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PromoteUserResponseDto(msg));
         }
 
         if (loggedInUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto("Error: Insufficient permissions to promote that user."));
+            String msg = messageService.getMessage("Exception.authority.insufficient");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto(msg));
         }
 
         if (userService.isValidPromotionRequest(loggedInUser, userToPromote, promotableRank)) {
@@ -288,7 +289,8 @@ public class UserAccountController {
 
             return ResponseEntity.status(HttpStatus.OK).body(purDto);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto("Error: Insufficient permissions to promote that user."));
+            String msg = messageService.getMessage("Exception.authority.insufficient");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto(msg));
         }
     }
 
@@ -302,11 +304,13 @@ public class UserAccountController {
         UserRole demotableRank = demoteUserSubmissionDto.getDemotableRank();
 
         if (userToDemote == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new DemoteUserResponseDto("Error: User not found"));
+            String msg = messageService.getMessage("Exception.user.notfound", demoteUserSubmissionDto.getUsername());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new DemoteUserResponseDto(msg));
         }
 
         if (loggedInUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DemoteUserResponseDto("Error: Insufficient permissions to demote that user."));
+            String msg = messageService.getMessage("Exception.authority.insufficient");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DemoteUserResponseDto(msg));
         }
 
         if (userService.isValidDemotionRequest(loggedInUser, userToDemote, demotableRank)) {
@@ -315,7 +319,8 @@ public class UserAccountController {
 
             return ResponseEntity.status(HttpStatus.OK).body(durDto);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DemoteUserResponseDto("Error: Insufficient permissions to demote that user."));
+            String msg = messageService.getMessage("Exception.authority.insufficient");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DemoteUserResponseDto(msg));
         }
     }
 

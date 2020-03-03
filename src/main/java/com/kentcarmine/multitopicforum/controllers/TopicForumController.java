@@ -92,7 +92,8 @@ public class TopicForumController {
         TopicForum forum = forumService.getForumByName(name);
 
         if (forum == null) {
-            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
+//            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
+            throw new ForumNotFoundException();
         }
 
         model.addAttribute("topicThreadSearchDto", new TopicThreadSearchDto());
@@ -125,7 +126,7 @@ public class TopicForumController {
      */
     private BindingResult updateForumCreationBindingResult(TopicForumDto topicForumDto, BindingResult bindingResult) {
         if (forumService.isForumWithNameExists(topicForumDto.getName())) {
-            bindingResult.rejectValue("name", "message.forum.creation.duplicateName", "A topic forum with the name " + topicForumDto.getName()
+            bindingResult.rejectValue("name", "Forum.creation.duplicateName", "A topic forum with the name " + topicForumDto.getName()
                     + " already exists.");
         }
 

@@ -150,6 +150,7 @@ class TopicThreadControllerTest {
         String searchString = " \" Thread Title\"   ";
 
         when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
+        when(messageService.getMessage(eq("Exception.forum.notfound"))).thenReturn("Forum was not found.");
 
         mockMvc.perform(post("/processSearchThreads/" + testTopicForum.getName())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -231,6 +232,7 @@ class TopicThreadControllerTest {
     @Test
     void searchForumThreads_noSuchForumName() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
+        when(messageService.getMessage(eq("Exception.forum.notfound"))).thenReturn("Forum was not found.");
 
         mockMvc.perform(get("/searchForumThreads/aihgpnwng?searchError"))
                 .andExpect(status().isNotFound())
@@ -294,6 +296,7 @@ class TopicThreadControllerTest {
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
         when(topicThreadService.createNewTopicThread(any(), any(), any())).thenReturn(testTopicForumThread);
+        when(messageService.getMessage(eq("Exception.forum.notfound"))).thenReturn("Forum was not found.");
 
         mockMvc.perform(post("/forum/" + testTopicForum.getName() + "/processCreateThread")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -416,6 +419,7 @@ class TopicThreadControllerTest {
     void showThread_noSuchForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(false);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(messageService.getMessage(eq("Exception.forum.notfound"))).thenReturn("Forum was not found.");
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
@@ -428,6 +432,7 @@ class TopicThreadControllerTest {
     void showThread_noSuchThreadOnGivenForum() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(null);
+        when(messageService.getMessage("Exception.thread.notfound")).thenReturn("Thread was not found.");
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
@@ -503,10 +508,12 @@ class TopicThreadControllerTest {
     void processLockThread_nullThread() throws Exception {
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(topicThreadService.getThreadById(anyLong())).thenReturn(null);
+        when(messageService.getMessage(eq("Exception.thread.notfound"))).thenReturn("Thread was not found.");
 
         mockMvc.perform(post("/lockTopicThread/1"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(view().name("general-error-page"));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("thread-not-found"))
+                .andExpect(model().attributeExists("message"));
 
         verify(userService, times(0)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());
@@ -604,10 +611,12 @@ class TopicThreadControllerTest {
 
         when(userService.getLoggedInUser()).thenReturn(testModerator);
         when(topicThreadService.getThreadById(anyLong())).thenReturn(null);
+        when(messageService.getMessage(eq("Exception.thread.notfound"))).thenReturn("Thread was not found.");
 
         mockMvc.perform(post("/unlockTopicThread/1"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(view().name("general-error-page"));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("thread-not-found"))
+                .andExpect(model().attributeExists("message"));
 
         verify(topicThreadService, times(1)).getThreadById(anyLong());
         verify(userService, times(0)).getLoggedInUser();

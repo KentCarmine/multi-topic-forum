@@ -46,7 +46,7 @@
 
         <div sec:authorize="isAuthenticated()" th:if="${!threadIsLocked}">
             <form id="new-post-form" th:action="@{'/forum/' + ${forumName} + '/show/' + ${threadId} + '/createPost'}" th:object="${postCreationDto}" method="post">
-                <div th:if="${#fields.hasErrors('*')}">
+                <div id="new-post-form-errors" th:if="${#fields.hasErrors('*')}">
                     <p style="color: red">Please Correct Errors Below:</p>
                     <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
                 </div>

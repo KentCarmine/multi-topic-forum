@@ -8,6 +8,7 @@ import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.model.Discipline;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.DisciplineService;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -51,12 +52,14 @@ public class DisciplineController {
         User user = userService.getUser(username);
 
         if (user == null) {
-            throw new UserNotFoundException("User " + username + " was not found.");
+//            String msg = messageService.getMessage("Exception.user.notfound", username);
+            throw new UserNotFoundException("Exception.user.notfound", username);
         }
 
         if (!loggedInUser.isHigherAuthority(user)) {
-            throw new InsufficientAuthorityException(loggedInUser.getUsername() + " has insufficient authority to view "
-                    + user.getUsername() + "'s disciplines.");
+//            throw new InsufficientAuthorityException(loggedInUser.getUsername() + " has insufficient authority to view "
+////                    + user.getUsername() + "'s disciplines.");
+            throw new InsufficientAuthorityException();
         }
 
         SortedSet<DisciplineViewDto> activeDisciplines = disciplineService.getActiveDisciplinesForUser(user, loggedInUser);
@@ -87,12 +90,13 @@ public class DisciplineController {
         User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
 
         if (disciplinedUser == null) {
-            System.out.println("### in processUserDisciplineSubmission(). disciplinedUser == null case");
-            throw new UserNotFoundException();
+//            String msg = messageService.getMessage("Exception.user.notfound", userDisciplineSubmissionDto.getDisciplinedUsername());
+//            throw new UserNotFoundException(msg);
+            throw new UserNotFoundException("Exception.user.notfound", userDisciplineSubmissionDto.getDisciplinedUsername());
         }
 
         if (bindingResult.hasErrors()) {
-            System.out.println("### in processUserDisciplineSubmission(). bindingResult.hasErrors() case");
+//            System.out.println("### in processUserDisciplineSubmission(). bindingResult.hasErrors() case");
             SortedSet<DisciplineViewDto> activeDisciplines = disciplineService.getActiveDisciplinesForUser(disciplinedUser, loggedInUser);
             SortedSet<DisciplineViewDto> inactiveDisciplines = disciplineService.getInactiveDisciplinesForUser(disciplinedUser);
 
@@ -104,7 +108,7 @@ public class DisciplineController {
             return mv;
         }
 
-        System.out.println("### in processUserDisciplineSubmission(). pre userService.disciplineUser() case");
+//        System.out.println("### in processUserDisciplineSubmission(). pre userService.disciplineUser() case");
         boolean successfulBan = disciplineService.disciplineUser(userDisciplineSubmissionDto, loggedInUser);
 
         String url = "redirect:/users/" + disciplinedUser.getUsername();
@@ -114,7 +118,7 @@ public class DisciplineController {
             url = url + "?userAlreadyBanned";
         }
 
-        System.out.println("### in processUserDisciplineSubmission(). Url = " + url);
+//        System.out.println("### in processUserDisciplineSubmission(). Url = " + url);
         mv = new ModelAndView(url);
         return mv;
     }
@@ -158,25 +162,30 @@ public class DisciplineController {
      */
     @PostMapping("/rescindDiscipline/{username}/{id}")
     public String processRescindDiscipline(@PathVariable String username, @PathVariable Long id) {
-        System.out.println("### in processRescindDiscipline. username = " + username + ", id = " + id);
+//        System.out.println("### in processRescindDiscipline. username = " + username + ", id = " + id);
 
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);
 
         User disciplinedUser = userService.getUser(username);
         if (disciplinedUser == null) {
-            System.out.println("Error in processRescindDiscipline. disciplinedUser is null");
-            throw new UserNotFoundException("User not found");
+//            String msg = messageService.getMessage("Exception.user.notfound", username);
+//            String msg = messageService.getMessage("Exception.user.notfound");
+//            System.out.println("### in processRescindDiscipline(). msg = " + msg);
+//            throw new UserNotFoundException(msg);
+            throw new UserNotFoundException("Exception.user.notfound", username);
         }
 
         Discipline disciplineToRescind = disciplineService.getDisciplineByIdAndUser(id, disciplinedUser);
         if (disciplineToRescind == null) {
-            System.out.println("Error in processRescindDiscipline. disciplineToRescind is null");
-            throw new DisciplineNotFoundException("Discipline to rescind was not found");
+//            System.out.println("Error in processRescindDiscipline. disciplineToRescind is null");
+//            throw new DisciplineNotFoundException("Discipline to rescind was not found");
+            throw new DisciplineNotFoundException();
         }
 
         if (!loggedInUser.equals(disciplineToRescind.getDiscipliningUser()) && !loggedInUser.isHigherAuthority(disciplineToRescind.getDiscipliningUser())) {
-            throw new InsufficientAuthorityException("Insufficient authority to rescind discipline");
+//            throw new InsufficientAuthorityException("Insufficient authority to rescind discipline");
+            throw new InsufficientAuthorityException();
         }
 
         disciplineService.rescindDiscipline(disciplineToRescind);
@@ -189,12 +198,18 @@ public class DisciplineController {
         User disciplinedUser = userService.getUser(userDisciplineSubmissionDto.getDisciplinedUsername());
 
         if (disciplinedUser == null) {
-            System.out.println("### in updateDisciplineSubmissionBindingResult(). disciplinedUser == null");
-            bindingResult.rejectValue("disciplinedUsername", null, "Could not find user " + userDisciplineSubmissionDto.getDisciplinedUsername());
+//            System.out.println("### in updateDisciplineSubmissionBindingResult(). disciplinedUser == null");
+//            bindingResult.rejectValue("disciplinedUsername", "Exception.user.notfound");
+//            bindingResult.rejectValue("disciplinedUsername", null, messageService.getMessage("Exception.user.notfound", userDisciplineSubmissionDto.getDisciplinedUsername()));
+//            bindingResult.rejectValue("disciplinedUsername", null, "Could not find user " + userDisciplineSubmissionDto.getDisciplinedUsername());
+            bindingResult.rejectValue("disciplinedUsername", "Exception.user.notfound",
+                    new String[]{userDisciplineSubmissionDto.getDisciplinedUsername()},
+                    "Could not find user " + userDisciplineSubmissionDto.getDisciplinedUsername());
         }
 
         if (loggedInUser == null || disciplinedUser == null || !loggedInUser.isHigherAuthority(disciplinedUser)) {
-            bindingResult.reject("insufficientAuthority", null, "You do not have the authority to discipline this user");
+//            bindingResult.reject("insufficientAuthority", null, "You do not have the authority to discipline this user");
+            bindingResult.reject("Exception.authority.insufficient", "You do not have the authority to discipline this user");
         }
 
         return bindingResult;

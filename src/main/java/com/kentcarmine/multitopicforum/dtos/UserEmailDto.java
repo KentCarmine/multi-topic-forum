@@ -7,7 +7,7 @@ import com.kentcarmine.multitopicforum.annotations.ValidEmail;
  */
 public class UserEmailDto {
 
-    @ValidEmail(message = "email must be a valid email address")
+    @ValidEmail(message = "{User.email.mustBeValid}")
     private String email;
 
     public String getEmail() {
