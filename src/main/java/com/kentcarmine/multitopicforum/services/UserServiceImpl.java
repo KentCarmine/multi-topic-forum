@@ -35,15 +35,18 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationService authenticationService;
     private final AuthorityRepository authorityRepository;
     private final UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
+    private final MessageService messageService;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
                            AuthorityRepository authorityRepository,
-                           UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter) {
+                           UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter,
+                           MessageService messageService) {
         this.userRepository = userRepository;
         this.authenticationService = authenticationService;
         this.authorityRepository = authorityRepository;
         this.userToUserRankAdjustmentDtoConverter = userToUserRankAdjustmentDtoConverter;
+        this.messageService = messageService;
     }
 
     /**
@@ -297,8 +300,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public PromoteUserResponseDto getPromoteUserResponseDtoForUser(User promotedUser) {
-        String msg = promotedUser.getUsername() + " promoted to "
-                + promotedUser.getHighestAuthority().getDisplayRank() + ".";
+        String msg = messageService.getMessage("User.authority.promotion.notification", promotedUser.getUsername(),
+                promotedUser.getHighestAuthority().getDisplayRank());
+
         String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
                 + "/promoteUserButton/" + promotedUser.getUsername();
         String newDemoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
@@ -315,8 +319,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public DemoteUserResponseDto getDemoteUserResponseDtoForUser(User demotedUser) {
-        String msg = demotedUser.getUsername() + " demoted to "
-                + demotedUser.getHighestAuthority().getDisplayRank() + ".";
+        String msg = messageService.getMessage("User.authority.demotion.notification", demotedUser.getUsername(),
+                demotedUser.getHighestAuthority().getDisplayRank());
         String newPromoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()
                 + "/promoteUserButton/" + demotedUser.getUsername();
         String newDemoteButtonUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()

@@ -23,15 +23,17 @@ public class DisciplineServiceImpl implements DisciplineService {
     private final DisciplineRepository disciplineRepository;
     private final DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
     private final UserService userService;
+    private final MessageService messageService;
 
     @Autowired
     public DisciplineServiceImpl(UserRepository userRepository, DisciplineRepository disciplineRepository,
-                           DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter,
-                                 UserService userService) {
+                                 DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter,
+                                 UserService userService, MessageService messageService) {
         this.userRepository = userRepository;
         this.disciplineRepository = disciplineRepository;
         this.disciplineToDisciplineViewDtoConverter = disciplineToDisciplineViewDtoConverter;
         this.userService = userService;
+        this.messageService = messageService;
     }
 
     /**
@@ -47,8 +49,8 @@ public class DisciplineServiceImpl implements DisciplineService {
 
         DisciplineType disciplineType = userDisciplineSubmissionDto.isBan() ? DisciplineType.BAN : DisciplineType.SUSPENSION;
 
-        System.out.println("### in disciplineUser(). disciplinedUser.isBanned() = " + disciplinedUser.isBanned());
-        System.out.println("### in disciplineUser(). disciplineType = " + disciplineType);
+//        System.out.println("### in disciplineUser(). disciplinedUser.isBanned() = " + disciplinedUser.isBanned());
+//        System.out.println("### in disciplineUser(). disciplineType = " + disciplineType);
 
         if (disciplineType.equals(DisciplineType.BAN) && disciplinedUser.isBanned()) {
             return false;
@@ -79,7 +81,7 @@ public class DisciplineServiceImpl implements DisciplineService {
     @Override
     public void handleDisciplinedUser(User user) throws DisciplinedUserException {
         if (user != null && user.isBannedOrSuspended()) {
-            System.out.println("### in handleDisciplinedUser() fire exception case for " + user);
+//            System.out.println("### in handleDisciplinedUser() fire exception case for " + user);
             throw new DisciplinedUserException(user);
         }
     }
@@ -185,18 +187,16 @@ public class DisciplineServiceImpl implements DisciplineService {
      */
     @Override
     public String getLoggedInUserBannedInformationMessage(Discipline greatestDurationActiveDiscipline) {
-        StringBuilder msgBuilder = new StringBuilder("You have been ");
+        String msg;
 
         if (greatestDurationActiveDiscipline.isBan()) {
-            msgBuilder.append("permanently banned.");
+            msg = messageService.getMessage("Discipline.ban.advisory", greatestDurationActiveDiscipline.getReason());
         } else {
             String endsAtStr = greatestDurationActiveDiscipline.getDisciplineEndTime().toString();
-            msgBuilder.append("suspended. Your suspension will end at: " + endsAtStr + ".");
+            msg = messageService.getMessage("Discipline.suspension.advisory", endsAtStr, greatestDurationActiveDiscipline.getReason());
         }
 
-        msgBuilder.append(" The reason given for this disciplinary action was: " + greatestDurationActiveDiscipline.getReason());
-
-        return msgBuilder.toString();
+        return msg;
     }
 
     /**

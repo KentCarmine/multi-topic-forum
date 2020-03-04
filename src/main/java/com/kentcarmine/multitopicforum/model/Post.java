@@ -24,7 +24,7 @@ public class Post implements Comparable<Post> {
     @NotNull
     private TopicThread thread;
 
-    @NotBlank(message = "Post content must not be blank")
+    @NotBlank(message = "{Post.content.notBlank}")
     @Lob
     private String content;
 

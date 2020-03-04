@@ -9,31 +9,31 @@
     <body>
         <div th:fragment="navbar">
             <span>
-                <a th:href="@{/}" href="#">Home</a>
+                <a th:href="@{/}" href="#"th:text="#{Label.home}">Home</a>
             </span>
             <span>
-                <a th:href="@{/forums}" href="#">All Forums</a>
+                <a th:href="@{/forums}" href="#"th:text="#{Label.allForums}">All Forums</a>
             </span>
             <span>
-                <a th:href="@{/users}" href="#">Search Users</a>
+                <a th:href="@{/users}" href="#" th:text="#{Label.searchUsers}">Search Users</a>
             </span>
 
             <span sec:authorize="isAuthenticated()" th:if="${#request.requestURI != '/users/' + #authentication.getName()}">
-                <a th:href="@{'/users/'+${#authentication.getName()}}" href="#">User home</a>
+                <a th:href="@{'/users/'+${#authentication.getName()}}" href="#" th:text="#{Label.userHome}">User home</a>
             </span>
 
             <span th:if="${#authentication == null || #authorization.expression('hasRole(''ROLE_ANONYMOUS'')')}">
-                <a href="#" th:href="@{/login}">Login</a>
+                <a href="#" th:href="@{/login}"th:text="#{Label.login}">Login</a>
             </span>
             <span sec:authorize="isAuthenticated()">
-                <a href="#" th:href="@{/logout}">Logout</a>
+                <a href="#" th:href="@{/logout}" th:text="#{Label.logout}">Logout</a>
             </span>
             <span th:if="${#authentication == null || #authorization.expression('hasRole(''ROLE_ANONYMOUS'')')}">
-                <a href="#" th:href="@{/registerUser}">Register</a>
+                <a href="#" th:href="@{/registerUser}" th:text="#{Label.register}">Register</a>
             </span>
 
             <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-                <a href="#", th:href="@{/administration}">Administration</a>
+                <a href="#", th:href="@{/administration}" th:text="#{Label.administration}">Administration</a>
             </span>
         </div>
     </body>

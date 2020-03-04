@@ -66,6 +66,9 @@ class DisciplineServiceTest {
     @Mock
     PasswordEncoder passwordEncoder;
 
+    @Mock
+    MessageService messageService;
+
     private DisciplineToDisciplineViewDtoConverter disciplineToDisciplineViewDtoConverter;
 
     private User testUser;
@@ -79,7 +82,8 @@ class DisciplineServiceTest {
         MockitoAnnotations.initMocks(this);
         disciplineToDisciplineViewDtoConverter = new DisciplineToDisciplineViewDtoConverter();
 
-        disciplineService = new DisciplineServiceImpl(userRepository, disciplineRepository, disciplineToDisciplineViewDtoConverter, userService);
+        disciplineService = new DisciplineServiceImpl(userRepository, disciplineRepository,
+                disciplineToDisciplineViewDtoConverter, userService, messageService);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);

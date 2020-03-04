@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.listeners;
 import com.kentcarmine.multitopicforum.events.OnRegistrationCompleteEvent;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.EmailService;
+import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -20,15 +21,15 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 
     private final UserAccountService userAccountService;
 
-    private final MessageSource messageSource;
+    private final MessageService messageService;
 
     private final EmailService emailService;
-    
+
     @Autowired
-    public RegistrationListener(UserAccountService userAccountService, MessageSource messageSource, EmailService emailService) {
+    public RegistrationListener(UserAccountService userAccountService, MessageService messageService, EmailService emailService) {
         this.userAccountService = userAccountService;
-        this.messageSource = messageSource;
         this.emailService = emailService;
+        this.messageService = messageService;
     }
 
     @Override
@@ -47,9 +48,9 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         userAccountService.createVerificationToken(user, token);
 
         String recipientEmail = user.getEmail();
-        String subject = "Multi-Topic Forum Registration Confirmation";
+        String subject = messageService.getMessage("User.registration.confirmationEmail.subject");
         String confirmationUrl = event.getAppUrl() + "/registrationConfirm?token=" + token;
-        String message = messageSource.getMessage("message.regSucc", null, event.getLocale());
+        String message = messageService.getMessage("message.regSucc", event.getLocale());
         String fullContent = message + "\n" + confirmationUrl;
 
         emailService.sendEmail(recipientEmail, subject, fullContent);

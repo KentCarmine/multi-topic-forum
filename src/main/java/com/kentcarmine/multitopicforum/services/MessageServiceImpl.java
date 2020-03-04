@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Locale;
 
+/**
+ * Service that handles translating message codes from properties to their corresponding strings.
+ */
 @Service
 public class MessageServiceImpl implements MessageService {
 
@@ -19,27 +22,21 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public String getMessage(String id, Locale locale) {
-//        System.out.println("### In MessageService case 1");
         return messageSource.getMessage(id, null, locale);
     }
 
     @Override
     public String getMessage(String id) {
-//        System.out.println("### In MessageService case 2");
-//        System.out.println("### Locale = " + LocaleContextHolder.getLocale());
         return getMessage(id, LocaleContextHolder.getLocale());
     }
 
     @Override
     public String getMessage(String id, Locale locale, Object... args) {
-//        System.out.println("### In MessageService case 3");
         return messageSource.getMessage(id, args, locale);
     }
 
     @Override
     public String getMessage(String id, Object... args) {
-//        System.out.println("### In MessageService case 4");
-//        System.out.println("### Locale = " + LocaleContextHolder.getLocale());
         return getMessage(id, LocaleContextHolder.getLocale(), args);
     }
 }

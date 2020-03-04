@@ -3,14 +3,14 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
-        <title>Administration and Management</title>
+        <title th:text="#{Label.administrationAndManagement.header}">Administration and Management</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
         <div>
-            <h2>Administrative Actions</h2>
+            <h2 th:text="#{Label.administration.administrativeActions.header}">Administrative Actions</h2>
             <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-                <a href="#" th:href="@{/createNewForum}">Create New Topic Forum</a>
+                <a href="#" th:href="@{/createNewForum}" th:text="#{Label.forum.createNew}">Create New Topic Forum</a>
             </div>
 
 <!--            TODO: Add other admin/mod functions-->

@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 /**
  * DTO that handles transferring data about user disciplinary actions
  */
-@ValidUserDisciplineSubmission
+@ValidUserDisciplineSubmission(message = "{Discipline.suspension.hours.invalidValue.warning}", min = 1, max = 30 * 24)
 public class UserDisciplineSubmissionDto {
 
     @NotBlank

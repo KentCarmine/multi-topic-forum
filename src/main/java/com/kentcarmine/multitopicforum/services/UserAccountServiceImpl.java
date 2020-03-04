@@ -75,11 +75,11 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     public User createUser(User user) throws DuplicateEmailException, DuplicateUsernameException {
         if (userService.usernameExists(user.getUsername())) {
-            throw new DuplicateUsernameException("The username "+ user.getUsername() + " is taken.");
+            throw new DuplicateUsernameException();
         }
 
         if (userService.emailExists(user.getEmail())) {
-            throw new DuplicateEmailException("Account with email address " + user.getEmail() + " already exists.");
+            throw new DuplicateEmailException();
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));

@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 public class User {
 
     @Id
-    @Size(min = 4, message = "Username must be at least {min} characters long")
-    @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters")
+    @Size(min = 4, message = "{User.username.length}")
+    @ValidCharacters(message = "{User.username.validChars}")
     @ValidUsername
     private String username;
 
-    @Size(min = 8, message = "password must be at least {min} characters long")
+    @Size(min = 8, message = "{User.password.length}")
     private String password;
 
     @Column(name = "email", unique = true)
-    @ValidEmail(message = "email must be a valid email address")
+    @ValidEmail(message = "{User.email.mustBeValid}")
     private String email;
 
     @SortNatural
@@ -59,11 +59,11 @@ public class User {
         this.postVotes = new HashSet<>();
     }
 
-    public User(@Size(min = 4, message = "Username must be at least {min} characters long")
-                @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters") String username,
-                @Size(min = 8, message = "password must be at least {min} characters long") String password,
-                @ValidEmail(message = "email must be a valid email address") String email,
-                @NotEmpty(message = "user must have at least one role") SortedSet<Authority> authorities) {
+    public User(@Size(min = 4, message = "{User.username.length}")
+                @ValidCharacters(message = "{User.username.validChars}") String username,
+                @Size(min = 8, message = "{User.password.length}") String password,
+                @ValidEmail(message = "{User.email.mustBeValid}") String email,
+                @NotEmpty(message = "{User.roles.notEmpty}") SortedSet<Authority> authorities) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -74,10 +74,10 @@ public class User {
         this.disciplines = new HashSet<>();
     }
 
-    public User(@Size(min = 4, message = "Username must be at least {min} characters long")
-                @ValidCharacters(message = "username must consist only of letters, numbers, - and _ characters") String username,
-                @Size(min = 8, message = "password must be at least {min} characters long") String password,
-                @ValidEmail(message = "email must be a valid email address") String email) {
+    public User(@Size(min = 4, message = "{User.username.length}")
+                @ValidCharacters(message = "{User.username.validChars}") String username,
+                @Size(min = 8, message = "{User.password.length}") String password,
+                @ValidEmail(message = "{User.email.mustBeValid}") String email) {
         this.username = username;
         this.password = password;
         this.email = email;

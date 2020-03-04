@@ -15,7 +15,7 @@
             <td style="border: 1px solid black;" th:text="${discipline.getReason()}">Reason</td>
             <td style="border: 1px solid black;">
                 <form th:action="@{'/rescindDiscipline/' + ${discipline.getDisciplinedUsername()} + '/' + ${discipline.getId()}}" method="post">
-                    <button type="submit" th:disabled="${!discipline.canRescind()}">Rescind</button>
+                    <button type="submit" th:disabled="${!discipline.canRescind()}" th:text="#{Label.discipline.rescind}">Rescind</button>
                 </form>
             </td>
         </tr>
