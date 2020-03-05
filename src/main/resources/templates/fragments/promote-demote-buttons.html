@@ -5,17 +5,28 @@
     </head>
 
     <body>
+<!--        <input type="button" class="promote-user-button" th:fragment="promote-button-fragment (userRankAdjustmentDto)"-->
+<!--               th:attr="data-username=${userRankAdjustmentDto.getUsername()}, data-promotable-rank=${userRankAdjustmentDto.getIncrementedRank()}"-->
+<!--               th:attrappend="data-promotable-rank-display=${userRankAdjustmentDto.getIncrementedRank() != null}?${userRankAdjustmentDto.getIncrementedRank().getDisplayRank()}"-->
+<!--               th:disabled="${!userRankAdjustmentDto.isPromotableByLoggedInUser()}"-->
+<!--               th:value="${userRankAdjustmentDto.getIncrementedRank() != null}?${'Promote to ' + userRankAdjustmentDto.getIncrementedRank().getDisplayRank()}:'Cannot promote'">>-->
+
+<!--        <input type="button" class="demote-user-button" th:fragment="demote-button-fragment (userRankAdjustmentDto)"-->
+<!--               th:attr="data-username=${userRankAdjustmentDto.getUsername()}, data-demotable-rank=${userRankAdjustmentDto.getDecrementedRank()}"-->
+<!--               th:attrappend="data-demotable-rank-display=${userRankAdjustmentDto.getDecrementedRank() != null}?${userRankAdjustmentDto.getDecrementedRank().getDisplayRank()}"-->
+<!--               th:disabled="${!userRankAdjustmentDto.isDemotableByLoggedInUser()}"-->
+<!--               th:value="${userRankAdjustmentDto.getDecrementedRank() != null}?${'Demote to ' + userRankAdjustmentDto.getDecrementedRank().getDisplayRank()}:'Cannot demote'">-->
+
         <input type="button" class="promote-user-button" th:fragment="promote-button-fragment (userRankAdjustmentDto)"
                th:attr="data-username=${userRankAdjustmentDto.getUsername()}, data-promotable-rank=${userRankAdjustmentDto.getIncrementedRank()}"
                th:attrappend="data-promotable-rank-display=${userRankAdjustmentDto.getIncrementedRank() != null}?${userRankAdjustmentDto.getIncrementedRank().getDisplayRank()}"
                th:disabled="${!userRankAdjustmentDto.isPromotableByLoggedInUser()}"
-               th:value="${userRankAdjustmentDto.getIncrementedRank() != null}?${'Promote to ' + userRankAdjustmentDto.getIncrementedRank().getDisplayRank()}:'Cannot promote'">>
+               th:value="${userRankAdjustmentDto.getIncrementedRank() != null}?#{Label.promote.toRank(${userRankAdjustmentDto.getIncrementedRank().getDisplayRank()})}:#{Label.promote.cannot}">>
 
         <input type="button" class="demote-user-button" th:fragment="demote-button-fragment (userRankAdjustmentDto)"
                th:attr="data-username=${userRankAdjustmentDto.getUsername()}, data-demotable-rank=${userRankAdjustmentDto.getDecrementedRank()}"
                th:attrappend="data-demotable-rank-display=${userRankAdjustmentDto.getDecrementedRank() != null}?${userRankAdjustmentDto.getDecrementedRank().getDisplayRank()}"
                th:disabled="${!userRankAdjustmentDto.isDemotableByLoggedInUser()}"
-               th:value="${userRankAdjustmentDto.getDecrementedRank() != null}?${'Demote to ' + userRankAdjustmentDto.getDecrementedRank().getDisplayRank()}:'Cannot demote'">
-
+               th:value="${userRankAdjustmentDto.getDecrementedRank() != null}?#{Label.demote.toRank(${userRankAdjustmentDto.getDecrementedRank().getDisplayRank()})}:#{Label.demote.cannot}">
     </body>
 </html>

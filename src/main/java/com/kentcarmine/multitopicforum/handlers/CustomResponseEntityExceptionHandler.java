@@ -37,7 +37,10 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleUserNotFound(Model model, UserNotFoundException ex) {
-        model.addAttribute("message", ex.getMessage());
+//        System.out.println("### in handleUserNotFound(). ex.message = " + ex.getMessage());
+        String msg = messageService.getMessage(ex.getMessage(), ex.getUsername());
+        System.out.println("### in handleUserNotFound, msg = " + msg);
+        model.addAttribute("message", msg);
         return "user-not-found";
     }
 
@@ -47,7 +50,8 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     @ExceptionHandler(ForumNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleForumNotFound(Model model, ForumNotFoundException ex) {
-        model.addAttribute("message", ex.getMessage());
+        String msg = messageService.getMessage(ex.getMessage());
+        model.addAttribute("message", msg);
         return "forum-not-found";
     }
 
@@ -57,16 +61,27 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     @ExceptionHandler(TopicThreadNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleThreadNotFound(Model model, TopicThreadNotFoundException ex) {
-        model.addAttribute("message", ex.getMessage());
+        String msg = messageService.getMessage(ex.getMessage());
+        model.addAttribute("message", msg);
         return "thread-not-found";
     }
 
     @ExceptionHandler({InsufficientAuthorityException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public String handleInsufficientAuthority(InsufficientAuthorityException e, Model model) {
+    public String handleInsufficientAuthority(InsufficientAuthorityException e) {
         logger.error(e);
 
         return "redirect:/forbidden";
+    }
+
+    @ExceptionHandler({DisciplineNotFoundException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleDisciplineNotFound(DisciplineNotFoundException e, Model model) {
+        logger.error(e);
+
+        String msg = messageService.getMessage(e.getMessage());
+        model.addAttribute("message", msg);
+        return "general-error-page";
     }
 
     /**
@@ -77,7 +92,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
      */
     @ExceptionHandler({DisciplinedUserException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public String handleDisciplinedUserTakingActionRequiringAuth(DisciplinedUserException e, Model model) {
+    public String handleDisciplinedUserTakingActionRequiringAuth(DisciplinedUserException e) {
         logger.error(e);
 
         System.out.println("### in handleDisciplinedUserTakingActionRequiringAuth. User = " + e.getUser());

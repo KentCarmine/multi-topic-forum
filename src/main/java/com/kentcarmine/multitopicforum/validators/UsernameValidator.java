@@ -13,10 +13,6 @@ public class UsernameValidator implements ConstraintValidator<ValidUsername, Str
 
     @Override
     public boolean isValid(String username, ConstraintValidatorContext constraintValidatorContext) {
-//        if (username == null) {
-//            return false;
-//        }
-
         for (String forbiddenName : FORBIDDEN_USERNAMES) {
             if (username.equalsIgnoreCase(forbiddenName)) {
                 return false;

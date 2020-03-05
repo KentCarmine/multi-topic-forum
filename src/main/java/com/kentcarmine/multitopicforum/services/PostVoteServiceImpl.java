@@ -76,10 +76,10 @@ public class PostVoteServiceImpl implements PostVoteService {
         PostVote postVote = getPostVoteByUserAndPost(loggedInUser, post);
         if (postVote == null || postVote.getPostVoteState().equals(PostVoteState.NONE)) {
             if (postVote == null) {
-                System.out.println("### Creating new vote");
+//                System.out.println("### Creating new vote");
                 postVote = new PostVote(PostVoteState.NONE, loggedInUser, post);
             } else {
-                System.out.println("### Updating existing vote");
+//                System.out.println("### Updating existing vote");
             }
 
             PostVoteState voteState;
@@ -97,7 +97,7 @@ public class PostVoteServiceImpl implements PostVoteService {
             postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), true, post.getVoteCount());
 //            System.out.println("### Response: " + postVoteResponseDto);
         } else {
-            System.out.println("### Invalid vote submission in handlePostVoteSubmission()");
+//            System.out.println("### Invalid vote submission in handlePostVoteSubmission()");
             postVoteResponseDto = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());
         }
 

@@ -14,7 +14,6 @@ import java.util.Date;
  */
 @Entity
 @ValidDiscipline
-//@Table(name = "discipline", uniqueConstraints = @UniqueConstraint(columnNames = "disciplined_user_username"))
 public class Discipline {
     private static final int SECONDS_PER_HOUR = 60 * 60;
 
@@ -41,8 +40,8 @@ public class Discipline {
 
     private Integer disciplineDurationHours;
 
-    @NotBlank(message = "Reason must not be blank")
-    @Size(min = 2, max = 500, message = "Reason must be between 2 and 500 characters")
+    @NotBlank(message = "{Discipline.reason.notBlank}")
+    @Size(min = 2, max = 500, message = "{Discipline.reason.length}")
     private String reason;
 
     private boolean rescinded;

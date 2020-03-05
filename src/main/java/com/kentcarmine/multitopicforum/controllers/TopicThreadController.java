@@ -55,7 +55,8 @@ public class TopicThreadController {
                                        @PathVariable String name) throws UnsupportedEncodingException {
 
         if (!forumService.isForumWithNameExists(name)) {
-            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
+//            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
+            throw new ForumNotFoundException();
         }
 
         if (bindingResult.hasErrors()) {
@@ -80,7 +81,8 @@ public class TopicThreadController {
             throws UnsupportedEncodingException {
 
         if (!forumService.isForumWithNameExists(name)) {
-            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
+//            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
+            throw new ForumNotFoundException();
         }
 
         if (request.getParameterMap().containsKey("search")) {
@@ -114,7 +116,8 @@ public class TopicThreadController {
         ModelAndView mv;
 
         if (!forumService.isForumWithNameExists(name)) {
-            throw new ForumNotFoundException("Forum " + name + " does not exist");
+//            throw new ForumNotFoundException("Forum " + name + " does not exist");
+            throw new ForumNotFoundException();
         }
 
         if (bindingResult.hasErrors()) {
@@ -139,13 +142,15 @@ public class TopicThreadController {
     @GetMapping("/forum/{forumName}/show/{threadId}")
     public String showThread(Model model, @PathVariable String forumName, @PathVariable Long threadId) {
         if (!forumService.isForumWithNameExists(forumName)) {
-            throw new ForumNotFoundException("Forum " + forumName + " does not exist");
+//            throw new ForumNotFoundException("Forum " + forumName + " does not exist");
+            throw new ForumNotFoundException();
         }
 
         TopicThread thread = topicThreadService.getThreadByForumNameAndId(forumName, threadId);
 
         if (thread == null) {
-            throw new TopicThreadNotFoundException("Thread was not found");
+//            throw new TopicThreadNotFoundException("Thread was not found");
+            throw new TopicThreadNotFoundException();
         }
 
         model.addAttribute("forumName", forumName);
@@ -174,11 +179,13 @@ public class TopicThreadController {
     @PostMapping("/lockTopicThread/{threadId}")
     public String processLockThread(@PathVariable Long threadId) {
         TopicThread thread = topicThreadService.getThreadById(threadId);
-        TopicForum forum = thread.getForum();
 
         if (thread == null) {
-            throw new TopicThreadNotFoundException("Thread was not found");
+//            throw new TopicThreadNotFoundException("Thread was not found");
+            throw new TopicThreadNotFoundException();
         }
+
+        TopicForum forum = thread.getForum();
 
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);
@@ -206,11 +213,13 @@ public class TopicThreadController {
     @PostMapping("/unlockTopicThread/{threadId}")
     public String processUnlockThread(@PathVariable Long threadId) {
         TopicThread thread = topicThreadService.getThreadById(threadId);
-        TopicForum forum = thread.getForum();
 
         if (thread == null) {
-            throw new TopicThreadNotFoundException("Thread was not found");
+//            throw new TopicThreadNotFoundException("Thread was not found");
+            throw new TopicThreadNotFoundException();
         }
+
+        TopicForum forum = thread.getForum();
 
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);

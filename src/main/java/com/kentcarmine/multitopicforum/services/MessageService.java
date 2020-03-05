@@ -7,4 +7,10 @@ import java.util.Locale;
  */
 public interface MessageService {
     String getMessage(String id, Locale locale);
+
+    String getMessage(String id, Locale locale, Object... args);
+
+    String getMessage(String id);
+
+    String getMessage(String id, Object... args);
 }

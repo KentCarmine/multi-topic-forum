@@ -3,7 +3,7 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
-        <title>Create New Topic Forum</title>
+        <title th:text="#{Label.forum.createNew.header}">Create New Topic Forum</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
@@ -11,21 +11,21 @@
         <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
             <form th:action="@{/processNewForumCreation}" th:object="${topicForumDto}" method="post">
                 <div th:if="${#fields.hasErrors('all')}">
-                    <p style="color: red">Please Correct Errors Below:</p>
+                    <p style="color: red" th:text="#{Label.formErrors.correctionPrompt}">Please Correct Errors Below:</p>
                     <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
                 </div>
 
                 <div>
-                    <label>Forum Name</label>
+                    <label th:text="#{Label.forum.name}">Forum Name</label>
                     <input th:field="*{name}" type="text" name="name" placeholder="forum name">
                 </div>
 
                 <div>
-                    <label>Description</label>
+                    <label th:text="#{Label.forum.description}">Description</label>
                     <input th:field="*{description}" type="text" name="description" placeholder="what is this forum about?">
                 </div>
 
-                <button type="submit">Create Forum</button>
+                <button type="submit" th:text="#{Label.forum.create}">Create Forum</button>
             </form>
         </div>
     </body>

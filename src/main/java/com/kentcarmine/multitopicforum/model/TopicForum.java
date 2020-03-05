@@ -16,14 +16,14 @@ import java.util.List;
 public class TopicForum {
 
     @Id
-    @NotBlank(message = "name must not be blank")
-    @Size(min=4, message="forum name must be at least {min} characters long")
-    @ValidCharacters(message = "name must consist only of letters, numbers, - and _ characters")
+    @NotBlank(message = "{Forum.name.notBlank}")
+    @Size(min=4, message="{Forum.name.minSize}")
+    @ValidCharacters(message = "{Forum.name.validChars}")
     private String name;
 
     @Lob
-    @NotBlank(message = "description must not be blank")
-    @Size(min = 1, max = 500, message = "Description must be between {min} and {max} characters long")
+    @NotBlank(message = "{Forum.description.notBlank}")
+    @Size(min = 1, max = 500, message = "{Forum.description.length}")
     private String description;
 
     @OneToMany(mappedBy = "forum", cascade = CascadeType.ALL)
@@ -33,7 +33,7 @@ public class TopicForum {
         this.threads = new ArrayList<>();
     }
 
-    public TopicForum(@Size(min=4, message="forum name must be at least {min} characters long") String name, String description) {
+    public TopicForum(@Size(min=4, message="{Forum.name.minSize}") String name, String description) {
         this.name = name;
         this.description = description;
         this.threads = new ArrayList<>();
@@ -43,7 +43,7 @@ public class TopicForum {
         return name;
     }
 
-    public void setName(@Size(min=4, message="forum name must be at least {min} characters long") String name) {
+    public void setName(@Size(min=4, message="{Forum.name.minSize}") String name) {
         this.name = name;
     }
 

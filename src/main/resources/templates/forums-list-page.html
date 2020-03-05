@@ -2,30 +2,30 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
-        <title>All Topic Forums</title>
+        <title th:text="#{Label.forum.listAll.header}">All Topic Forums</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
         <div>
             <span style="float: right">
                 <form th:action="@{/searchTopicForums}" th:object="${topicForumSearchDto}" method="post">
-                    <input th:field="*{searchText}" type="text" name="searchText" placeholder="Search" value="">
+                    <input th:field="*{searchText}" type="text" name="searchText" placeholder="Search" th:placeholder="#{Label.forum.search.placeholder}" value="">
                     <button type="submit">Search</button>
                 </form>
             </span>
         </div>
-        <h2>All Forums</h2>
+        <h2 th:text="#{Label.forum.listAll.header}">All Topic Forums</h2>
 
         <div th:if="${param.searchError}">
-            <p style="color: red">Invalid search terms.</p>
+            <p style="color: red" th:text="#{Label.forum.search.error.invalidSearchTerms}">Invalid search terms.</p>
         </div>
 
-        <div th:if="${forums.isEmpty()}">There are no Topic Forums!</div>
+        <div th:if="${forums.isEmpty()}" th:text="#{Label.forums.list.none}">There are no Topic Forums!</div>
         <div th:if="${!forums.isEmpty()}">
             <table>
                 <tr>
-                    <th>Forum Name</th>
-                    <th>Description</th>
+                    <th th:text="#{Label.forum.list.name.tableHeader}">Forum Name</th>
+                    <th th:text="#{Label.forum.list.description.tableHeader}">Description</th>
                 </tr>
                 <tr th:each="forum : ${forums}" th:include="fragments/forum-list-elements.html :: forum-list-element (${forum})"></tr> <!--TODO: Paginate?-->
             </table>

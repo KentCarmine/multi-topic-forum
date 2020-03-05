@@ -48,18 +48,18 @@ public class PostVoteController {
         Post post = postService.getPostById(postVoteSubmissionDto.getPostId());
 
         if (loggedInUser == null || post == null || errors.hasErrors()) {
-            System.out.println("### In processVoteSubmission(). Error case 1");
+//            System.out.println("### In processVoteSubmission(). Error case 1");
             response = new PostVoteResponseDto(null,false ,false, false, 0);
             return ResponseEntity.unprocessableEntity().body(response);
         }
 
         PostVote postVote = postVoteService.getPostVoteByUserAndPost(loggedInUser, post);
         if (postVote == null || postVote.getPostVoteState().equals(PostVoteState.NONE)) {
-            System.out.println("### In processVoteSubmission(). Creation case");
+//            System.out.println("### In processVoteSubmission(). Creation case");
             response = postVoteService.handlePostVoteSubmission(loggedInUser, post, postVoteSubmissionDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } else {
-            System.out.println("### In processVoteSubmission(). Error case 2");
+//            System.out.println("### In processVoteSubmission(). Error case 2");
             response = new PostVoteResponseDto(post.getId(), postVote.isUpvote(), postVote.isDownvote(), false, post.getVoteCount());
             return ResponseEntity.badRequest().body(response);
         }

@@ -31,16 +31,20 @@ public class PostController {
     private final UserService userService;
     private final TopicThreadService topicThreadService;
     private final PostService postService;
+    private final PostVoteService postVoteService;
     private final DisciplineService disciplineService;
+    private final MessageService messageService;
 
     @Autowired
     public PostController(ForumService forumService, UserService userService, TopicThreadService topicThreadService,
-                          PostService postService, DisciplineService disciplineService) {
+                          PostService postService, PostVoteService postVoteService, DisciplineService disciplineService, MessageService messageService) {
         this.forumService = forumService;
         this.userService = userService;
         this.topicThreadService = topicThreadService;
         this.postService = postService;
+        this.postVoteService = postVoteService;
         this.disciplineService = disciplineService;
+        this.messageService = messageService;
     }
 
     /**
@@ -49,24 +53,41 @@ public class PostController {
     @PostMapping("/forum/{forumName}/show/{threadId}/createPost")
     public ModelAndView addPostToThread(@Valid @ModelAttribute PostCreationDto postCreationDto, BindingResult bindingResult, @PathVariable String forumName,
                                         @PathVariable Long threadId) {
+        System.out.println("### in addPostToThread()");
         ModelAndView mv;
 
         if (!forumService.isForumWithNameExists(forumName)) {
-            throw new ForumNotFoundException("Forum " + forumName + " does not exist");
+//            throw new ForumNotFoundException("Forum " + forumName + " does not exist");
+            throw new ForumNotFoundException();
         }
 
         TopicThread thread = topicThreadService.getThreadByForumNameAndId(forumName, threadId);
 
         if (thread == null) {
-            throw new TopicThreadNotFoundException("Thread was not found");
+//            throw new TopicThreadNotFoundException("Thread was not found");
+            throw new TopicThreadNotFoundException();
         }
 
         if (bindingResult.hasErrors()) {
+            System.out.println("### in addPostToThread(). hasErrors() case");
+            bindingResult.getAllErrors().stream().forEach(System.out::println);
             mv = new ModelAndView("topic-thread-page", "postCreationDto", postCreationDto);
             mv.addObject("forumName", forumName);
             mv.addObject("threadTitle", thread.getTitle());
             mv.addObject("threadId", threadId);
             mv.addObject("posts", thread.getPosts());
+            mv.addObject("threadIsLocked", thread.isLocked());
+
+            User loggedInUser = userService.getLoggedInUser();
+
+            if (loggedInUser != null) {
+                System.out.println("### in addPostToThread(). has loggedInUser case");
+                mv.addObject("loggedInUser", loggedInUser);
+                mv.addObject("voteMap", postVoteService.generateVoteMap(loggedInUser, thread));
+                mv.addObject("canLock", topicThreadService.canUserLockThread(loggedInUser, thread));
+                mv.addObject("canUnlock", topicThreadService.canUserUnlockThread(loggedInUser, thread));
+            }
+
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
             return mv;
         }
@@ -87,22 +108,25 @@ public class PostController {
         Post postToDelete = postService.getPostById(deletePostSubmissionDto.getPostId());
 
         if (postToDelete == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new DeletePostResponseDto("Error: Post not found.", null));
+            String msg = messageService.getMessage("Exception.post.notfound");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new DeletePostResponseDto(msg, null));
         }
 
         User postingUser = postToDelete.getUser();
         User loggedInUser = userService.getLoggedInUserIfNotDisciplined();
 
         if (loggedInUser == null || !loggedInUser.isHigherAuthority(postingUser)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DeletePostResponseDto("Error: Insufficient permissions to delete that post.", postToDelete.getId()));
+            String msg = messageService.getMessage("Exception.authority.insufficient");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new DeletePostResponseDto(msg, postToDelete.getId()));
         }
 
         String postUrl = postService.getGetDeletedPostUrl(postToDelete);
 
         postToDelete = postService.deletePost(postToDelete, loggedInUser);
 
+        String msg = messageService.getMessage("Post.deleted.success");
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new DeletePostResponseDto("Post deleted.", postToDelete.getId(), postUrl));
+                .body(new DeletePostResponseDto(msg, postToDelete.getId(), postUrl));
     }
 
     /**
@@ -123,9 +147,11 @@ public class PostController {
             postToRestore = postService.restorePost(postToRestore);
             String postUrl = postService.getRestoredPostUrl(postToRestore);
 
-            return ResponseEntity.status(HttpStatus.OK).body(new RestorePostResponseDto("Post restored.", postToRestore.getId(), postUrl));
+            String msg = messageService.getMessage("Post.restored.success");
+            return ResponseEntity.status(HttpStatus.OK).body(new RestorePostResponseDto(msg, postToRestore.getId(), postUrl));
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RestorePostResponseDto("Error: Insufficient permissions to restore that post.", postToRestore.getId()));
+            String msg = messageService.getMessage("Exception.authority.insufficient");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RestorePostResponseDto(msg, postToRestore.getId()));
         }
     }
 }

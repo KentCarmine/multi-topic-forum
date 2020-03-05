@@ -47,14 +47,14 @@
                                    th:name="${'delete-button-post-id-' + post.getId()}"
                                    th:disabled="${!post.isDeletableBy(loggedInUser)}"
                                    class="delete-post-button"
-                                   value="Delete Post">
+                                   th:value="#{Label.post.delete}">
                         </span>
                         <span th:if="${post.isDeleted()}">
                             <input type="button" th:attr="data-post-id=${post.getId()}"
                                    th:name="${'restore-button-post-id-' + post.getId()}"
                                    th:disabled="${!post.isRestorableBy(loggedInUser)}"
                                    class="restore-post-button"
-                                   value="Restore Post">
+                                   th:value="#{Label.post.restore}">
                         </span>
                     </span>
                 </div>
@@ -63,8 +63,9 @@
                     Content
                 </div>
                 <div th:if="${post.isDeleted()}">
-                    Post has been deleted.
-                    <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" th:text="'ORIGINAL CONTENT: ' + ${post.getContent()}" >
+                    <div th:text="#{Post.deleted.success.notification}">Post has been deleted.</div>
+
+                    <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" th:text="#{Label.post.originalContent} + ${post.getContent()}" >
                     </div>
                 </div>
                 <hr>

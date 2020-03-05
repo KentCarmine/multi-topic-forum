@@ -211,6 +211,7 @@ class TopicForumControllerTest {
     @Test
     void showForum_nonExistingForum() throws Exception {
         when(forumService.getForumByName(anyString())).thenReturn(null);
+        when(messageService.getMessage(eq("Exception.forum.notfound"))).thenReturn("Forum was not found.");
 
         mockMvc.perform(get("/forum/" + testTopicForum.getName()))
                 .andExpect(status().isNotFound())

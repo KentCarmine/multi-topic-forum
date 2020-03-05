@@ -60,8 +60,7 @@ public class ForumServiceImpl implements ForumService {
     @Override
     public TopicForum createForum(TopicForum topicForum) throws DuplicateForumNameException {
        if (isForumWithNameExists(topicForum.getName())) {
-           throw new DuplicateForumNameException("A topic forum with the name " + topicForum.getName()
-                   + " already exists.");
+           throw new DuplicateForumNameException();
        }
 
        return topicForumRepository.save(topicForum);

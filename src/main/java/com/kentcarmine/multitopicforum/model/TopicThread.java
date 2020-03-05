@@ -20,8 +20,8 @@ public class TopicThread {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "title must not be blank")
-    @Size(min=4, message="thread title must be at least {min} characters long")
+    @NotBlank(message = "{TopicThread.title.notBlank}")
+    @Size(min=4, message="{TopicThread.title.length}")
     private String title;
 
     @ManyToOne

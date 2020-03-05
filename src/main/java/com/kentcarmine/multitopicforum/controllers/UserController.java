@@ -55,7 +55,8 @@ public class UserController {
             }
             return "user-page";
         } else {
-            throw new UserNotFoundException("User with name " + username + " was not found");
+//            throw new UserNotFoundException("User with name " + username + " was not found");
+            throw new UserNotFoundException("Exception.user.notfound", username);
         }
     }
 

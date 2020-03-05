@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 /**
  * DTO that handles transferring data about user disciplinary actions
  */
-@ValidUserDisciplineSubmission
+@ValidUserDisciplineSubmission(message = "{Discipline.suspension.hours.invalidValue.warning}", min = 1, max = 30 * 24)
 public class UserDisciplineSubmissionDto {
 
     @NotBlank
@@ -19,7 +19,7 @@ public class UserDisciplineSubmissionDto {
 
     private String suspensionHours;
 
-    @NotBlank(message = "Reason for disciplinary action must not be blank")
+    @NotBlank(message = "{Discipline.reason.notBlank}")
     @NotNull
     private String reason;
 
@@ -27,7 +27,7 @@ public class UserDisciplineSubmissionDto {
     }
 
     public UserDisciplineSubmissionDto(@NotBlank @NotNull String disciplinedUsername, String disciplineType,
-                                       @NotBlank @NotNull String reason) {
+                                       @NotBlank(message = "{Discipline.reason.notBlank}") @NotNull String reason) {
         this.disciplinedUsername = disciplinedUsername;
         this.disciplineType = disciplineType;
         this.suspensionHours = "0";
@@ -35,7 +35,7 @@ public class UserDisciplineSubmissionDto {
     }
 
     public UserDisciplineSubmissionDto(@NotBlank @NotNull String disciplinedUsername, String disciplineType, String suspensionHours,
-                                       @NotBlank @NotNull String reason) {
+                                       @NotBlank(message = "{Discipline.reason.notBlank}") @NotNull String reason) {
         this.disciplinedUsername = disciplinedUsername;
         this.disciplineType = disciplineType;
         this.suspensionHours = suspensionHours;

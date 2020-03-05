@@ -101,7 +101,7 @@ class UserAccountControllerTest {
         MockitoAnnotations.initMocks(this);
         userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
-        userAccountController = new UserAccountController(userService, applicationEventPublisher, emailService, userAccountService, disciplineService);
+        userAccountController = new UserAccountController(userService, applicationEventPublisher, emailService, userAccountService, disciplineService, messageService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(userAccountController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -560,6 +560,8 @@ class UserAccountControllerTest {
         when(userService.getUser(any())).thenReturn(testUser);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.isValidPromotionRequest(any(), any(), any())).thenReturn(false);
+        when(messageService.getMessage(eq("Exception.authority.insufficient")))
+                .thenReturn("You do not have the authority to perform that action.");
 
         PromoteUserSubmissionDto req = new PromoteUserSubmissionDto(testUser.getUsername(), UserRole.MODERATOR.name());
 
@@ -573,7 +575,7 @@ class UserAccountControllerTest {
         String resStr = result.getResponse().getContentAsString();
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: Insufficient permissions to promote that user.", msg);
+        assertEquals("You do not have the authority to perform that action.", msg);
 
         String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
         assertNull(promoteButtonUrl);
@@ -588,6 +590,8 @@ class UserAccountControllerTest {
     void processPromoteUser_loggedInUserNull() throws Exception {
         when(userService.getUser(any())).thenReturn(testUser);
         when(userService.getLoggedInUser()).thenReturn(null);
+        when(messageService.getMessage(eq("Exception.authority.insufficient")))
+                .thenReturn("You do not have the authority to perform that action.");
 
         PromoteUserSubmissionDto req = new PromoteUserSubmissionDto(testUser.getUsername(), UserRole.MODERATOR.name());
 
@@ -601,7 +605,7 @@ class UserAccountControllerTest {
         String resStr = result.getResponse().getContentAsString();
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: Insufficient permissions to promote that user.", msg);
+        assertEquals("You do not have the authority to perform that action.", msg);
 
         String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
         assertNull(promoteButtonUrl);
@@ -617,6 +621,8 @@ class UserAccountControllerTest {
     void processPromoteUser_promotionTargetUserNull() throws Exception {
         when(userService.getUser(any())).thenReturn(null);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(messageService.getMessage(eq("Exception.user.notfound"), anyString()))
+                .thenReturn("User with the username " + testUser.getUsername() + " was not found.");
 
         PromoteUserSubmissionDto req = new PromoteUserSubmissionDto(testUser.getUsername(), UserRole.MODERATOR.name());
 
@@ -630,7 +636,7 @@ class UserAccountControllerTest {
         String resStr = result.getResponse().getContentAsString();
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: User not found", msg);
+        assertEquals("User with the username " + testUser.getUsername() + " was not found.", msg);
 
         String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
         assertNull(promoteButtonUrl);
@@ -693,6 +699,8 @@ class UserAccountControllerTest {
         when(userService.getUser(anyString())).thenReturn(testModerator);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(testAdmin);
         when(userService.isValidDemotionRequest(any(), any(), any())).thenReturn(false);
+        when(messageService.getMessage(eq("Exception.authority.insufficient")))
+                .thenReturn("You do not have the authority to perform that action.");
 
         DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
 
@@ -706,7 +714,7 @@ class UserAccountControllerTest {
         String resStr = result.getResponse().getContentAsString();
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: Insufficient permissions to demote that user.", msg);
+        assertEquals("You do not have the authority to perform that action.", msg);
 
         String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
         assertNull(promoteButtonUrl);
@@ -725,6 +733,8 @@ class UserAccountControllerTest {
 
         when(userService.getUser(anyString())).thenReturn(null);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(messageService.getMessage(eq("Exception.user.notfound"), anyString()))
+                .thenReturn("User with the username " + testUser.getUsername() + " was not found.");
 
         DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
 
@@ -738,7 +748,7 @@ class UserAccountControllerTest {
         String resStr = result.getResponse().getContentAsString();
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: User not found", msg);
+        assertEquals("User with the username " + testUser.getUsername() + " was not found.", msg);
 
         String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
         assertNull(promoteButtonUrl);
@@ -757,6 +767,8 @@ class UserAccountControllerTest {
 
         when(userService.getUser(anyString())).thenReturn(testModerator);
         when(userService.getLoggedInUser()).thenReturn(null);
+        when(messageService.getMessage(eq("Exception.authority.insufficient")))
+                .thenReturn("You do not have the authority to perform that action.");
 
         DemoteUserSubmissionDto req = new DemoteUserSubmissionDto(testModerator.getUsername(), UserRole.USER.name());
 
@@ -770,7 +782,7 @@ class UserAccountControllerTest {
         String resStr = result.getResponse().getContentAsString();
 
         String msg = JsonPath.read(resStr, "$.message");
-        assertEquals("Error: Insufficient permissions to demote that user.", msg);
+        assertEquals("You do not have the authority to perform that action.", msg);
 
         String promoteButtonUrl = JsonPath.read(resStr, "$.newPromoteButtonUrl");
         assertNull(promoteButtonUrl);

@@ -78,6 +78,9 @@ class UserServiceTest {
     @Mock
     PasswordEncoder passwordEncoder;
 
+    @Mock
+    MessageService messageService;
+
     private UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
 
     private User testUser;
@@ -93,7 +96,7 @@ class UserServiceTest {
         userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
         userService = new UserServiceImpl(userRepository, authenticationService, authorityRepository,
-                userToUserRankAdjustmentDtoConverter);
+                userToUserRankAdjustmentDtoConverter, messageService);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);

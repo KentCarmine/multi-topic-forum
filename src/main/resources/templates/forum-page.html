@@ -10,7 +10,7 @@
         <h2 th:text="${forum.getName()}">Forum Name</h2>
         <div>
             <form th:action="@{'/processSearchThreads/' + ${forum.getName()}}" th:object="${topicThreadSearchDto}" method="post">
-                <input type="text" th:field="*{searchText}" name="searchText" placeholder="Search for threads" >
+                <input type="text" th:field="*{searchText}" name="searchText" placeholder="Search for threads" th:placeholder="#{Label.thread.search.searchText.placeholder}">
                 <button type="submit">Search</button>
             </form>
         </div>
@@ -19,7 +19,7 @@
         </div>
 
         <div sec:authorize="isAuthenticated()">
-            <a href="#" th:href="@{'/forum/' + ${forum.getName()} + '/createThread'}">Create Thread</a>
+            <a href="#" th:href="@{'/forum/' + ${forum.getName()} + '/createThread'}" th:text="#{Label.thread.createNew}">Create Thread</a>
             <hr>
         </div>
 

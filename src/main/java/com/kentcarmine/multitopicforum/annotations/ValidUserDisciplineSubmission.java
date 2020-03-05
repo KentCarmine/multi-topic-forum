@@ -24,4 +24,7 @@ public @interface ValidUserDisciplineSubmission {
     String message() default "Invalid discipline request";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
+
+    int min();
+    int max();
 }

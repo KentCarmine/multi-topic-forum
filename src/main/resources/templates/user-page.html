@@ -3,27 +3,27 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
-        <title th:text="'Multi-Topic Forum | ' + ${user.username} + '\'s Page'">PLACEHOLDER Page</title>
+<!--        <title th:text="'Multi-Topic Forum | ' + ${user.username} + '\'s Page'">PLACEHOLDER Page</title>-->
+        <title th:text="#{Label.user.page.header.title(${user.username})}">PLACEHOLDER Page</title>
         <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
         <script type="text/javascript" th:src="@{/js/promote-demote-user-ajax.js}"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
-        <h2 th:text="${user.username} + '\'s Page'"></h2>
+        <h2 th:text="#{Label.user.page.header(${user.username})}"></h2>
 
         <div th:if="${param.userDisciplined}">
-            <p style="color: greenyellow">User disciplined.</p>
+            <p style="color: greenyellow" th:text="#{Label.user.page.userDisciplined.prompt}">User disciplined.</p>
         </div>
 
         <div th:if="${param.userAlreadyBanned}">
-            <p style="color: orange">User was already banned.</p>
+            <p style="color: orange" th:text="#{Label.user.page.userAlreadyBanned.prompt}">User was already banned.</p>
         </div>
 
-        <p>PLACEHOLDER</p>
         <hr>
 
         <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-            <h3>Administrative Options</h3>
+            <h3 th:text="#{Label.user.page.administrativeOptions.header}">Administrative Options</h3>
 
             <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
                 <span id="demote-user-button-container">
@@ -38,15 +38,15 @@
             </div>
 
             <span th:if="${loggedInUser.isHigherAuthority(user)}">
-                <a th:href="@{'/manageUserDiscipline/' + ${user.getUsername()}}" href="#">Discipline Management</a>
+                <a th:href="@{'/manageUserDiscipline/' + ${user.getUsername()}}" href="#" th:text="#{Label.user.page.disciplineManagement}">Discipline Management</a>
             </span>
 
             <hr>
         </div>
 
         <div>
-            <h3 th:text="${user.username} + '\'s Posts'"></h3>
-            <div th:if="${user.getPosts().isEmpty()}" th:text="${user.username} +' has not made any posts.'"></div>
+            <h3 th:text="#{Label.user.page.postList.header(${user.username})}"></h3>
+            <div th:if="${user.getPosts().isEmpty()}" th:text="#{Label.user.page.postList.none(${user.username})}"></div>
             <div th:each="post : ${user.getPosts()}" th:include="fragments/post-display.html :: post-summary-fragment (post)"></div>
         </div>
 <!--        <div th:if="${#authentication.getName() == user.username}" id="own-user-page">-->

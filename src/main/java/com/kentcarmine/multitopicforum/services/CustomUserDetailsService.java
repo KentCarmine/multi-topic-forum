@@ -24,21 +24,24 @@ import java.util.Set;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private UserRepository userRepository;
+    private MessageService messageService;
 
     @Autowired
-    public CustomUserDetailsService(UserRepository userRepository) {
+    public CustomUserDetailsService(UserRepository userRepository, MessageService messageService) {
         this.userRepository = userRepository;
+        this.messageService = messageService;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
-        System.out.println("### in loadUserByUsername. Username = " + username);
+//        System.out.println("### in loadUserByUsername. Username = " + username);
         if (user == null) {
-            throw new UsernameNotFoundException("No user found with username: " + username);
+            String msg = messageService.getMessage("Exception.user.notfound", username);
+            throw new UsernameNotFoundException(msg);
         }
 
-        System.out.println("### in loadUserByUsername. authorities = " + user.getAuthorities().toString());
+//        System.out.println("### in loadUserByUsername. authorities = " + user.getAuthorities().toString());
 
         boolean accountNonExpired = true;
         boolean credentialsNonExpired = true;

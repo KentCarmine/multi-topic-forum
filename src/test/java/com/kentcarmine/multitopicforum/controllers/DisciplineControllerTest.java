@@ -8,10 +8,7 @@ import com.kentcarmine.multitopicforum.model.Discipline;
 import com.kentcarmine.multitopicforum.model.DisciplineType;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
-import com.kentcarmine.multitopicforum.services.DisciplineService;
-import com.kentcarmine.multitopicforum.services.EmailService;
-import com.kentcarmine.multitopicforum.services.MessageService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -111,6 +108,7 @@ class DisciplineControllerTest {
     @Test
     void showManageUserDisciplinePage_noSuchUser() throws Exception {
         when(userService.getUser(any())).thenReturn(null);
+        when(messageService.getMessage(anyString(), anyString())).thenReturn("User was not found.");
 
         mockMvc.perform(get("/manageUserDiscipline/fakeUserDoesNotExistForTesting"))
                 .andExpect(status().isNotFound())
@@ -441,6 +439,7 @@ class DisciplineControllerTest {
     void processRescindDiscipline_targetUserNull() throws Exception {
         when(userService.getLoggedInUser()).thenReturn(testSuperAdmin);
         when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(null);
+        when(messageService.getMessage(anyString(), anyString())).thenReturn("User with the username " + testAdmin.getUsername() + " was not found.");
 
         mockMvc.perform(post("/rescindDiscipline/" + testAdmin.getUsername() + "/" + 12))
                 .andExpect(status().isNotFound())
@@ -455,10 +454,12 @@ class DisciplineControllerTest {
         when(userService.getLoggedInUser()).thenReturn(testSuperAdmin);
         when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
         when(disciplineService.getDisciplineByIdAndUser(12L, testAdmin)).thenReturn(null);
+        when(messageService.getMessage(anyString())).thenReturn("Discipline was not found");
 
         mockMvc.perform(post("/rescindDiscipline/" + testAdmin.getUsername() + "/" + 12))
-                .andExpect(status().isInternalServerError())
-                .andExpect(view().name("general-error-page"));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("general-error-page"))
+                .andExpect(model().attributeExists("message"));
 
         verify(disciplineService, times(0)).rescindDiscipline(any());
     }

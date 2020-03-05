@@ -2,11 +2,11 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
-        <title>Registration Error</title>
+        <title th:text="#{Label.registration.error.header}">Registration Error</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
-        <h4>There was an error sending the registration confirmation email. Please try again.</h4>
+        <h4 th:text="#{Label.registration.error.prompt}">There was an error sending the registration confirmation email. Please try again.</h4>
     </body>
 </html>

@@ -3,38 +3,38 @@
       xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
-        <title>Multi-Topic Forum | Register</title>
+        <title th:text="#{Label.registration.header.title}">Multi-Topic Forum | Register</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
-        <h2>Create an Account</h2>
+        <h2 th:text="#{Label.registration.header}">Create an Account</h2>
         <form th:action="@{/processUserRegistration}" th:object="${user}" method="post">
             <div th:if="${#fields.hasErrors('*')}">
-                <p style="color: red">Please Correct Errors Below:</p>
+                <p style="color: red" th:text="#{Label.formErrors.correctionPrompt}">Please Correct Errors Below:</p>
                 <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
             </div>
 
             <div>
-                <label>Username</label>
-                <input th:field="*{username}" type="text" name="username" placeholder="Username">
+                <label th:text="#{Label.registration.username}">Username</label>
+                <input th:field="*{username}" type="text" name="username" placeholder="Username" th:placeholder="${Label.registration.username.placeholder}">
             </div>
 
             <div>
-                <label>Email</label>
-                <input th:field="*{email}" type="email" name="email" placeholder="Email">
+                <label th:text="#{Label.registration.email}">Email</label>
+                <input th:field="*{email}" type="email" name="email" placeholder="Email" th:placeholder="${Label.registration.email.placeholder}">
             </div>
 
             <div>
-                <label>Password</label>
-                <input th:field="*{password}" type="password" name="password" placeholder="Password">
+                <label th:text="#{Label.registration.password}">Password</label>
+                <input th:field="*{password}" type="password" name="password" placeholder="Password" th:placeholder="${Label.registration.password.placeholder}">
             </div>
 
             <div>
-                <label>Confirm Password</label>
-                <input th:field="*{confirmPassword}" type="password" name="confirmPassword" placeholder="Confirm Password">
+                <label th:text="#{Label.registration.confirmPassword}">Confirm Password</label>
+                <input th:field="*{confirmPassword}" type="password" name="confirmPassword" placeholder="Confirm Password" th:placeholder="${Label.registration.confirmPassword.placeholder}">
             </div>
 
-            <button type="submit">Create Account</button>
+            <button type="submit" th:text="#{Label.registration.submit.buttonText}">Create Account</button>
         </form>
 
     </body>
