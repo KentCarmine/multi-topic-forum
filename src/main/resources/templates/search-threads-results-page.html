@@ -2,15 +2,18 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
-        <title th:text="'Searching ' + ${forumName} + ' for \'' + ${searchText} + '\''">Search {FORUM} for {SEARCH_TEXT}</title>
+<!--        <title th:text="'Searching ' + ${forumName} + ' for \'' + ${searchText} + '\''">Search {FORUM} for {SEARCH_TEXT}</title>-->
+        <title th:text="#{Label.thread.search.header.title.parameterized(${forumName},${searchText})}">Search {FORUM} for {SEARCH_TEXT}</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
-        <h2 th:text="'Search results for \'' + ${searchText} + '\' on ' + ${forumName}">Search results for {SEARCH_TEXT} on {FORUM}</h2>
+<!--        <h2 th:text="'Search results for \'' + ${searchText} + '\' on ' + ${forumName}">Search results for {SEARCH_TEXT} on {FORUM}</h2>-->
+<!--        <h2 th:text="#{Label.thread.search.header.parameterized(${searchText},${forumName})}">Search results for {SEARCH_TEXT} on {FORUM}</h2>-->
+        <h2 th:text="#{Label.thread.search.header.parameterized(${searchText},${forumName})}">Search results for {SEARCH_TEXT} on {FORUM}</h2>
 
         <div th:if="${param.searchError}">
-            <p style="color: red">Invalid search terms</p>
+            <p style="color: red" th:text="#{Label.thread.search.error.invalidSearchTerms}">Invalid search terms</p>
         </div>
 
         <div th:if="${param.search}">
@@ -21,7 +24,8 @@
                 </ul>
             </div>
             <div th:if="${threads == null || threads.isEmpty()}">
-                <p th:text="'No threads found for search: \'' + ${searchText} + '\''">No threads found for search</p>
+<!--                <p th:text="'No threads found for search: \'' + ${searchText} + '\''">No threads found for search</p>-->
+                <p th:text="#{Label.thread.search.noneFound.parameterized(${searchText})}">No threads found for search</p>
             </div>
         </div>
 

@@ -2,11 +2,11 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
-        <title>Error</title>
+        <title th:text="#{Label.error.unknown.header}">Error</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
-        <h3 style="color: red">An error occurred</h3>
+        <h3 style="color: red" th:text="#{Label.error.unknown.header}">An error occurred</h3>
         <p th:text="${message}">An unknown error occurred.</p>
     </body>
 </html>

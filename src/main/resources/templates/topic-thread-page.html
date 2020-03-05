@@ -3,7 +3,8 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
-        <title th:text="${forumName} + ' | ' + ${threadTitle}">Create New Thread</title>
+<!--        <title th:text="${forumName} + ' | ' + ${threadTitle}">Thread Title</title>-->
+        <title th:text=" #{Label.thread.createNew.header.title.parameterized(${forumName},${threadTitle})}">Thread Title</title>
         <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
         <script type="text/javascript" th:src="@{/js/post-vote-ajax.js}"></script>
         <script type="text/javascript" th:src="@{/js/delete-post-ajax.js}"></script>
@@ -13,30 +14,30 @@
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
         <h2 th:text="${threadTitle}">Thread Title</h2>
-        <h4 th:if="${threadIsLocked}" style="color: red">This thread has been locked.</h4>
+        <h4 th:if="${threadIsLocked}" style="color: red" th:text="#{Label.thread.locked.prompt}">This thread has been locked.</h4>
 
         <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
             <div th:if="${param.lockThreadError}">
-                <p style="color: red">An error occurred when locking the thread</p>
+                <p style="color: red" th:text="#{Label.thread.lock.error.prompt}">An error occurred when locking the thread</p>
             </div>
             <div th:if="${param.unlockThreadError}">
-                <p style="color: red">An error occurred when unlocking the thread</p>
+                <p style="color: red" th:text="#{Label.thread.unlock.error.prompt}">An error occurred when unlocking the thread</p>
             </div>
 
             <div th:if="${param.threadLocked}">
-                <p style="color: greenyellow">Thread locked</p>
+                <p style="color: greenyellow" th:text="#{Label.thread.lock.success.prompt}">Thread locked</p>
             </div>
 
             <div th:if="${param.threadUnlocked}">
-                <p style="color: greenyellow">Thread unlocked</p>
+                <p style="color: greenyellow" th:text="#{Label.thread.unlock.success.prompt}">Thread unlocked</p>
             </div>
 
             <form th:if="${canLock}" th:action="@{'/lockTopicThread/' + ${threadId}}" method="POST">
-                <button type="submit">Lock Thread</button>
+                <button type="submit" th:text="#{Label.thread.lock.buttonText}">Lock Thread</button>
             </form>
 
             <form th:if="${canUnlock}" th:action="@{'/unlockTopicThread/' + ${threadId}}" method="POST">
-                <button type="submit">Unlock Thread</button>
+                <button type="submit" th:text="#{Label.thread.unlock.buttonText}">Unlock Thread</button>
             </form>
         </div>
 
@@ -47,7 +48,7 @@
         <div sec:authorize="isAuthenticated()" th:if="${!threadIsLocked}">
             <form id="new-post-form" th:action="@{'/forum/' + ${forumName} + '/show/' + ${threadId} + '/createPost'}" th:object="${postCreationDto}" method="post">
                 <div id="new-post-form-errors" th:if="${#fields.hasErrors('*')}">
-                    <p style="color: red">Please Correct Errors Below:</p>
+                    <p style="color: red" th:text="#{Label.formErrors.correctionPrompt}">Please Correct Errors Below:</p>
                     <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
                 </div>
 

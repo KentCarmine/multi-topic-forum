@@ -2,13 +2,13 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
-        <title>Multi-Topic Forum | Login</title>
+        <title th:text="#{Label.login.header.title}">Multi-Topic Forum | Login</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
         <form th:action="@{/processLogin}" method="POST">
             <div th:if="${param.error}">
-                <p style="color: red">Incorrect username or password</p>
+                <p style="color: red" th:text="#{Label.login.error.incorrectUsernameOrPassword.prompt}">Incorrect username or password</p>
             </div>
 
             <div th:if="${param.regError}">
@@ -16,39 +16,42 @@
             </div>
 
             <div th:if="${param.logout}">
-                <p style="color: greenyellow">You have been logged out</p>
+                <p style="color: greenyellow" th:text="#{Label.login.loggedOut.success.prompt}">You have been logged out</p>
             </div>
 
             <div th:if="${param.regEmailSent}">
-                <p style="color: greenyellow">Please check your email to complete your registration</p>
+                <p style="color: greenyellow" th:text="#{Label.login.registration.checkEmail.prompt}">Please check your email to complete your registration</p>
             </div>
 
             <div th:if="${param.registrationSuccess}">
-                <p style="color: greenyellow">You successfully registered an account</p>
+                <p style="color: greenyellow" th:text="#{Label.login.registration.success.prompt}">You successfully registered an account</p>
             </div>
 
             <div th:if="${param.passwordResetError}">
-                <p style="color: red">Error when attempting to reset password</p>
+                <p style="color: red" th:text="#{Label.login.error.passwordReset.prompt}">Error when attempting to reset password</p>
             </div>
 
             <div th:if="${param.passwordUpdateSuccess}">
-                <p style="color: greenyellow">You password has been successfully updated</p>
+                <p style="color: greenyellow" th:text="#{Label.login.passwordReset.success.prompt}">You password has been successfully updated</p>
             </div>
 
             <div>
-                Username: <input type="text" name="username" placeholder="username">
+                <label th:text="#{Label.login.username}">Username: </label>
+                <input type="text" name="username" placeholder="username">
             </div>
             <div>
-                Password: <input type="password" name="password" placeholder="password">
+                <label th:text="#{Label.login.password}">Password: </label>
+                <input type="password" name="password" placeholder="password">
             </div>
             <div>
-                <a href="#" th:href="@{/resetPassword}">Reset password</a>
+                <a href="#" th:href="@{/resetPassword}" th:text="#{Label.login.password.reset}">Reset password</a>
             </div>
             <div>
-                Remember me: <input type="checkbox" name="remember-me">
+                <label th:text="#{Label.login.rememberMe}">Remember me: </label>
+                <input type="checkbox" name="remember-me">
             </div>
 
-            <button type="submit">Login</button>
+            <button type="submit" th:text="#{Label.login.submit.buttonText}">Login</button>
         </form>
     </body>
 </html>

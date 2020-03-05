@@ -3,31 +3,32 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
-        <title th:text="${forumName} + ' | Create New Thread'">Create New Thread</title>
+<!--        <title th:text="${forumName} + ' | Create New Thread'">Create New Thread</title>-->
+        <title th:text="#{Label.thread.createNew.header.withForumName(${forumName})}">Create New Thread</title>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
         <div sec:authorize="isAuthenticated()">
-            <h3>Create New Thread</h3>
+            <h3 th:text="#{Label.thread.createNew.header}">Create New Thread</h3>
 
             <form th:action="@{'/forum/' + ${forumName} + '/processCreateThread'}" th:object="${topicThreadCreationDto}" method="post">
                 <div th:if="${#fields.hasErrors('*')}">
-                    <p style="color: red">Please Correct Errors Below:</p>
+                    <p style="color: red" th:text="#{Label.formErrors.correctionPrompt}">Please Correct Errors Below:</p>
                     <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
                 </div>
 
                 <div>
-                    <label>Title</label>
+                    <label th:text="#{Label.thread.title}">Title</label>
                     <input th:field="*{title}" type="text" name="title" placeholder="" value="">
                 </div>
 
                 <div>
-                    <label>Content</label>
-                    <input th:field="*{firstPostContent}" type="text" name="firstPostContent" value="" placeholder="Write your post here"> <!--TODO: Resize -->
+                    <label th:text="#{Label.thread.content}">Content</label>
+                    <input th:field="*{firstPostContent}" type="text" name="firstPostContent" value="" placeholder="Write your post here" th:placeholder="#{Label.thread.content.placeholder}"> <!--TODO: Resize -->
                 </div>
 
                 <div>
-                    <button type="submit">Create Thread</button>
+                    <button type="submit" th:text="#{Label.thread.createNew}">Create Thread</button>
                 </div>
             </form>
 
