@@ -19,22 +19,32 @@ import java.util.Properties;
  */
 @Service
 public class EmailServiceImpl implements EmailService {
+    private static final String TRANSPORT_PROTOCOL_CODE = "mail.transport.protocol";
+    private static final String SMTP_AUTH_CODE = "mail.smtp.auth";
+    private static final String ENABLE_STARTTLS_CODE = "mail.smtp.starttls.enable";
+    private static final String DEBUG_CODE = "mail.debug";
 
     private JavaMailSender mailSender;
     private UserAccountService userAccountService;
     private MessageService messageService;
 
     @Autowired
-    public EmailServiceImpl(@Value("${spring.mail.host}") String mailHost, @Value("${spring.mail.port}") int mailPort,
+    public EmailServiceImpl(@Value("${spring.mail.host}") String mailHost,
+                            @Value("${spring.mail.port}") int mailPort,
                             @Value("${spring.mail.username}") String mailUserName,
-                            @Value("${spring.mail.password}") String mailPassword, UserAccountService userAccountService,
-                            MessageService messageService) {
-        mailSender = initMailSender(mailHost, mailPort, mailUserName, mailPassword);
+                            @Value("${spring.mail.password}") String mailPassword,
+                            @Value("${mail.transport.protocol}") String protocol,
+                            @Value("${mail.smtp.auth}") String smtpAuth,
+                            @Value("${mail.smtp.starttls.enable}") String enableStartTls,
+                            @Value("${mail.debug}") String debug,
+                            UserAccountService userAccountService, MessageService messageService) {
+        mailSender = initMailSender(mailHost, mailPort, mailUserName, mailPassword, protocol, smtpAuth, enableStartTls, debug);
         this.userAccountService = userAccountService;
         this.messageService = messageService;
     }
 
-    private JavaMailSender initMailSender(String mailHost, int mailPort, String mailUserName, String mailPassword) {
+    private JavaMailSender initMailSender(String mailHost, int mailPort, String mailUserName, String mailPassword,
+                                          String protocol, String smtpAuth, String enableStartTls, String debug) {
         JavaMailSenderImpl ms = new JavaMailSenderImpl();
 
         ms.setHost(mailHost);
@@ -43,12 +53,11 @@ public class EmailServiceImpl implements EmailService {
         ms.setUsername(mailUserName);
         ms.setPassword(mailPassword);
 
-        // TODO: Move into properties file?
         Properties props = ms.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
+        props.put(TRANSPORT_PROTOCOL_CODE, protocol);
+        props.put(SMTP_AUTH_CODE, smtpAuth);
+        props.put(ENABLE_STARTTLS_CODE, enableStartTls);
+        props.put(DEBUG_CODE, debug);
 
         return ms;
     }
