@@ -4,13 +4,15 @@
     <head>
         <meta charset="UTF-8">
         <title th:text="#{Label.forum.createNew.header}">Create New Topic Forum</title>
+        <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+        <script type="text/javascript" th:src="@{/js/form-error-autoscroll.js}"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
         <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
             <form th:action="@{/processNewForumCreation}" th:object="${topicForumDto}" method="post">
-                <div th:if="${#fields.hasErrors('all')}">
+                <div th:if="${#fields.hasErrors('all')}" class="form-error-container">
                     <p style="color: red" th:text="#{Label.formErrors.correctionPrompt}">Please Correct Errors Below:</p>
                     <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
                 </div>

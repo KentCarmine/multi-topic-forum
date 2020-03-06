@@ -9,6 +9,7 @@
         <script type="text/javascript" th:src="@{/js/post-vote-ajax.js}"></script>
         <script type="text/javascript" th:src="@{/js/delete-post-ajax.js}"></script>
         <script type="text/javascript" th:src="@{/js/restore-post-ajax.js}"></script>
+        <script type="text/javascript" th:src="@{/js/form-error-autoscroll.js}"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
@@ -47,7 +48,7 @@
 
         <div sec:authorize="isAuthenticated()" th:if="${!threadIsLocked}">
             <form id="new-post-form" th:action="@{'/forum/' + ${forumName} + '/show/' + ${threadId} + '/createPost'}" th:object="${postCreationDto}" method="post">
-                <div id="new-post-form-errors" th:if="${#fields.hasErrors('*')}">
+                <div id="new-post-form-errors" th:if="${#fields.hasErrors('*')}" class="form-error-container">
                     <p style="color: red" th:text="#{Label.formErrors.correctionPrompt}">Please Correct Errors Below:</p>
                     <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
                 </div>
