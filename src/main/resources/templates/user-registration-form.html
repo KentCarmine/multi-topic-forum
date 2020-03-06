@@ -16,22 +16,22 @@
 
             <div>
                 <label th:text="#{Label.registration.username}">Username</label>
-                <input th:field="*{username}" type="text" name="username" placeholder="Username" th:placeholder="${Label.registration.username.placeholder}">
+                <input th:field="*{username}" type="text" name="username" placeholder="Username" th:placeholder="#{Label.registration.username.placeholder}">
             </div>
 
             <div>
                 <label th:text="#{Label.registration.email}">Email</label>
-                <input th:field="*{email}" type="email" name="email" placeholder="Email" th:placeholder="${Label.registration.email.placeholder}">
+                <input th:field="*{email}" type="email" name="email" placeholder="Email" th:placeholder="#{Label.registration.email.placeholder}">
             </div>
 
             <div>
                 <label th:text="#{Label.registration.password}">Password</label>
-                <input th:field="*{password}" type="password" name="password" placeholder="Password" th:placeholder="${Label.registration.password.placeholder}">
+                <input th:field="*{password}" type="password" name="password" placeholder="Password" th:placeholder="#{Label.registration.password.placeholder}">
             </div>
 
             <div>
                 <label th:text="#{Label.registration.confirmPassword}">Confirm Password</label>
-                <input th:field="*{confirmPassword}" type="password" name="confirmPassword" placeholder="Confirm Password" th:placeholder="${Label.registration.confirmPassword.placeholder}">
+                <input th:field="*{confirmPassword}" type="password" name="confirmPassword" placeholder="Confirm Password" th:placeholder="#{Label.registration.confirmPassword.placeholder}">
             </div>
 
             <button type="submit" th:text="#{Label.registration.submit.buttonText}">Create Account</button>
