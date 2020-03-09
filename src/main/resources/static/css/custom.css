@@ -1,0 +1,15 @@
+.form-error-list {
+    margin-bottom: 12px;
+}
+
+.form-error-list-item {
+    font-weight: bold;
+}
+
+.flash-prompt-container {
+    width: fit-content;
+}
+
+.flash-prompt-success {
+    font-style: italic;
+}
