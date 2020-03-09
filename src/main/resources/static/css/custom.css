@@ -13,3 +13,11 @@
 .flash-prompt-success {
     font-style: italic;
 }
+
+body {
+    padding-bottom: 20px;
+}
+
+.navbar {
+    margin-bottom: 20px;
+}
