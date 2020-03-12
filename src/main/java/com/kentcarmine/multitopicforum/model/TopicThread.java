@@ -1,12 +1,16 @@
 package com.kentcarmine.multitopicforum.model;
 
 import org.hibernate.annotations.SortNatural;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.*;
+import java.time.temporal.TemporalUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -124,6 +128,26 @@ public class TopicThread {
     public void unlock() {
         setLocked(false);
         setLockingUser(null);
+    }
+
+    /**
+     * Gets a string representation of the amount of time since this thread was created. Only includes the amount of
+     * time in the largest whole unit of time.
+     *
+     * @return a string representation of the amount of time since this thread was created.
+     */
+    public String getTimeSinceCreation() {
+        return this.getFirstPost().getTimeSinceCreation();
+    }
+
+    /**
+     * Gets a string representation of the amount of time since the most recent post was added to it. Only includes the
+     * amount of time in the largest whole unit of time.
+     *
+     * @return a string representation of the amount of time since this thread was most recently updated with a post.
+     */
+    public String getTimeSinceMostRecentPost() {
+        return this.getLastPost().getTimeSinceCreation();
     }
 
     @Override

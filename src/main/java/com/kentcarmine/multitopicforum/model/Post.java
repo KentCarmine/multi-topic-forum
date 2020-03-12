@@ -3,6 +3,10 @@ package com.kentcarmine.multitopicforum.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
@@ -13,6 +17,24 @@ import java.util.Set;
  */
 @Entity
 public class Post implements Comparable<Post> {
+
+    // TODO: Move these into messages and refactor method using them
+    private static final String TIME_PLURALIZER_SUFFIX = "s";
+
+    private static final String SECOND = "second";
+
+    private static final String MINUTE = "minute";
+
+    private static final String HOUR = "hour";
+
+    private static final String DAY = "day";
+
+    private static final String WEEK = "week";
+
+    private static final String MONTH = "month";
+
+    private static final String YEAR = "year";
+
     private static final int ABBREVIATED_CONTENT_LENGTH = 50;
 
     @Id
@@ -202,6 +224,50 @@ public class Post implements Comparable<Post> {
         }
 
         return false;
+    }
+
+    // TODO: Refactor this method to use messages from properties
+    /**
+     * Gets a string representation of the amount of time since this post was created. Only includes the amount of
+     * time in the largest whole unit of time.
+     *
+     * @return a string representation of the amount of time since this post was created.
+     */
+    public String getTimeSinceCreation() {
+        Date creationDate = this.getPostedAt();
+        LocalDateTime creationTimestamp = creationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime now = LocalDateTime.now();
+
+        Duration duration = Duration.between(creationTimestamp, now);
+        Period period = Period.between(creationTimestamp.toLocalDate(), now.toLocalDate());
+
+        long seconds = duration.getSeconds();
+        long mins = duration.dividedBy(Duration.ofMinutes(1));
+        long hours = duration.dividedBy(Duration.ofHours(1));
+        long days = duration.dividedBy(Duration.ofDays(1));
+        long weeks = duration.dividedBy(Duration.ofDays(7));
+        long months = period.getMonths();
+        long years = period.getYears();
+
+        final String[] timeMeasurements = {SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, YEAR};
+        final long[] elapsedList = {seconds, mins, hours, days, weeks, months, years};
+
+        for (int i = timeMeasurements.length - 1; i >= 0; i--) {
+            String unit = timeMeasurements[i];
+            long elapsed = elapsedList[i];
+
+            if (elapsed > 0) {
+                StringBuffer result = new StringBuffer(elapsed + " " + unit);
+
+                if (elapsed > 1) {
+                    result.append(TIME_PLURALIZER_SUFFIX);
+                }
+
+                return result.append(" ago").toString();
+            }
+        }
+
+        return "0 seconds ago";
     }
 
     @Override
