@@ -8,7 +8,7 @@
         <title th:text="${forum.getName()}">Forum Page</title>
 
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <link rel="stylesheet" th:href="@{css/custom.css}">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
 
         <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
@@ -16,9 +16,9 @@
         <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
     </head>
     <body>
-        <div th:replace="fragments/navbar.html :: navbar"></div>
+        <nav th:replace="fragments/navbar.html :: navbar"></nav>
 
-        <main class="container-fluid">
+        <main class="container-fluid h-100">
             <!-- Header section -->
             <div class="mt-1 ml-3">
                 <!-- Forum title -->
@@ -34,7 +34,7 @@
                 <!--Create thread button (if logged in)-->
                 <div>
                     <div sec:authorize="isAuthenticated()">
-                        <a class="btn btn-shadow btn-wide btn-primary mb-1" href="#" th:href="@{'/forum/' + ${forum.getName()} + '/createThread'}">
+                        <a class="btn btn-shadow btn-wide btn-primary mb-2" href="#" th:href="@{'/forum/' + ${forum.getName()} + '/createThread'}">
                             <span class="btn-icon-wrapper pr-2 opacity-7">
                             <i class="fa fa-plus fa-w-20"></i>
                             </span>

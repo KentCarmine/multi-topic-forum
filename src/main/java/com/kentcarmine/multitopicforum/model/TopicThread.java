@@ -85,10 +85,18 @@ public class TopicThread {
     }
 
     public Post getFirstPost() {
+        if (getPosts().isEmpty()) {
+            return null;
+        }
+
         return getPosts().first();
     }
 
     public Post getLastPost() {
+        if (getPosts().isEmpty()) {
+            return null;
+        }
+
         return getPosts().last();
     }
 

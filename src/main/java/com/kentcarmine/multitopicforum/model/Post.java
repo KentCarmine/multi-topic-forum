@@ -1,5 +1,7 @@
 package com.kentcarmine.multitopicforum.model;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -18,21 +20,14 @@ import java.util.Set;
 @Entity
 public class Post implements Comparable<Post> {
 
-    // TODO: Move these into messages and refactor method using them
+    // TODO: Move these into messages and refactor method using them (maybe also use enum or time based class?)
     private static final String TIME_PLURALIZER_SUFFIX = "s";
-
     private static final String SECOND = "second";
-
     private static final String MINUTE = "minute";
-
     private static final String HOUR = "hour";
-
     private static final String DAY = "day";
-
     private static final String WEEK = "week";
-
     private static final String MONTH = "month";
-
     private static final String YEAR = "year";
 
     private static final int ABBREVIATED_CONTENT_LENGTH = 50;
