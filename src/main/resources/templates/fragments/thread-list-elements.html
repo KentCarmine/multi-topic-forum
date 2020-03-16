@@ -15,7 +15,7 @@
         <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
     </head>
     <body>
-        <div th:fragment="thread-list-element-fragment (thread)">
+        <div th:fragment="thread-list-element-fragment (thread,iterStat)">
             <div class="card-body py-3">
                 <div class="row no-gutters align-items-center">
                     <!-- Topic section-->
@@ -62,7 +62,7 @@
                     </div>
                 </div>
             </div>
-            <hr class="m-0">
+            <hr th:if="${!iterStat.last}" class="m-0">
         </div>
     </body>
 </html>

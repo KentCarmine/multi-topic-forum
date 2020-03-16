@@ -69,7 +69,7 @@
                 </div>
 
                 <!-- Thread list main body-->
-                <div th:each="thread : ${forum.getThreads()}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread})"> <!--TODO: Add Pagination?-->
+                <div th:each="thread,iterStat : ${forum.getThreads()}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread},${iterStat})"> <!--TODO: Add Pagination?-->
                 </div>
 
             </div>

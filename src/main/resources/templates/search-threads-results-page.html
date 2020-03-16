@@ -53,7 +53,7 @@
                 <div>
                     <!-- Show results (if some exist)-->
                     <div th:if="${threads != null && !threads.isEmpty()}">
-                        <div th:each="thread : ${threads}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread})"> <!--TODO: Add Pagination?-->
+                        <div th:each="thread,iterStat : ${threads}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread},${iterStat})"> <!--TODO: Add Pagination?-->
                         </div>
                     </div>
 
