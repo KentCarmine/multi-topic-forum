@@ -1,41 +1,27 @@
-package com.kentcarmine.multitopicforum.model;
+package com.kentcarmine.multitopicforum.dtos;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.kentcarmine.multitopicforum.model.PostUpdatedTimable;
+import com.kentcarmine.multitopicforum.model.PostVote;
+import com.kentcarmine.multitopicforum.model.User;
 
-import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * Entity that models a single forum Post within a TopicThread.
- */
-@Entity
-public class Post implements Comparable<Post>, PostUpdatedTimable {
+public class PostViewDto implements Comparable<PostViewDto>, PostUpdatedTimable {
     private static final int ABBREVIATED_CONTENT_LENGTH = 50; // TODO: Move into properties file
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "thread_id")
     @NotNull
-    private TopicThread thread;
+    private TopicThreadViewDto thread;
 
     @NotBlank(message = "{Post.content.notBlank}")
-    @Lob
     private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "username")
     @NotNull
     private User user;
 
@@ -43,20 +29,18 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
 
     private boolean deleted;
     private Date deletedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "deleted_by_username")
     private User deletedBy;
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<PostVote> postVotes;
 
-    public Post() {
+    private String creationTimeDifferenceMessage;
+
+    public PostViewDto() {
         postVotes = new HashSet<>();
         deleted = false;
     }
 
-    public Post(String content, Date postedAt) {
+    public PostViewDto(String content, Date postedAt) {
         this.content = content;
         this.postedAt = postedAt;
         this.postVotes = new HashSet<>();
@@ -71,20 +55,20 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
         this.id = id;
     }
 
+    public TopicThreadViewDto getThread() {
+        return thread;
+    }
+
+    public void setThread(TopicThreadViewDto thread) {
+        this.thread = thread;
+    }
+
     public String getContent() {
         return content;
     }
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public Date getPostedAt() {
-        return postedAt;
-    }
-
-    public void setPostedAt(Date postedAt) {
-        this.postedAt = postedAt;
     }
 
     public User getUser() {
@@ -95,24 +79,12 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
         this.user = user;
     }
 
-    public TopicThread getThread() {
-        return thread;
+    public Date getPostedAt() {
+        return postedAt;
     }
 
-    public void setThread(TopicThread thread) {
-        this.thread = thread;
-    }
-
-    public Set<PostVote> getPostVotes() {
-        return postVotes;
-    }
-
-    public void setPostVotes(Set<PostVote> postVotes) {
-        this.postVotes = postVotes;
-    }
-
-    public void addPostVote(PostVote postVote) {
-        postVotes.add(postVote);
+    public void setPostedAt(Date postedAt) {
+        this.postedAt = postedAt;
     }
 
     public boolean isDeleted() {
@@ -137,6 +109,14 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
 
     public void setDeletedBy(User deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public Set<PostVote> getPostVotes() {
+        return postVotes;
+    }
+
+    public void setPostVotes(Set<PostVote> postVotes) {
+        this.postVotes = postVotes;
     }
 
     /**
@@ -173,11 +153,11 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Post)) {
+        if (!(obj instanceof PostViewDto)) {
             return false;
         }
 
-        return this.getId() == ((Post)(obj)).getId();
+        return this.getId() == ((PostViewDto)(obj)).getId();
     }
 
     public boolean isDeletableBy(User loggedInUser) {
@@ -210,8 +190,16 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
         return false;
     }
 
+    public String getCreationTimeDifferenceMessage() {
+        return creationTimeDifferenceMessage;
+    }
+
+    public void setCreationTimeDifferenceMessage(String creationTimeDifferenceMessage) {
+        this.creationTimeDifferenceMessage = creationTimeDifferenceMessage;
+    }
+
     @Override
-    public int compareTo(Post o) {
+    public int compareTo(PostViewDto o) {
         if (this.getPostedAt().getTime() > o.getPostedAt().getTime()) {
             return 1;
         } else if (this.getPostedAt().getTime() < o.getPostedAt().getTime()) {
@@ -247,7 +235,7 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
             deletedAtStr = deletedAt.toString();
         }
 
-        return "Post{" +
+        return "PostViewDto{" +
                 "id=" + id +
                 ", forum=" + forumName +
                 ", thread=" + threadTitle +
@@ -259,4 +247,5 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
                 ", deltedBy=" + deletedName +
                 '}';
     }
+
 }

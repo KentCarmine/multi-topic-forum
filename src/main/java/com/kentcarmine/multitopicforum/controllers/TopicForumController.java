@@ -92,12 +92,11 @@ public class TopicForumController {
         TopicForum forum = forumService.getForumByName(name);
 
         if (forum == null) {
-//            throw new ForumNotFoundException("Topic Forum with the name " + name + " was not found.");
             throw new ForumNotFoundException();
         }
 
         model.addAttribute("topicThreadSearchDto", new TopicThreadSearchDto());
-        model.addAttribute("forum", forum);
+        model.addAttribute("forum", forumService.getTopicForumViewDtoForTopicForum(forum));
         return "forum-page";
     }
 

@@ -1,5 +1,7 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
+import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -60,6 +62,8 @@ class TopicForumControllerTest {
     @Mock
     MessageService messageService;
 
+    ForumHierarchyConverter forumHierarchyConverter;
+
     TopicForum testTopicForum;
     User testUser;
     private User testModerator;
@@ -71,6 +75,8 @@ class TopicForumControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
+
+        forumHierarchyConverter = new ForumHierarchyConverter();
 
         topicForumController = new TopicForumController(forumService);
 
@@ -200,7 +206,10 @@ class TopicForumControllerTest {
 
     @Test
     void showForum_existingForum() throws Exception {
+        TopicForumViewDto topicForumDto = forumHierarchyConverter.convertForum(testTopicForum);
+
         when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(forumService.getTopicForumViewDtoForTopicForum(any())).thenReturn(topicForumDto);
 
         mockMvc.perform(get("/forum/" + testTopicForum.getName()))
                 .andExpect(status().isOk())

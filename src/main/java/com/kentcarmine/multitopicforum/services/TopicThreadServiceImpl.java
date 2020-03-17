@@ -1,6 +1,9 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
+import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
@@ -24,16 +27,20 @@ public class TopicThreadServiceImpl implements TopicThreadService {
     private final TopicThreadRepository topicThreadRepository;
     private final PostRepository postRepository;
     private final ForumService forumService;
-
+    private final ForumHierarchyConverter forumHierarchyConverter;
+    private final TimeCalculatorService timeCalculatorService;
 
     @Autowired
     public TopicThreadServiceImpl(TopicForumRepository topicForumRepository,
                                   TopicThreadRepository topicThreadRepository, PostRepository postRepository,
-                                  ForumService forumService) {
+                                  ForumService forumService, ForumHierarchyConverter forumHierarchyConverter,
+                                  TimeCalculatorService timeCalculatorService) {
         this.topicForumRepository = topicForumRepository;
         this.topicThreadRepository = topicThreadRepository;
         this.postRepository = postRepository;
         this.forumService = forumService;
+        this.forumHierarchyConverter = forumHierarchyConverter;
+        this.timeCalculatorService = timeCalculatorService;
     }
 
     /**
@@ -83,12 +90,12 @@ public class TopicThreadServiceImpl implements TopicThreadService {
      *
      * @param forumName the name of the forum to search
      * @param searchText The text to search for
-     * @return the set of TopicThreads (ordered reverse chronologically by creation date of the first post) that match
+     * @return the set of TopicThreadViewDtos (ordered reverse chronologically by creation date of the first post) that match
      * the search terms
      * @throws UnsupportedEncodingException
      */
     @Override
-    public SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText)
+    public SortedSet<TopicThreadViewDto> searchTopicThreads(String forumName, String searchText)
             throws UnsupportedEncodingException {
         SortedSet<TopicThread> threads = new TreeSet<>(new Comparator<TopicThread>() {
             @Override
@@ -97,13 +104,13 @@ public class TopicThreadServiceImpl implements TopicThreadService {
             }
         });
 
+        TopicForum forum = topicForumRepository.findByName(forumName);
         if (searchText.equals("") || searchText.equals("\"\"")) {
-            TopicForum forum = topicForumRepository.findByName(forumName);
             if (forum != null) {
                 threads.addAll(forum.getThreads());
             }
 
-            return threads;
+            return convertThreadsToThreadViewDtos(threads, forum);
         }
 
         List<String> searchTerms = parseSearchText(searchText);
@@ -126,7 +133,34 @@ public class TopicThreadServiceImpl implements TopicThreadService {
             }
         }
 
-        return threads;
+        return convertThreadsToThreadViewDtos(threads, forum);
+    }
+
+    /**
+     * Helper method that converts the given threads in the given forum from threads to ThreadViewDtos.
+     *
+     * @param threads the threads to convert
+     * @param forum the forum the threads belong to
+     * @return a SortedSet of ThreadViewDtos for the given threads
+     */
+    private SortedSet<TopicThreadViewDto> convertThreadsToThreadViewDtos(SortedSet<TopicThread> threads, TopicForum forum) {
+        SortedSet<TopicThreadViewDto> threadDtos = new TreeSet<>(new Comparator<TopicThreadViewDto>() {
+            @Override
+            public int compare(TopicThreadViewDto o1, TopicThreadViewDto o2) {
+                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt()); // Newest threads first
+            }
+        });
+
+        TopicForumViewDto forumViewDto = forumHierarchyConverter.convertForum(forum);
+        for (TopicThread thread : threads) {
+            TopicThreadViewDto threadDto = forumHierarchyConverter.convertThread(thread, forumViewDto);
+            threadDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadDto));
+            threadDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadDto));
+
+            threadDtos.add(threadDto);
+        }
+
+        return threadDtos;
     }
 
     /**

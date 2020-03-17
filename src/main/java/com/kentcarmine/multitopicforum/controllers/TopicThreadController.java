@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.controllers;
 import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -88,7 +89,7 @@ public class TopicThreadController {
         if (request.getParameterMap().containsKey("search")) {
             String searchText = URLEncoderDecoderHelper.decode(search);
 
-            SortedSet<TopicThread> threads = topicThreadService.searchTopicThreads(name, search);
+            SortedSet<TopicThreadViewDto> threads = topicThreadService.searchTopicThreads(name, search);
 
             model.addAttribute("threads", threads);
             model.addAttribute("forumName", name);
@@ -122,6 +123,7 @@ public class TopicThreadController {
 
         if (bindingResult.hasErrors()) {
             mv = new ModelAndView("create-thread-page", "topicThreadCreationDto", topicThreadCreationDto);
+            mv.addObject("forumName", name);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
             return mv;
         }

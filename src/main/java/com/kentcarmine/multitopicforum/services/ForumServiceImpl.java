@@ -1,7 +1,11 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
 import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
+import com.kentcarmine.multitopicforum.dtos.PostViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
+import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.TopicForum;
@@ -21,12 +25,18 @@ public class ForumServiceImpl implements ForumService {
 
     private final TopicForumRepository topicForumRepository;
     private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
+    private final ForumHierarchyConverter forumHierarchyConverter;
+    private final TimeCalculatorService timeCalculatorService;
 
     @Autowired
     public ForumServiceImpl(TopicForumRepository topicForumRepository,
-                            TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter) {
+                            TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter,
+                            ForumHierarchyConverter forumHeirarchyConverter,
+                            TimeCalculatorService timeCalculatorService) {
         this.topicForumRepository = topicForumRepository;
         this.topicForumDtoToTopicForumConverter = topicForumDtoToTopicForumConverter;
+        this.forumHierarchyConverter = forumHeirarchyConverter;
+        this.timeCalculatorService = timeCalculatorService;
     }
 
     @Override
@@ -122,6 +132,25 @@ public class ForumServiceImpl implements ForumService {
 
         return forums;
     }
+
+    @Override
+    public TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum) {
+        TopicForumViewDto forumViewDto = forumHierarchyConverter.convertForum(topicForum);
+//        System.out.println("### in getTopicForumViewDtoForTopicForum, starting forumViewDto = " + forumViewDto);
+
+        for (TopicThreadViewDto threadViewDto : forumViewDto.getThreads()) {
+
+            for (PostViewDto postViewDto : threadViewDto.getPosts()) {
+                postViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(postViewDto));
+            }
+
+            threadViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadViewDto));
+            threadViewDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadViewDto));
+        }
+
+        return forumViewDto;
+    }
+
 
     /**
      * Helper method that parses search text.

@@ -1,13 +1,11 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
 import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
 import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.model.*;
-import com.kentcarmine.multitopicforum.repositories.PostRepository;
-import com.kentcarmine.multitopicforum.repositories.PostVoteRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
-import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -55,6 +53,10 @@ class ForumServiceTest {
     @Mock
     TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
 
+    ForumHierarchyConverter forumHierarchyConverter;
+
+    @Mock
+    TimeCalculatorService timeCalculatorService;
 
     private TopicForum testTopicForum;
     private TopicForum testTopicForum2;
@@ -70,7 +72,8 @@ class ForumServiceTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        forumService = new ForumServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter);
+        forumHierarchyConverter = new ForumHierarchyConverter();
+        forumService = new ForumServiceImpl(topicForumRepository, topicForumDtoToTopicForumConverter, forumHierarchyConverter, timeCalculatorService);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);

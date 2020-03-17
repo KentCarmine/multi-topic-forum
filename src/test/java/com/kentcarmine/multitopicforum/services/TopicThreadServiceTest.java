@@ -1,10 +1,10 @@
 package com.kentcarmine.multitopicforum.services;
 
-import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
+import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
-import com.kentcarmine.multitopicforum.repositories.PostVoteRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,6 +66,11 @@ class TopicThreadServiceTest {
     @Mock
     ForumService forumService;
 
+    ForumHierarchyConverter forumHierarchyConverter;
+
+    @Mock
+    TimeCalculatorService timeCalculatorService;
+
     private TopicForum testTopicForum;
     private TopicForum testTopicForum2;
     private TopicThread testTopicThread;
@@ -80,7 +85,10 @@ class TopicThreadServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        topicThreadService = new TopicThreadServiceImpl(topicForumRepository, topicThreadRepository, postRepository, forumService);
+
+        forumHierarchyConverter = new ForumHierarchyConverter();
+
+        topicThreadService = new TopicThreadServiceImpl(topicForumRepository, topicThreadRepository, postRepository, forumService, forumHierarchyConverter, timeCalculatorService);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -99,6 +107,7 @@ class TopicThreadServiceTest {
         testPost = new Post("test post content", Date.from(Instant.now()));
         testPost.setId(1L);
         testPost.setUser(testUser);
+        testPost.setThread(testTopicThread);
         testTopicThread.getPosts().add(testPost);
         testTopicForum.addThread(testTopicThread);
 
@@ -166,33 +175,38 @@ class TopicThreadServiceTest {
 
     @Test
     void searchTopicThreads_existingResults() throws Exception {
+        when(topicForumRepository.findByName(eq(TEST_TOPIC_FORUM_NAME))).thenReturn(testTopicForum);
         when(topicThreadRepository.findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString()))
                 .thenReturn(List.of(testTopicThread));
 
         final String searchStr = "test";
 
-        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+//        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+        SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
 
         assertEquals(1, results.size());
         assertEquals(testTopicThread.getTitle(), results.first().getTitle());
 
-        verify(topicForumRepository, times(0)).findByName(anyString());
+//        verify(topicForumRepository, times(0)).findByName(anyString());
         verify(topicThreadRepository, times(1))
                 .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
     }
 
     @Test
     void searchTopicThreads_noResults() throws Exception {
+        when(topicForumRepository.findByName(eq(TEST_TOPIC_FORUM_NAME))).thenReturn(testTopicForum);
         when(topicThreadRepository.findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString()))
                 .thenReturn(List.of());
 
         final String searchStr = "test";
 
-        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+//        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+        SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+
 
         assertEquals(0, results.size());
 
-        verify(topicForumRepository, times(0)).findByName(anyString());
+//        verify(topicForumRepository, times(0)).findByName(anyString());
         verify(topicThreadRepository, times(1))
                 .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
     }
@@ -203,7 +217,8 @@ class TopicThreadServiceTest {
 
         final String searchStr = "";
 
-        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+//        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
+        SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
 
         assertEquals(1, results.size());
 

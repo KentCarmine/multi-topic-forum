@@ -1,15 +1,16 @@
 package com.kentcarmine.multitopicforum.helpers;
 
-import com.kentcarmine.multitopicforum.model.TopicThread;
+import com.kentcarmine.multitopicforum.model.ThreadUpdatedTimeable;
 
 import java.util.Comparator;
 
 /**
- * Compares two TopicThreads, ordering them based on the time of their most recent post, in ascending order.
+ * Compares two ThreadUpdatedTimeable objects, ordering them based on the time of their most recent post, in ascending order.
  */
-public class ThreadUpdateTimeComparator implements Comparator<TopicThread> {
+public class ThreadUpdateTimeComparator implements Comparator<ThreadUpdatedTimeable> {
+
     @Override
-    public int compare(TopicThread o1, TopicThread o2) {
+    public int compare(ThreadUpdatedTimeable o1, ThreadUpdatedTimeable o2) {
 
         if ((o1 == null || o1.getLastPost() == null || o1.getLastPost().getPostedAt() == null) && (o2 == null || o2.getLastPost() == null || o2.getLastPost().getPostedAt() == null)) {
             return 0;

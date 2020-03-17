@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
@@ -13,7 +14,8 @@ public interface TopicThreadService {
 
     TopicThread getThreadByForumNameAndId(String forumName, Long threadId);
 
-    SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText) throws UnsupportedEncodingException;
+//    SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText) throws UnsupportedEncodingException;
+    SortedSet<TopicThreadViewDto> searchTopicThreads(String forumName, String searchText) throws UnsupportedEncodingException;
 
     boolean canUserLockThread(User user, TopicThread thread);
 
