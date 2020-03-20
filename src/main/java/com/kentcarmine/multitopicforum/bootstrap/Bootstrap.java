@@ -121,6 +121,9 @@ public class Bootstrap implements CommandLineRunner {
         PostVote vote4 = new PostVote(PostVoteState.UPVOTE, userRepository.findByUsername("moderator2"), post1);
         vote4 = postVoteRepository.save(vote4);
 
+        forum2Thread1.lock(userRepository.findByUsername("superadmin"));
+        topicThreadRepository.save(forum2Thread1);
+
 //        post1 = postRepository.findById(post1.getId()).get();
 //        System.out.println("### " + postVoteRepository.findByUserAndPost(userRepository.findByUsername("admin2"), post1));
 //        System.out.println("### " + post1.getPostVotes().get(0).toString());\

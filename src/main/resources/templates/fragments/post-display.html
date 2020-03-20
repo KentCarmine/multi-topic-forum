@@ -3,44 +3,74 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title>Post</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
     </head>
     <body>
-        <div th:fragment="post-fragment (post)"> <!--TODO: Add upvote/downvote display and arg-->
-            <div th:id="'post_id_' + ${post.getId()}">
+
+        <div th:fragment="post-fragment (post)">
+            <div th:id="'post_id_' + ${post.getId()}" class="card bg-light mb-2">
+
+                <div class="card-header pt-2 pb-2 pl-3 pr-3">
+                    <span class="row no-gutters align-items-center">
+                        <span class="col-0 mr-auto">
+                            <a href="#" th:href="@{'/users/' + ${post.getUser().getUsername()}}" th:text="${post.getUser().getUsername()}" class="font-weight-bold mr-3 align-middle">Poster</a>
+
+                            <span th:if="${!post.isDeleted() && loggedInUser != null}" class="align-content-center align-middle">
+
+                                <button th:if="${voteMap.get(post.getId()) != 1}" type="button" class="btn btn-vote btn-upvote upvote-button"
+                                        th:attr="data-post-id=${post.getId()}"
+                                        th:name="${'upvote-button-post-id-' + post.getId()}"
+                                        th:classappend="${voteMap.get(post.getId()) == -1}? 'invisible' : 'visible'">
+
+                                    <i th:attr="data-post-id=${post.getId()}" class="fas fa-arrow-alt-circle-up fa-3x"></i>
+                                </button>
+                                <span class="btn-vote upvote-button-selected align-middle"
+                                      th:attr="data-post-id=${post.getId()}"
+                                      th:classappend="${voteMap.get(post.getId()) == 1}? 'displayed' : 'not-displayed'">
+                                    <i th:attr="data-post-id=${post.getId()}" class="far fa-arrow-alt-circle-up fa-3x"></i>
+                                </span>
+
+                                <span th:attr="data-post-id=${post.getId()}"
+                                      th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}" class="vote-counter font-weight-bold align-middle">
+                                    ###
+                                </span>
+
+                                <button th:if="${voteMap.get(post.getId()) != -1}" type="button" class="btn btn-vote btn-downvote downvote-button"
+                                        th:attr="data-post-id=${post.getId()}"
+                                        th:name="${'downvote-button-post-id-' + post.getId()}"
+                                        th:classappend="${voteMap.get(post.getId()) == 1}? 'invisible' : 'visible'">
+
+                                    <i th:attr="data-post-id=${post.getId()}" class="fas fa-arrow-alt-circle-down fa-3x"></i>
+                                </button>
+                                <span class="btn-vote downvote-button-selected align-middle"
+                                      th:attr="data-post-id=${post.getId()}"
+                                      th:classappend="${voteMap.get(post.getId()) == -1}? 'displayed' : 'not-displayed'">
+                                    <i th:attr="data-post-id=${post.getId()}" class="far fa-arrow-alt-circle-down fa-3x"></i>
+                                </span>
+
+                            </span>
+                            <span th:if="${post.isDeleted() || loggedInUser == null}" class="align-content-center align-middle">
+                                <span th:attr="data-post-id=${post.getId()}"
+                                      th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}" class="vote-counter font-weight-bold align-middle">
+                                    ###
+                                </span>
+                            </span>
+                        </span>
+
+                        <span class="col-auto align-items-right text-muted align-middle">
+                            <span th:text="#{Label.post.postedAtPrefix}" class="font-weight-bold align-middle">Posted At: </span>
+                            <span th:text="${post.getDisplayPostedAt()}" class="align-middle">Timestamp</span>
+                        </span>
+                    </span>
+                </div>
+
+                <!-- TODO: Style and rewire JS for delete/restore post-->
                 <div>
-                    <span>
-                        <a href="#" th:href="@{'/users/' + ${post.getUser().getUsername()}}" th:text="${post.getUser().getUsername()}">Poster</a>
-                    </span>
-                    <span> @ </span>
-                    <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
-
-                    <span th:if="${loggedInUser == null || post.isDeleted()}">
-                        <span> | </span>
-                        <span th:text="${post.getVoteCount()}"></span>
-                    </span>
-
-                    <span th:if="${!post.isDeleted() && loggedInUser != null}">
-                        <span>
-                            <input type="image" alt="Upvote" width="32" height="32" th:class="upvote-button"
-                                   th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
-                                   th:src="${voteMap.get(post.getId()) == 1} ? '/images/black-arrow-green-filled.png' : '/images/green-arrow-hollow.png'"
-                                   th:name="${'upvote-button-post-id-' + post.getId()}">
-                        </span>
-
-                        <span th:class="vote-counter" th:attr="data-post-id=${post.getId()}"
-                              th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}">
-                            ###
-                        </span>
-
-                        <span>
-                            <input type="image" alt="Downvote" width="32" height="32" th:class="downvote-button"
-                                   th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
-                                   th:src="${voteMap.get(post.getId()) == -1} ? '/images/black-arrow-red-filled.png' : '/images/red-arrow-hollow.png'"
-                                   th:name="${'downvote-button-post-id-' + post.getId()}">
-                        </span>
-                    </span>
-
                     <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
                         <span th:if="${!post.isDeleted()}">
                             <input type="button" th:attr="data-post-id=${post.getId()}"
@@ -48,7 +78,7 @@
                                    th:disabled="${!post.isDeletableBy(loggedInUser)}"
                                    class="delete-post-button"
                                    th:value="#{Label.post.delete}">
-                        </span>
+                            </span>
                         <span th:if="${post.isDeleted()}">
                             <input type="button" th:attr="data-post-id=${post.getId()}"
                                    th:name="${'restore-button-post-id-' + post.getId()}"
@@ -59,6 +89,7 @@
                     </span>
                 </div>
 
+                <!-- TODO: Style content section-->
                 <div th:if="${!post.isDeleted()}" th:text="${post.getContent()}">
                     Content
                 </div>
@@ -72,7 +103,7 @@
 
             </div>
         </div>
-
+        
         <div th:fragment="post-summary-fragment (post)">
             <div>
                 <span>

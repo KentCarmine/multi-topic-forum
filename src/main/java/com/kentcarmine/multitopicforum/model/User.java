@@ -245,6 +245,10 @@ public class User {
         this.posts = posts;
     }
 
+    public int getTotalPostsCount() {
+        return posts.size();
+    }
+
     public Set<Discipline> getDisciplines() {
         return disciplines;
     }

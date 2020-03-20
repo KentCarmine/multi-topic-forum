@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -19,6 +20,7 @@ import java.util.Set;
  */
 @Entity
 public class Post implements Comparable<Post>, PostUpdatedTimable {
+    private static final String DATE_TIME_FORMAT_STRING = "MM-dd-yyyy, HH:mm";
     private static final int ABBREVIATED_CONTENT_LENGTH = 50; // TODO: Move into properties file
 
     @Id
@@ -85,6 +87,12 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
 
     public void setPostedAt(Date postedAt) {
         this.postedAt = postedAt;
+    }
+
+    public String getDisplayPostedAt() {
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT_STRING);
+
+        return sdf.format(postedAt);
     }
 
     public User getUser() {
