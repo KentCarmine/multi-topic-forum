@@ -47,7 +47,7 @@ public class PostVoteController {
 
         Post post = postService.getPostById(postVoteSubmissionDto.getPostId());
 
-        if (loggedInUser == null || post == null || errors.hasErrors()) {
+        if (loggedInUser == null || post == null || errors.hasErrors() || post.isDeleted()) {
 //            System.out.println("### In processVoteSubmission(). Error case 1");
             response = new PostVoteResponseDto(null,false ,false, false, 0);
             return ResponseEntity.unprocessableEntity().body(response);

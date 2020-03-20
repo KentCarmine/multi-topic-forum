@@ -62,32 +62,58 @@
                             </span>
                         </span>
 
-                        <span class="col-auto align-items-right text-muted align-middle">
-                            <span th:text="#{Label.post.postedAtPrefix}" class="font-weight-bold align-middle">Posted At: </span>
-                            <span th:text="${post.getDisplayPostedAt()}" class="align-middle">Timestamp</span>
+                        <span class="col-auto">
+                            <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" class="ml-2 mr-3">
+                                <button type="button" th:if="${!post.isDeleted()}" th:attr="data-post-id=${post.getId()}"
+                                        th:name="${'delete-button-post-id-' + post.getId()}"
+                                        th:disabled="${!post.isDeletableBy(loggedInUser)}"
+                                        class="btn btn-outline-danger delete-post-button">
+                                    <i class="fas fa-times" th:attr="data-post-id=${post.getId()}"></i>
+                                    <span th:text="#{Label.post.delete}" th:attr="data-post-id=${post.getId()}"></span>
+                                </button>
+
+                                <button type="button" th:if="${post.isDeleted()}" th:attr="data-post-id=${post.getId()}"
+                                        th:name="${'restore-button-post-id-' + post.getId()}"
+                                        th:disabled="${!post.isRestorableBy(loggedInUser)}"
+                                        class="btn btn-outline-success restore-post-button">
+                                    <i class="fas fa-check" th:attr="data-post-id=${post.getId()}"></i>
+                                    <span th:text="#{Label.post.restore}" th:attr="data-post-id=${post.getId()}"></span>
+                                </button>
+                            </span>
+
+                            <span class="align-items-right text-muted align-middle">
+                                <span th:text="#{Label.post.postedAtPrefix}" class="font-weight-bold align-middle">Posted At: </span>
+                                <span th:text="${post.getDisplayPostedAt()}" class="align-middle">Timestamp</span>
+                            </span>
                         </span>
                     </span>
+
+
+
+
+
+                    <!-- TODO: Style and rewire JS for delete/restore post-->
+<!--                    <div>-->
+<!--                    <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">-->
+<!--                        <span th:if="${!post.isDeleted()}">-->
+<!--                            <input type="button" th:attr="data-post-id=${post.getId()}"-->
+<!--                                   th:name="${'delete-button-post-id-' + post.getId()}"-->
+<!--                                   th:disabled="${!post.isDeletableBy(loggedInUser)}"-->
+<!--                                   class="delete-post-button"-->
+<!--                                   th:value="#{Label.post.delete}">-->
+<!--                            </span>-->
+<!--                        <span th:if="${post.isDeleted()}">-->
+<!--                            <input type="button" th:attr="data-post-id=${post.getId()}"-->
+<!--                                   th:name="${'restore-button-post-id-' + post.getId()}"-->
+<!--                                   th:disabled="${!post.isRestorableBy(loggedInUser)}"-->
+<!--                                   class="restore-post-button"-->
+<!--                                   th:value="#{Label.post.restore}">-->
+<!--                        </span>-->
+<!--                    </span>-->
+<!--                    </div>-->
                 </div>
 
-                <!-- TODO: Style and rewire JS for delete/restore post-->
-                <div>
-                    <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-                        <span th:if="${!post.isDeleted()}">
-                            <input type="button" th:attr="data-post-id=${post.getId()}"
-                                   th:name="${'delete-button-post-id-' + post.getId()}"
-                                   th:disabled="${!post.isDeletableBy(loggedInUser)}"
-                                   class="delete-post-button"
-                                   th:value="#{Label.post.delete}">
-                            </span>
-                        <span th:if="${post.isDeleted()}">
-                            <input type="button" th:attr="data-post-id=${post.getId()}"
-                                   th:name="${'restore-button-post-id-' + post.getId()}"
-                                   th:disabled="${!post.isRestorableBy(loggedInUser)}"
-                                   class="restore-post-button"
-                                   th:value="#{Label.post.restore}">
-                        </span>
-                    </span>
-                </div>
+
 
                 <!-- TODO: Style content section-->
                 <div th:if="${!post.isDeleted()}" th:text="${post.getContent()}">
@@ -103,7 +129,7 @@
 
             </div>
         </div>
-        
+
         <div th:fragment="post-summary-fragment (post)">
             <div>
                 <span>
