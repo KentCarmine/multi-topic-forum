@@ -78,7 +78,6 @@
             </div>
 
             <!-- List of posts -->
-            <!-- TODO: Style below-->
             <!--TODO: Add Pagination?-->
             <div>
                 <div th:each="post : ${posts}" th:include="fragments/post-display.html :: post-fragment (${post})"></div>
@@ -95,7 +94,6 @@
                     </div>
 
                     <div class="form-group">
-<!--                        <label for="new-post-content" class="font-weight-bold">Content</label>-->
                         <textarea class="form-control" id="new-post-content" rows="10" th:field="*{content}"
                                   th:placeholder="#{Label.post.new.content.prompt.placeholder}">
                             Write your post here
@@ -104,7 +102,6 @@
 
                     <button type="submit" class="btn btn-primary btn-lg" th:text="#{Label.post.new.submit.buttonText}">Reply</button>
                 </form>
-
 
             </div>
 

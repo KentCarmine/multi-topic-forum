@@ -103,7 +103,7 @@ public class Bootstrap implements CommandLineRunner {
                 "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa " +
                 "qui officia deserunt mollit anim id est laborum.";
         for (int i = 0; i < 100; i++) {
-            Post post = new Post("Dynamic test content " + i + ". " + lorem, java.util.Date.from(Instant.now().plusSeconds(120 + i)));
+            Post post = new Post("Dynamic test content " + i + ". " + lorem, java.util.Date.from(Instant.now().minusSeconds(120 - i)));
             post.setUser(admin);
             post.setThread(forum2Thread1);
             postRepository.save(post);

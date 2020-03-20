@@ -94,9 +94,10 @@ public class PostController {
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);
 
-        postService.addNewPostToThread(postCreationDto, loggedInUser, thread);
+        Post newPost = postService.addNewPostToThread(postCreationDto, loggedInUser, thread);
+        String newPostId = "#post_id_" + newPost.getId();
 
-        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId);
+        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId + newPostId);
         return mv;
     }
 
