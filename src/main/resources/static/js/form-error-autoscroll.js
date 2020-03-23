@@ -13,5 +13,5 @@ function scrollTo(element) {
     let body = $("html,body");
 
     body.scrollTop(element.offset().top - body.offset().top + element.scrollTop());
-    console.log("### Scrolling done");
+    // console.log("### Scrolling done");
 }
