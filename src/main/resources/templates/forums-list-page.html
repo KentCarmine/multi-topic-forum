@@ -13,33 +13,75 @@
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
         <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
+
+        <script type="text/javascript" th:src="@{/js/form-error-autoscroll.js}"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
-        <div>
-            <span style="float: right">
-                <form th:action="@{/searchTopicForums}" th:object="${topicForumSearchDto}" method="post">
-                    <input th:field="*{searchText}" type="text" name="searchText" placeholder="Search" th:placeholder="#{Label.forum.search.placeholder}" value="">
-                    <button type="submit">Search</button>
-                </form>
-            </span>
-        </div>
-        <h2 th:text="#{Label.forum.listAll.header}">All Topic Forums</h2>
+        <main class="container-fluid h-100">
 
-        <div th:if="${param.searchError}">
-            <p style="color: red" th:text="#{Label.forum.search.error.invalidSearchTerms}">Invalid search terms.</p>
-        </div>
+            <!-- Header section -->
+            <div class="mt-1 ml-3">
+                <!-- Error section -->
+                <div th:if="${param.searchError}" class="container-sm text-center flash-prompt-container form-error-container">
+                    <div th:text="#{Label.forum.search.error.invalidSearchTerms}" class="alert alert-danger">
+                        Invalid search terms.
+                    </div>
+                </div>
 
-        <div th:if="${forums.isEmpty()}" th:text="#{Label.forums.list.none}">There are no Topic Forums!</div>
-        <div th:if="${!forums.isEmpty()}">
-            <table>
-                <tr>
-                    <th th:text="#{Label.forum.list.name.tableHeader}">Forum Name</th>
-                    <th th:text="#{Label.forum.list.description.tableHeader}">Description</th>
-                </tr>
-                <tr th:each="forum : ${forums}" th:include="fragments/forum-list-elements.html :: forum-list-element (${forum})"></tr> <!--TODO: Paginate?-->
-            </table>
-        </div>
+                <!-- Title and search box section -->
+                <div class="d-flex flex-wrap justify-content-between">
+
+                    <div>
+                        <h2 th:text="#{Label.forum.listAll.header}">All Topic Forums</h2>
+                    </div>
+
+                    <div class="col-12 col-md-3 p-0 mb-3">
+                        <form th:action="@{/searchTopicForums}" th:object="${topicForumSearchDto}" method="post">
+                            <input class="form-control" th:field="*{searchText}" type="text" name="searchText" placeholder="Search" th:placeholder="#{Label.forum.search.placeholder}" value="">
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header pr-0 pl-0">
+                            <div class="row no-gutters align-items-center w-100">
+
+                                <div class="col-2 font-weight-bold p-0 pl-3" style="min-width: fit-content" th:text="#{Label.forum.header}">Forum</div>
+                                <div class="d-none d-md-block col-10 text-muted">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-6 pl-3" th:text="#{Label.forum.description}">Description</div>
+                                        <div class="col-2 pl-2" th:text="#{Label.forum.threadCount}">Threads</div>
+                                        <div class="col-2" th:text="#{Label.forum.lastActivity}">Last Activity</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-0">
+                            <!-- No forums case -->
+                            <div th:if="${forums.isEmpty()}" class="row no-gutters align-items-center">
+                                <div class="text-center col">
+                                    <div th:text="#{Label.forums.list.none}" class="text-muted font-weight-bold">
+                                        There are no Topic Forums!
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Forums exist case -->
+                            <div th:if="${!forums.isEmpty()}">
+                                <div th:each="forum,iterStat : ${forums}"
+                                     th:include="fragments/forum-list-elements.html :: forum-list-element (${forum},${iterStat})"> <!--TODO: Paginate?-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </body>
 </html>

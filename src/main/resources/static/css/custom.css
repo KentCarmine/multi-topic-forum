@@ -169,3 +169,11 @@ body {
 .not-displayed {
     display: none;
 }
+
+.flex-truncate {
+    min-width: 0 !important
+}
+
+.d-block {
+    display: block !important
+}

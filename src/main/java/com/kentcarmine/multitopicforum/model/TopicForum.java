@@ -93,6 +93,22 @@ public class TopicForum {
         this.threads.add(thread);
     }
 
+    public int getNumThreads() {
+        return this.threads.size();
+    }
+
+    public boolean hasThreads() {
+        return !this.threads.isEmpty();
+    }
+
+    public Post getMostRecentPost() {
+        if (!hasThreads()) {
+            return null;
+        }
+
+        return this.threads.first().getLastPost();
+    }
+
     @Override
     public String toString() {
         return "TopicForum{" +
