@@ -21,6 +21,8 @@ public class TopicForumViewDto {
 //    @SortComparator(ThreadUpdateTimeComparator.class)
     private SortedSet<TopicThreadViewDto> threads;
 
+    private String updateTimeDifferenceMessage;
+
     public TopicForumViewDto() {
         this.threads = new TreeSet<>(new ThreadUpdateTimeComparator());
     }
@@ -60,12 +62,37 @@ public class TopicForumViewDto {
         this.threads.add(thread);
     }
 
+    public String getUpdateTimeDifferenceMessage() {
+        return updateTimeDifferenceMessage;
+    }
+
+    public void setUpdateTimeDifferenceMessage(String updateTimeDifferenceMessage) {
+        this.updateTimeDifferenceMessage = updateTimeDifferenceMessage;
+    }
+
+    public int getNumThreads() {
+        return this.threads.size();
+    }
+
+    public boolean hasThreads() {
+        return !this.threads.isEmpty();
+    }
+
+    public PostViewDto getMostRecentPost() {
+        if (!hasThreads()) {
+            return null;
+        }
+
+        return this.threads.first().getLastPost();
+    }
+
     @Override
     public String toString() {
         return "TopicForumViewDto{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", threads=" + threads +
+                ", updateTimeDifferenceMessage='" + updateTimeDifferenceMessage + '\'' +
                 '}';
     }
 }

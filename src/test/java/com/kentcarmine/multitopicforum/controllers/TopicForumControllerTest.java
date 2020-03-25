@@ -256,8 +256,8 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getAllForums();
-        verify(forumService, times(0)).searchTopicForums(anyString());
+        verify(forumService, times(1)).getAllForumsAsViewDtos();
+        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
     }
 
     @Test
@@ -279,8 +279,8 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(0)).getAllForums();
-        verify(forumService, times(1)).searchTopicForums(anyString());
+        verify(forumService, times(0)).getAllForumsAsViewDtos();
+        verify(forumService, times(1)).searchTopicForumsForViewDtos(anyString());
     }
 
     @Test
@@ -291,8 +291,8 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getAllForums();
-        verify(forumService, times(0)).searchTopicForums(anyString());
+        verify(forumService, times(1)).getAllForumsAsViewDtos();
+        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
     }
 
     @Test
@@ -303,8 +303,8 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getAllForums();
-        verify(forumService, times(0)).searchTopicForums(anyString());
+        verify(forumService, times(1)).getAllForumsAsViewDtos();
+        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
     }
 
 }

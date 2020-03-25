@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.dtos.PostViewDto;
+import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -79,6 +80,11 @@ public class TimeCalculatorServiceImpl implements TimeCalculatorService {
     @Override
     public String getTimeSinceThreadUpdatedMessage(TopicThreadViewDto threadViewDto) {
         return getTimeSincePostCreationMessage(threadViewDto.getLastPost());
+    }
+
+    @Override
+    public String getTimeSinceForumUpdatedMessage(TopicForumViewDto topicForumViewDto) {
+        return getTimeSinceThreadUpdatedMessage(topicForumViewDto.getThreads().first());
     }
 
     /**

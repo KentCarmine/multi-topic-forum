@@ -95,6 +95,30 @@ public class ForumServiceImpl implements ForumService {
     }
 
     /**
+     * Return a SortedSet of all forums as ForumViewDtos sorted in alphabetical order by name
+     *
+     * @return a SortedSet of all forums  as ForumViewDtos sorted in alphabetical order by name
+     */
+    @Override
+    public SortedSet<TopicForumViewDto> getAllForumsAsViewDtos() {
+        SortedSet<TopicForumViewDto> dtos = new TreeSet<>(new Comparator<TopicForumViewDto>() {
+            @Override
+            public int compare(TopicForumViewDto o1, TopicForumViewDto o2) {
+                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+            }
+        });
+
+        for (TopicForum forum : getAllForums()) {
+            TopicForumViewDto forumDto = forumHierarchyConverter.convertForum(forum);
+            String mostRecentUpdateMsg = timeCalculatorService.getTimeSinceForumUpdatedMessage(forumDto);
+            forumDto.setUpdateTimeDifferenceMessage(mostRecentUpdateMsg);
+            dtos.add(forumDto);
+        }
+
+        return dtos;
+    }
+
+    /**
      * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
      * double quotes and spaces, but not spaces within double quotes) of the given search text.
      *
@@ -131,6 +155,36 @@ public class ForumServiceImpl implements ForumService {
         }
 
         return forums;
+    }
+
+    /**
+     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
+     * double quotes and spaces, but not spaces within double quotes) of the given search text, then returns a SortedSet
+     * of TopicForumViewDtos representing those TopicForums
+     *
+     * @param searchText The text to search for
+     * @return the set of TopicForumViewDtos (ordered alphabetically by name) that match the search terms
+     * @throws UnsupportedEncodingException
+     */
+    @Override
+    public SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException {
+        SortedSet<TopicForum> forums = searchTopicForums(searchText);
+
+        SortedSet<TopicForumViewDto> forumDtos = new TreeSet<>(new Comparator<TopicForumViewDto>() {
+            @Override
+            public int compare(TopicForumViewDto o1, TopicForumViewDto o2) {
+                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+            }
+        });
+
+        for (TopicForum forum : forums) {
+            TopicForumViewDto dto = forumHierarchyConverter.convertForum(forum);
+            String mostRecentUpdateMsg = timeCalculatorService.getTimeSinceForumUpdatedMessage(dto);
+            dto.setUpdateTimeDifferenceMessage(mostRecentUpdateMsg);
+            forumDtos.add(dto);
+        }
+
+        return forumDtos;
     }
 
     @Override

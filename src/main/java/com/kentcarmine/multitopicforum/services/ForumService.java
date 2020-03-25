@@ -27,4 +27,9 @@ public interface ForumService {
     SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException;
 
     TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum);
+
+    SortedSet<TopicForumViewDto> getAllForumsAsViewDtos();
+
+    SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException;
+
 }

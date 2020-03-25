@@ -43,7 +43,7 @@
                                     Recently updated thread
                                 </a>
                                 <span class="text-muted small text-truncate">
-                                    <span>2d ago [PLACEHOLDER]</span> <!-- TODO: Update to use real value-->
+                                    <span th:text="${forum.getUpdateTimeDifferenceMessage()}">2d ago [PLACEHOLDER]</span>
                                     <span>&nbsp;·&nbsp;</span>
                                     <a href="#" class="text-muted"
                                        th:text="${forum.getMostRecentPost().getUser().getUsername()}"

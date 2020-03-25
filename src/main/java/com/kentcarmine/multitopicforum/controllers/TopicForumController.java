@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumSearchDto;
+import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -41,12 +42,12 @@ public class TopicForumController {
     @GetMapping("/forums")
     public String showForumsPage(ServletRequest request, Model model, @RequestParam(required = false) String search,
                                  @RequestParam(required = false) String searchError) throws UnsupportedEncodingException {
-        SortedSet<TopicForum> forums;
+        SortedSet<TopicForumViewDto> forums;
 
         if (search == null || search.equals("") || request.getParameterMap().containsKey("searchError")) {
-            forums = forumService.getAllForums();
+            forums = forumService.getAllForumsAsViewDtos();
         } else {
-            forums = forumService.searchTopicForums(search);
+            forums = forumService.searchTopicForumsForViewDtos(search);
         }
 
         model.addAttribute("forums", forums);
