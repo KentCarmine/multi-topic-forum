@@ -41,7 +41,7 @@
                 </div>
 
                 <article class="card-body mx-auto" style="max-width: 400px;">
-                    <h2 class="mb-3 font-weight-normal text-center card-title mt-1">Sign In</h2>
+                    <h2 class="mb-3 font-weight-normal text-center card-title mt-1" th:text="#{Label.login.signIn}">Sign In</h2>
 
                     <form th:action="@{/processLogin}" method="POST" class="form-login">
 
