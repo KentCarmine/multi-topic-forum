@@ -53,9 +53,11 @@
             <div class="mb-3">
                 <!-- Header section with Thread title prefixed by lock icon (if applicable) -->
                 <div class="row ml-2">
-                <span class="mr-2">
-                    <i th:if="${threadIsLocked}" class="fa fa-lock color-darkred" > </i>
-                </span>
+                    <span class="mr-2">
+                        <h5><a href="#"  th:text="${forumName}" th:href="@{'/forum/' + ${forumName}}"></a></h5>
+                    </span>
+                    <span class="mr-2"><h5 class="font-weight-bolder">></h5></span>
+                    <span th:if="${threadIsLocked}" class="mr-2"><i class="fa fa-lock color-darkred"></i></span>
                     <h5 th:text="${threadTitle}">Thread title</h5>
                 </div>
 
