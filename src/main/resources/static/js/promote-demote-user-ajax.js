@@ -49,7 +49,7 @@ function promoteUser(event) {
         username: username,
         promotableRank: promotableRank
     };
-    console.log(req);
+    // console.log(req);
 
     $.ajax({
         type: "POST",
@@ -59,12 +59,14 @@ function promoteUser(event) {
         cache: false,
         data: JSON.stringify(req)
     }).done(function (resp) {
-        console.log("### Resp:");
-        console.log(resp);
+        // console.log("### Resp:");
+        // console.log(resp);
 
         updateButtons(resp.newPromoteButtonUrl, resp.newDemoteButtonUrl)
         alert(resp.message);
     }).fail(function(xhr, status, e) {
+        // console.log("Failed!!!");
+        // console.log(xhr);
         if (xhr.status === 401 || xhr.status === 404) {
             alert(xhr.responseJSON.message);
         } else {
@@ -82,7 +84,7 @@ function demoteUser(event) {
         username: username,
         demotableRank: demotableRank
     };
-    console.log(req);
+    // console.log(req);
 
     $.ajax({
         type: "POST",
@@ -92,12 +94,14 @@ function demoteUser(event) {
         cache: false,
         data: JSON.stringify(req)
     }).done(function(resp){
-        console.log("### Resp:");
-        console.log(resp);
+        // console.log("### Resp:");
+        // console.log(resp);
 
         updateButtons(resp.newPromoteButtonUrl, resp.newDemoteButtonUrl)
         alert(resp.message);
     }).fail(function(xhr, status, e){
+        // console.log("Failed!!!");
+        // console.log(xhr);
         if (xhr.status === 401 || xhr.status === 404) {
             alert(xhr.responseJSON.message);
         } else {
@@ -107,14 +111,22 @@ function demoteUser(event) {
 }
 
 function updateButtons(promoteButtonUrl, demoteButtonUrl) {
-    $("#promote-user-button-container").load(promoteButtonUrl, function() {
+    // console.log("Updating Buttons");
+
+    $("#promote-user-button-container").load(promoteButtonUrl, function(responseText, responseStatus) {
+        // console.log("### Response text:")
+        // console.log(responseText)
+        // console.log("### Response status:")
+        // console.log(responseStatus)
+
         setClickListenersOnButtons();
     });
+
     $("#demote-user-button-container").load(demoteButtonUrl, function(responseText, responseStatus) {
-        console.log("### Response text:")
-        console.log(responseText)
-        console.log("### Response status:")
-        console.log(responseStatus)
+        // console.log("### Response text:")
+        // console.log(responseText)
+        // console.log("### Response status:")
+        // console.log(responseStatus)
 
         setClickListenersOnButtons();
     });

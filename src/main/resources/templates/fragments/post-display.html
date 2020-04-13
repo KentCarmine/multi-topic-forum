@@ -112,19 +112,30 @@
             </div>
         </div>
 
-        <!-- TODO: Update this-->
-        <div th:fragment="post-summary-fragment (post)">
-            <div>
-                <span>
-                    <a href="#" th:href="@{'/forum/' + ${post.getThread().getForum().getName()} + '/show/' + ${post.getThread().getId()} + '#post_id_' + ${post.getId()}}" th:text="${post.getThread().getTitle()}">Thread Title</a>
-                </span>
-                <span> @ </span>
-                <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
+
+        <div th:fragment="post-summary-fragment (post, iterStat)">
+            <div class="row no-gutters align-items-center mt-3 mb-3">
+
+                <!-- Post's thread title section-->
+                <div class="col-md-3 pl-2 text-ellipsis-overflow">
+                    <a href="#" class="text-large" th:href="@{'/forum/' + ${post.getThread().getForum().getName()} + '/show/' + ${post.getThread().getId()} + '#post_id_' + ${post.getId()}}"
+                       th:text="${post.getThread().getTitle()}">Thread Title</a>
+                </div>
+
+                <!-- Abbreviated post content section-->
+                <div class="col-md-7 pl-2 d-none d-md-block text-ellipsis-overflow" th:text="${post.getContent()}">
+                    Post content goes here
+                </div>
+
+                <div class="col-md-2 pl-2 pr-2 d-none d-md-block text-muted" th:text="${post.getDisplayablePostedAt()}">
+                    Posted at
+                </div>
+
             </div>
-            <div th:text="${post.getAbbreviatedContent()}"> <!--TODO: Restrict content length-->
-                Abbreviated Content
-            </div>
-            <hr>
+
+            <hr th:if="${!iterStat.last}">
+
         </div>
+
     </body>
 </html>

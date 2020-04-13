@@ -56,7 +56,7 @@ public class Bootstrap implements CommandLineRunner {
                 "description. Second forum for testing! This is a very long description.");
         topicForumRepository.save(testForum2);
 
-        TopicThread forum2Thread1 = new TopicThread("Thread1", testForum2);
+        TopicThread forum2Thread1 = new TopicThread("Thread1 this is a very long thread name, this is a very long thread name, this is a very long thread name, this is a very long thread name", testForum2);
         topicThreadRepository.save(forum2Thread1);
 
         TopicThread forum2Thread2 = new TopicThread("Thread 2", testForum2);

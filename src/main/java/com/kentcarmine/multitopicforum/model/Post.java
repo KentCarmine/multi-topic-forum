@@ -10,10 +10,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * Entity that models a single forum Post within a TopicThread.
@@ -266,5 +264,11 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
                 ", deletedAt=" + deletedAtStr +
                 ", deltedBy=" + deletedName +
                 '}';
+    }
+
+    public String getDisplayablePostedAt() {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm").withLocale(Locale.getDefault())
+                .withZone(ZoneId.systemDefault());
+        return dtf.format(postedAt.toInstant());
     }
 }

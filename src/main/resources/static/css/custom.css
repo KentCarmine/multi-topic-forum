@@ -177,3 +177,17 @@ body {
 .d-block {
     display: block !important
 }
+
+.text-ellipsis-overflow {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-banned-strikethough {
+    text-decoration: line-through;
+}
+
+.text-large {
+    font-size: large;
+}
