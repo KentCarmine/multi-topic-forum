@@ -3,10 +3,7 @@ package com.kentcarmine.multitopicforum.services;
 import com.kentcarmine.multitopicforum.converters.DisciplineToDisciplineViewDtoConverter;
 import com.kentcarmine.multitopicforum.converters.UserDtoToUserConverter;
 import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
-import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
-import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
-import com.kentcarmine.multitopicforum.dtos.UserDto;
-import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateEmailException;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateUsernameException;
@@ -81,6 +78,9 @@ class UserServiceTest {
     @Mock
     MessageService messageService;
 
+    @Mock
+    TimeCalculatorService timeCalculatorService;
+
     private UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
 
     private User testUser;
@@ -96,7 +96,7 @@ class UserServiceTest {
         userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
         userService = new UserServiceImpl(userRepository, authenticationService, authorityRepository,
-                userToUserRankAdjustmentDtoConverter, messageService);
+                userToUserRankAdjustmentDtoConverter, messageService, timeCalculatorService);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -176,74 +176,153 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByUsername(anyString());
     }
 
+//    @Test
+//    void searchForUsers_multipleResults() throws Exception {
+//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
+//
+//        SortedSet<User> results = userService.searchForUsers("user");
+//
+//        assertEquals(2, results.size());
+//        assertEquals(testUser, results.first());
+//        assertEquals(testUser2, results.last());
+//
+//        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+//    }
+
     @Test
     void searchForUsers_multipleResults() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
+        when(timeCalculatorService.getTimeSinceUserLastActiveMessage(any())).thenReturn("1 hour ago");
 
-        SortedSet<User> results = userService.searchForUsers("user");
+        SortedSet<UserSearchResultDto> results = userService.searchForUsers("user");
+
 
         assertEquals(2, results.size());
-        assertEquals(testUser, results.first());
-        assertEquals(testUser2, results.last());
+        assertEquals(testUser.getUsername(), results.first().getUsername());
+        assertEquals(testUser2.getUsername(), results.last().getUsername());
 
         verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+        verify(timeCalculatorService, times(2)).getTimeSinceUserLastActiveMessage(any());
     }
+
+//    @Test
+//    void searchForUsers_noResults() throws Exception {
+//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
+//
+//        SortedSet<User> results = userService.searchForUsers("0-qht0g-24nhg");
+//
+//        assertEquals(0, results.size());
+//
+//        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+//    }
 
     @Test
     void searchForUsers_noResults() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
 
-        SortedSet<User> results = userService.searchForUsers("0-qht0g-24nhg");
+        SortedSet<UserSearchResultDto> results = userService.searchForUsers("0-qht0g-24nhg");
 
         assertEquals(0, results.size());
 
         verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+        verify(timeCalculatorService, times(0)).getTimeSinceUserLastActiveMessage(any());
     }
+
+//    @Test
+//    void searchForUsers_emptySearchText() throws Exception {
+//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
+//
+//        SortedSet<User> results = userService.searchForUsers("");
+//
+//        assertEquals(0, results.size());
+//
+//        verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
+//    }
 
     @Test
     void searchForUsers_emptySearchText() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
 
-        SortedSet<User> results = userService.searchForUsers("");
+        SortedSet<UserSearchResultDto> results = userService.searchForUsers("");
 
         assertEquals(0, results.size());
 
         verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
+        verify(timeCalculatorService, times(0)).getTimeSinceUserLastActiveMessage(any());
     }
+
+//    @Test
+//    void searchForUsernames_multipleResults() throws Exception {
+//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
+//
+//        SortedSet<String> results = userService.searchForUsernames("user");
+//
+//        assertEquals(2, results.size());
+//        assertEquals(testUser.getUsername(), results.first());
+//        assertEquals(testUser2.getUsername(), results.last());
+//
+//        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+//    }
 
     @Test
     void searchForUsernames_multipleResults() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
+        when(timeCalculatorService.getTimeSinceUserLastActiveMessage(any())).thenReturn("1 hour ago");
 
-        SortedSet<String> results = userService.searchForUsernames("user");
+        SortedSet<UserSearchResultDto> results = userService.searchForUsernames("user");
 
         assertEquals(2, results.size());
-        assertEquals(testUser.getUsername(), results.first());
-        assertEquals(testUser2.getUsername(), results.last());
+        assertEquals(testUser.getUsername(), results.first().getUsername());
+        assertEquals(testUser2.getUsername(), results.last().getUsername());
 
         verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+        verify(timeCalculatorService, times(2)).getTimeSinceUserLastActiveMessage(any());
     }
+
+//    @Test
+//    void searchForUsernames_noResults() throws Exception {
+//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
+//
+//        SortedSet<String> results = userService.searchForUsernames("naofg9-03t");
+//
+//        assertEquals(0, results.size());
+//
+//        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+//    }
 
     @Test
     void searchForUsernames_noResults() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
 
-        SortedSet<String> results = userService.searchForUsernames("naofg9-03t");
+        SortedSet<UserSearchResultDto> results = userService.searchForUsernames("naofg9-03t");
 
         assertEquals(0, results.size());
 
         verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
+        verify(timeCalculatorService, times(0)).getTimeSinceUserLastActiveMessage(any());
     }
+
+//    @Test
+//    void searchForUsernames_emptySearchText() throws Exception {
+//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
+//
+//        SortedSet<String> results = userService.searchForUsernames("");
+//
+//        assertEquals(0, results.size());
+//
+//        verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
+//    }
 
     @Test
     void searchForUsernames_emptySearchText() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
 
-        SortedSet<String> results = userService.searchForUsernames("");
+        SortedSet<UserSearchResultDto> results = userService.searchForUsernames("");
 
         assertEquals(0, results.size());
 
         verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
+        verify(timeCalculatorService, times(0)).getTimeSinceUserLastActiveMessage(any());
     }
 
     @Test

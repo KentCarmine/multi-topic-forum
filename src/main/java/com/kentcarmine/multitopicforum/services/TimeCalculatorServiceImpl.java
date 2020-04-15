@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.services;
 import com.kentcarmine.multitopicforum.dtos.PostViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,42 @@ public class TimeCalculatorServiceImpl implements TimeCalculatorService {
         this.weekStr = messageService.getMessage("Label.week");
         this.monthStr = messageService.getMessage("Label.month");
         this.yearStr = messageService.getMessage("Label.year");
+    }
+
+    /**
+     * Get a message in human-readable form defining the amount of time (in largest applicable units) since the given
+     * user was active.
+     *
+     * @param user the User to check for latest update time
+     * @return a message in human-readable form defining the amount of time (in largest applicable units) since the
+     * given user was active.
+     */
+    @Override
+    public String getTimeSinceUserLastActiveMessage(User user) {
+        Date lastActive = user.getMostRecentActivityDate();
+
+        if (lastActive == null) {
+            return messageService.getMessage("User.lastActiveAt.never");
+        }
+
+        final String[] timeMeasurements = getTimeMeasurements();
+
+        final long[] elapsedList = getElapsedTimeSinceDateAsUnitsList(lastActive);
+
+        for (int i = timeMeasurements.length - 1; i >= 0; i--) {
+            String unit = timeMeasurements[i];
+            long elapsed = elapsedList[i];
+
+            if (elapsed > 0) {
+                if (elapsed == 1) {
+                    return messageService.getMessage("User.lastActiveAt.singular", elapsed, unit);
+                } else {
+                    return messageService.getMessage("User.lastActiveAt.plural", elapsed, unit);
+                }
+            }
+        }
+
+        return messageService.getMessage("User.lastActiveAt.never");
     }
 
     /**

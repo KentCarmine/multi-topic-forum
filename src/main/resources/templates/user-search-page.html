@@ -2,39 +2,82 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title th:text="#{Label.user.search.header.title}">Multi-Topic Forum | Search Users</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
-        <h2 th:text="#{Label.user.search.header}">Search For Users</h2>
-        <form th:action="@{/processSearchUsers}" th:object="${userSearchDto}" method="post">
-            <label th:text="#{Label.user.search.searchUsers}">Search Users</label>
-            <br>
-            <input type="text" th:field="*{searchText}" name="searchText" placeholder="Search"
-                   th:placeholder="#{Label.user.search.searchUsers.placeholder}">
-            <button type="submit" th:text="#{Label.user.search.submit.buttonText}">Search</button>
-        </form>
+        <main class="container-sm h-100">
+            <!-- Header section -->
+            <div class="mt-1 ml-3">
+                <!-- Error section -->
+                <div th:if="${param.searchError}" class="container-sm text-center flash-prompt-container form-error-container">
+                    <div th:text="#{Label.user.search.error.invalidSearchTerms}" class="alert alert-danger">
+                        Invalid search terms.
+                    </div>
+                </div>
 
+                <!-- Title and search box section -->
+                <div class="d-flex flex-wrap justify-content-between mb-3">
+                    <div>
+                        <h2 th:text="#{Label.user.search.header}">Search for Users</h2>
+                    </div>
 
-        <div th:if="${param.searchError}">
-            <hr>
-            <p style="color: red" th:text="#{Label.user.search.error.invalidSearchTerms}">Invalid search terms.</p>
-        </div>
-
-        <div th:if="${param.search}">
-            <hr>
-            <div th:if="${usernames.isEmpty()}">
-                <p th:text="#{Label.user.search.noResults}">No matching users found.</p>
+                    <div class="col-12 col-md-4 p-0 align-self-center">
+                        <form th:action="@{/processSearchUsers}" th:object="${userSearchDto}" method="post">
+                            <input class="form-control" th:field="*{searchText}" type="text" name="searchText" placeholder="Search" th:placeholder="#{Label.user.search.searchUsers.placeholder}">
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div th:if="${!usernames.isEmpty()}">
-                <ol>
-                    <li th:each="username : ${usernames}">
-                        <a th:href="@{'/users/' + ${username}}" href="#" th:text="${username}"></a>
-                    </li>
-                </ol>
-            </div>
-        </div>
 
+            <!-- Search results section-->
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="card">
+                        <!-- Results header -->
+                        <div class="card-header pr-0 pl-0">
+                            <div class="row no-gutters align-items-center w-100">
+                                <div class="col-12 text-muted">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-md-6 pl-3 text-large" th:text="#{Label.user.search.table.username.header}">User</div>
+                                        <div class="col-md-6 pl-2 pr-2 d-none d-md-block text-large" th:text="#{Label.user.search.table.lastActive.header}">Last Active</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search results list body-->
+                        <div th:if="${userSearchResults != null}" class="card-body p-0">
+                            <!-- No results case-->
+                            <div th:if="${userSearchResults.isEmpty()}" class="row no-gutters align-items-center">
+                                <div class="text-center col">
+                                    <div th:text="#{Label.user.search.noResults(${search})}" class="text-muted font-weight-bold pt-2 pb-2">
+                                        No matching users found.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- With results case-->
+                            <div th:if="${!userSearchResults.isEmpty()}">
+                                <div th:each="userSearchResult,iterStat : ${userSearchResults}"
+                                     th:include="fragments/user-search-result.html :: user-search-result-fragment (${userSearchResult},${iterStat})">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </body>
 </html>

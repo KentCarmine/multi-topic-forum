@@ -10,10 +10,7 @@ import org.hibernate.annotations.SortNatural;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -333,6 +330,18 @@ public class User {
         }
 
         return mostSevere;
+    }
+
+    /**
+    * Gets the Date of the most recent activity (ie. posting) by this user.
+    */
+    public Date getMostRecentActivityDate() {
+        if (posts.isEmpty()) {
+            return null;
+        }
+
+        Post latestPost = posts.first();
+        return latestPost.getPostedAt();
     }
 
     @Override

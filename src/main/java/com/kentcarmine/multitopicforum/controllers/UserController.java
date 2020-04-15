@@ -71,8 +71,10 @@ public class UserController {
             throws UnsupportedEncodingException {
 
         if (request.getParameterMap().containsKey("search")) {
-            SortedSet<String> usernames = userService.searchForUsernames(search);
-            model.addAttribute("usernames", usernames);
+//            SortedSet<String> usernames = userService.searchForUsernames(search);
+//            model.addAttribute("usernames", usernames);
+            model.addAttribute("search", search);
+            model.addAttribute("userSearchResults", userService.searchForUsernames(search));
         }
 
         model.addAttribute("userSearchDto", new UserSearchDto());

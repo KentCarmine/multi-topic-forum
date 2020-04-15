@@ -42,7 +42,8 @@
                 <div class="d-flex flex-wrap justify-content-between">
                     <!-- Title section-->
                     <div class="col-auto pl-0">
-                        <h2 th:text="#{Label.user.page.header(${user.username})}" th:classappend="${user.isBanned()} ? 'user-banned-strikethough'"></h2>
+<!--                        <h2 th:text="#{Label.user.page.header(${user.username})}" th:classappend="${user.isBanned()} ? 'user-banned-strikethough'"></h2>-->
+                        <h2 th:text="#{Label.user.page.header(${user.username})}"></h2>
                     </div>
 
                     <!-- Admin section-->
