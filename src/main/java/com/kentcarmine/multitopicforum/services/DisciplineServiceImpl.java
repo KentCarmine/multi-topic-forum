@@ -199,6 +199,19 @@ public class DisciplineServiceImpl implements DisciplineService {
         return msg;
     }
 
+    @Override
+    public String getLoggedInUserBannedInformationHeader(Discipline greatestDurationActiveDiscipline) {
+        String msg;
+
+        if (greatestDurationActiveDiscipline.isBan()) {
+            msg = messageService.getMessage("Discipline.ban.header");
+        } else {
+            msg = messageService.getMessage("Discipline.suspension.header");
+        }
+
+        return msg;
+    }
+
     /**
      * Helper method that converts a Set of Disciplines into a SortedSet of DisciplineViewDtos sorted by duration.
      *

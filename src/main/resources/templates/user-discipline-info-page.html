@@ -2,11 +2,31 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title th:text="#{Label.discipline.userDisciplined.header.title}">User Disciplined</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
-        <h4 th:text="${message}" style="color: red">BANNED PLACEHOLDER MESSAGE</h4>
+        <main class="container h-100">
+            <div class="card align-middle align-items-center text-center pb-2 border-danger">
+
+
+                <h3 class="mb-3 text-center card-title mt-1 text-danger font-weight-bold text-uppercase"
+                    th:text="${header}">Disciplined
+                </h3>
+
+                <hr class="w-100 mt-0">
+
+                <div class="font-weight-bold font-italic" th:text="${message}">
+                    Message goes here
+                </div>
+            </div>
+        </main>
     </body>
 </html>
