@@ -173,27 +173,6 @@ class UserControllerTest {
         verify(userService, times(0)).searchForUsernames(anyString());
     }
 
-//    @Test
-//    void showUsersListPage_validSearch() throws Exception {
-//        String searchText = "user";
-//        String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
-//
-//        SortedSet<String> usernamesResult = new TreeSet<>((o1, o2) -> o1.toLowerCase().compareTo(o2.toLowerCase()));
-//        usernamesResult.add(testUser.getUsername());
-//        usernamesResult.add(testUser2.getUsername());
-//
-//        when(userService.searchForUsernames(anyString())).thenReturn(usernamesResult);
-//
-//        mockMvc.perform(get("/users?search=" + urlSafeSearchText))
-//                .andExpect(status().isOk())
-//                .andExpect(view().name("user-search-page"))
-//                .andExpect(model().attributeExists("userSearchDto"))
-//                .andExpect(model().attributeExists("usernames"))
-//                .andExpect(model().attribute("usernames", IsCollectionWithSize.hasSize(usernamesResult.size())));
-//
-//        verify(userService, times(1)).searchForUsernames(anyString());
-//    }
-
     @Test
     void showUsersListPage_validSearch() throws Exception {
         String searchText = "user";

@@ -24,7 +24,6 @@
                         <a class="text-big" data-abc="true" th:text="${thread.getTitle()}" th:href="@{'/forum/' + ${thread.getForum().getName()} + '/show/' + ${thread.getId()}}">Thread Title</a>
 
                         <div class="text-muted small mt-1">
-<!--                            <span th:text="${thread.getTimeSinceCreation()}">Creation time difference</span>-->
                             <span th:text="${thread.getCreationTimeDifferenceMessage()}">Creation time difference</span>
                             <span>&nbsp;·&nbsp;</span>
                             <a class="text-muted" data-abc="true" th:text="${thread.getFirstPost().getUser().getUsername()}" th:href="@{'/users/' + ${thread.getFirstPost().getUser().getUsername()}}">Original Poster</a>
@@ -43,7 +42,6 @@
                             <div class="col-8 align-items-center">
                                 <div class="flex-truncate ml-2">
                                     <!-- Recent Activity : When -->
-<!--                                    <div class="line-height-1 text-truncate" th:text="${thread.getTimeSinceMostRecentPost()}">-->
                                     <div class="line-height-1 text-truncate" th:text="${thread.getUpdateTimeDifferenceMessage()}">
                                         most recent update time elapsed
                                     </div>

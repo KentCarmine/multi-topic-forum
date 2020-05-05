@@ -181,13 +181,11 @@ class TopicThreadServiceTest {
 
         final String searchStr = "test";
 
-//        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
         SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
 
         assertEquals(1, results.size());
         assertEquals(testTopicThread.getTitle(), results.first().getTitle());
 
-//        verify(topicForumRepository, times(0)).findByName(anyString());
         verify(topicThreadRepository, times(1))
                 .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
     }
@@ -200,13 +198,10 @@ class TopicThreadServiceTest {
 
         final String searchStr = "test";
 
-//        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
         SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
-
 
         assertEquals(0, results.size());
 
-//        verify(topicForumRepository, times(0)).findByName(anyString());
         verify(topicThreadRepository, times(1))
                 .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
     }
@@ -217,7 +212,6 @@ class TopicThreadServiceTest {
 
         final String searchStr = "";
 
-//        SortedSet<TopicThread> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
         SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
 
         assertEquals(1, results.size());

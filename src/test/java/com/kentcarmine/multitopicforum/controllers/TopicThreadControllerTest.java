@@ -171,14 +171,6 @@ class TopicThreadControllerTest {
         final String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
         final String url = "/searchForumThreads/" + testTopicForum.getName() + "?search=" + urlSafeSearchText;
 
-//        SortedSet<TopicThread> threadsResults = new TreeSet<>(new Comparator<TopicThread>() {
-//            @Override
-//            public int compare(TopicThread o1, TopicThread o2) {
-//                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt());
-//            }
-//        });
-//        threadsResults.add(testTopicForumThread);
-
         SortedSet<TopicThreadViewDto> threadViewDtoResults = new TreeSet<>(new Comparator<TopicThreadViewDto>() {
             @Override
             public int compare(TopicThreadViewDto o1, TopicThreadViewDto o2) {
@@ -221,13 +213,6 @@ class TopicThreadControllerTest {
         final String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
         final String url = "/searchForumThreads/" + testTopicForum.getName() + "?search=" + urlSafeSearchText;
 
-//        SortedSet<TopicThread> threadsResults  = new TreeSet<>(new Comparator<TopicThread>() {
-//            @Override
-//            public int compare(TopicThread o1, TopicThread o2) {
-//                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt());
-//            }
-//        });
-//        threadsResults.add(testTopicForumThread);
         SortedSet<TopicThreadViewDto> threadViewDtoResults = new TreeSet<>(new Comparator<TopicThreadViewDto>() {
             @Override
             public int compare(TopicThreadViewDto o1, TopicThreadViewDto o2) {
@@ -586,7 +571,6 @@ class TopicThreadControllerTest {
         when(topicThreadService.getThreadById(anyLong())).thenReturn(testTopicForumThread);
 
         mockMvc.perform(post("/unlockTopicThread/1"))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testModerator.getUsername()));
 

@@ -176,19 +176,6 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByUsername(anyString());
     }
 
-//    @Test
-//    void searchForUsers_multipleResults() throws Exception {
-//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
-//
-//        SortedSet<User> results = userService.searchForUsers("user");
-//
-//        assertEquals(2, results.size());
-//        assertEquals(testUser, results.first());
-//        assertEquals(testUser2, results.last());
-//
-//        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
-//    }
-
     @Test
     void searchForUsers_multipleResults() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
@@ -205,17 +192,6 @@ class UserServiceTest {
         verify(timeCalculatorService, times(2)).getTimeSinceUserLastActiveMessage(any());
     }
 
-//    @Test
-//    void searchForUsers_noResults() throws Exception {
-//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
-//
-//        SortedSet<User> results = userService.searchForUsers("0-qht0g-24nhg");
-//
-//        assertEquals(0, results.size());
-//
-//        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
-//    }
-
     @Test
     void searchForUsers_noResults() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
@@ -228,17 +204,6 @@ class UserServiceTest {
         verify(timeCalculatorService, times(0)).getTimeSinceUserLastActiveMessage(any());
     }
 
-//    @Test
-//    void searchForUsers_emptySearchText() throws Exception {
-//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
-//
-//        SortedSet<User> results = userService.searchForUsers("");
-//
-//        assertEquals(0, results.size());
-//
-//        verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
-//    }
-
     @Test
     void searchForUsers_emptySearchText() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
@@ -250,19 +215,6 @@ class UserServiceTest {
         verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
         verify(timeCalculatorService, times(0)).getTimeSinceUserLastActiveMessage(any());
     }
-
-//    @Test
-//    void searchForUsernames_multipleResults() throws Exception {
-//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of(testUser, testUser2));
-//
-//        SortedSet<String> results = userService.searchForUsernames("user");
-//
-//        assertEquals(2, results.size());
-//        assertEquals(testUser.getUsername(), results.first());
-//        assertEquals(testUser2.getUsername(), results.last());
-//
-//        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
-//    }
 
     @Test
     void searchForUsernames_multipleResults() throws Exception {
@@ -279,17 +231,6 @@ class UserServiceTest {
         verify(timeCalculatorService, times(2)).getTimeSinceUserLastActiveMessage(any());
     }
 
-//    @Test
-//    void searchForUsernames_noResults() throws Exception {
-//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
-//
-//        SortedSet<String> results = userService.searchForUsernames("naofg9-03t");
-//
-//        assertEquals(0, results.size());
-//
-//        verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
-//    }
-
     @Test
     void searchForUsernames_noResults() throws Exception {
         when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
@@ -301,17 +242,6 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByUsernameLikeIgnoreCase(anyString());
         verify(timeCalculatorService, times(0)).getTimeSinceUserLastActiveMessage(any());
     }
-
-//    @Test
-//    void searchForUsernames_emptySearchText() throws Exception {
-//        when(userRepository.findByUsernameLikeIgnoreCase(anyString())).thenReturn(List.of());
-//
-//        SortedSet<String> results = userService.searchForUsernames("");
-//
-//        assertEquals(0, results.size());
-//
-//        verify(userRepository, times(0)).findByUsernameLikeIgnoreCase(anyString());
-//    }
 
     @Test
     void searchForUsernames_emptySearchText() throws Exception {
