@@ -15,8 +15,8 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     </head>
     <body>
-<!--        <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e1f2fe" th:fragment="navbar">-->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light" th:fragment="navbar">
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-2" th:fragment="navbar">
             <a class="navbar-brand" th:href="@{/}">
                 <img th:src="@{/images/brand-icon.png}" width="48" height="48">
             </a>
@@ -26,7 +26,7 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbar-item-container">
-                <ul class="navbar-nav mr-auto">
+                <ul class="navbar-nav mr-auto pl-1 pr-1 navbar-dropdown">
                     <li class="nav-item">
                         <a class="nav-link font-weight-bold" th:href="@{/forums}" href="#" th:text="#{Label.allForums}">All Forums</a>
                     </li>
@@ -36,7 +36,7 @@
                     </li>
 
                     <li sec:authorize="isAuthenticated()" th:if="${#request.requestURI != '/users/' + #authentication.getName()}" class="nav-item">
-                       <a class="nav-link font-weight-bold" th:href="@{'/users/'+${#authentication.getName()}}" href="#" th:text="#{Label.userHome}">User home</a>
+                        <a class="nav-link font-weight-bold" th:href="@{'/users/'+${#authentication.getName()}}" href="#" th:text="#{Label.userHome}">User home</a>
                     </li>
 
                     <li th:if="${#authentication == null || #authorization.expression('hasRole(''ROLE_ANONYMOUS'')')}" class="nav-item">
@@ -50,11 +50,54 @@
                         <a class="nav-link font-weight-bold" href="#" th:href="@{/registerUser}" th:text="#{Label.register}">Register</a>
                     </li>
 
-                    <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" class="nav-item">
+                    <li sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" class="nav-item">
                         <a class="nav-link font-weight-bold" href="#", th:href="@{/administration}" th:text="#{Label.administration}">Administration</a>
-                    </span>
+                    </li>
                 </ul>
             </div>
         </nav>
+
+<!--        <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e1f2fe" th:fragment="navbar">-->
+<!--        <nav class="navbar navbar-expand-lg navbar-light bg-light " th:fragment="navbar">-->
+<!--            <a class="navbar-brand" th:href="@{/}">-->
+<!--                <img th:src="@{/images/brand-icon.png}" width="48" height="48">-->
+<!--            </a>-->
+
+<!--            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-item-container" aria-controls="navbar-item-container" aria-expanded="false" aria-label="Toggle navigation">-->
+<!--                <span class="navbar-toggler-icon"></span>-->
+<!--            </button>-->
+
+<!--            <div class="collapse navbar-collapse" id="navbar-item-container">-->
+<!--                <ul class="navbar-nav mr-auto pl-1 pr-1 navbar-dropdown">-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link font-weight-bold" th:href="@{/forums}" href="#" th:text="#{Label.allForums}">All Forums</a>-->
+<!--                    </li>-->
+
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link font-weight-bold" th:href="@{/users}" href="#" th:text="#{Label.searchUsers}">Search Users</a>-->
+<!--                    </li>-->
+
+<!--                    <li sec:authorize="isAuthenticated()" th:if="${#request.requestURI != '/users/' + #authentication.getName()}" class="nav-item">-->
+<!--                       <a class="nav-link font-weight-bold" th:href="@{'/users/'+${#authentication.getName()}}" href="#" th:text="#{Label.userHome}">User home</a>-->
+<!--                    </li>-->
+
+<!--                    <li th:if="${#authentication == null || #authorization.expression('hasRole(''ROLE_ANONYMOUS'')')}" class="nav-item">-->
+<!--                        <a class="nav-link font-weight-bold" href="#" th:href="@{/login}"th:text="#{Label.login}">Login</a>-->
+<!--                    </li>-->
+<!--                    <li sec:authorize="isAuthenticated()" class="nav-item">-->
+<!--                        <a class="nav-link font-weight-bold" href="#" th:href="@{/logout}" th:text="#{Label.logout}">Logout</a>-->
+<!--                    </li>-->
+
+<!--                    <li th:if="${#authentication == null || #authorization.expression('hasRole(''ROLE_ANONYMOUS'')')}" class="nav-item">-->
+<!--                        <a class="nav-link font-weight-bold" href="#" th:href="@{/registerUser}" th:text="#{Label.register}">Register</a>-->
+<!--                    </li>-->
+
+<!--                    <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" class="nav-item">-->
+<!--                        <a class="nav-link font-weight-bold" href="#", th:href="@{/administration}" th:text="#{Label.administration}">Administration</a>-->
+<!--                    </span>-->
+<!--                </ul>-->
+<!--            </div>-->
+<!--        </nav>-->
+
     </body>
 </html>
