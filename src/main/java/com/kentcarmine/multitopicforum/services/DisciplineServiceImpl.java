@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 
@@ -130,19 +131,17 @@ public class DisciplineServiceImpl implements DisciplineService {
         Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
             @Override
             public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
-                if (o1.isBan() && o2.isBan()) {
-                    return 0;
-                } else if (o1.isBan()) {
-                    return 1;
-                } else if (o2.isBan()) {
-                    return -1;
-                } else {
-                    return o1.getDisciplinedUntil().compareTo(o2.getDisciplinedUntil());
+                if (o1.getDisciplinedAt().equals(o2.getDisciplinedAt())) {
+                    return o1.getId().compareTo(o2.getId()); // Prevent set exclusion due to identical discipline times
                 }
+                return o1.getDisciplinedAt().compareTo(o2.getDisciplinedAt());
             }
         };
 
-        return getSortedDisciplineViewDtos(user.getInactiveDisciplines(), comparator, null);
+        comparator = comparator.reversed();
+
+        SortedSet<DisciplineViewDto> dtoSet = getSortedDisciplineViewDtos(user.getInactiveDisciplines(), comparator, null);
+        return dtoSet;
     }
 
     /**
@@ -226,6 +225,10 @@ public class DisciplineServiceImpl implements DisciplineService {
 
             dto.setCanRescind(loggedInUser != null && (loggedInUser.equals(d.getDiscipliningUser())
                     || loggedInUser.isHigherAuthority(d.getDiscipliningUser())));
+
+            if (d.isBan()) {
+                dto.setDisciplinedUntilString(messageService.getMessage("Discipline.disciplinedUntil.ban"));
+            }
 
             dtoSet.add(dto);
         }

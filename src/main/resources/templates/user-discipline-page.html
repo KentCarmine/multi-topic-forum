@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -29,7 +28,7 @@
             </div>
 
             <!-- Create discipline section -->
-            <div id="create-new-discipline-container" class="card bg-light align-items-center text-center mb-3">
+            <div id="create-new-discipline-container" class="card bg-light align-items-center text-center mb-4">
                 <article class="card-body w-50 pt-2">
                     <h4 class="mb-3 text-center card-title"
                         th:text="#{Label.discipline.create.header(${userDisciplineSubmissionDto.getDisciplinedUsername()})}">Ban or Suspend User</h4>
@@ -46,12 +45,12 @@
 
                         <div class="mb-2">
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-secondary active">
+                                <label class="btn btn-info active">
                                     <input type="radio" id="suspension-radio-button" name="disciplineType" th:field="*{disciplineType}" th:value="#{Label.discipline.create.suspension}" th:text="#{Label.discipline.create.suspension}">
                                 </label>
 
-                                <label class="btn btn-secondary">
-                                    <input class="btn btn-secondary" type="radio" id="ban-radio-button" name="disciplineType" th:field="*{disciplineType}" th:value="#{Label.discipline.create.ban}" th:text="#{Label.discipline.create.ban}">
+                                <label class="btn btn-info">
+                                    <input type="radio" id="ban-radio-button" name="disciplineType" th:field="*{disciplineType}" th:value="#{Label.discipline.create.ban}" th:text="#{Label.discipline.create.ban}">
                                 </label>
                             </div>
 
@@ -75,145 +74,49 @@
                 </article>
             </div>
 
-            <div id="active-discipline-container">
-                <h3 th:text="#{Label.discipline.user.currentDisciplines}">Current Bans and Suspensions</h3>
+            <div id="active-discipline-container" class="mb-4">
+                <h4 th:text="#{Label.discipline.user.currentDisciplines}">Current Bans and Suspensions</h4>
 
-                <div th:if="${!activeDisciplines.isEmpty()}">
-                    <table style="border-collapse: separate; border-spacing: 12px 6px; border: 1px solid black;">
+                <table class="table table-striped">
+                    <thead class="thead-light">
                         <tr>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.type}">Type</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.disciplinedBy}">Disciplined By</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.disciplinedAt}">Disciplined At</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.disciplinedUntil}">Disciplined Until</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.duration}">Duration</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.reason}">Reason</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.rescind}">Rescind</th>
+                            <th scope="col" th:text="#{Label.discipline.active.user.type}">Type</th>
+                            <th scope="col" th:text="#{Label.discipline.active.user.disciplinedBy}">Disciplined By</th>
+                            <th scope="col" th:text="#{Label.discipline.active.user.disciplinedAt}">Disciplined At</th>
+                            <th scope="col" th:text="#{Label.discipline.active.user.disciplinedUntil}">Disciplined Until</th>
+                            <th scope="col" th:text="#{Label.discipline.active.user.duration.withHours}">Duration</th>
+                            <th scope="col" th:text="#{Label.discipline.active.user.reason}">Reason</th>
+                            <th scope="col" th:text="#{Label.discipline.active.user.rescind}">Rescind</th>
                         </tr>
-
-                        <tr th:each="discipline : ${activeDisciplines}" th:include="fragments/discipline-list-elements.html :: disicpline-active-list-element (${discipline})"></tr>
-
-                    </table>
-                </div>
-
-                <div th:if="${activeDisciplines.isEmpty()}">
-                    <p th:text="#{Label.discipline.active.user.none}">None</p>
-                </div>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${!activeDisciplines.isEmpty()}" th:each="discipline : ${activeDisciplines}"
+                            th:include="fragments/discipline-list-elements.html :: disicpline-active-list-element (${discipline})">
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-
-            <hr>
 
             <div id="past-discipline-container">
-                <h3 th:text="#{Label.discipline.user.previousDisciplines}">Previous Bans and Suspensions</h3>
+                <h4 th:text="#{Label.discipline.user.previousDisciplines}">Previous Bans and Suspensions</h4>
 
-                <div th:if="${!inactiveDisciplines.isEmpty()}">
-                    <table style="border-collapse: separate; border-spacing: 12px 6px; border: 1px solid black;">
+                <table class="table table-striped">
+                    <thead class="thead-light">
                         <tr>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.type}">Type</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.disciplinedBy}">Disciplined By</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.disciplinedAt}">Disciplined At</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.disciplinedUntil}">Disciplined Until</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.duration}">Duration</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.reason}">Reason</th>
-                            <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.wasRescinded}">Was Rescinded?</th>
+                            <th scope="col" th:text="#{Label.discipline.inactive.user.type}">Type</th>
+                            <th scope="col" th:text="#{Label.discipline.inactive.user.disciplinedBy}">Disciplined By</th>
+                            <th scope="col" th:text="#{Label.discipline.inactive.user.disciplinedAt}">Disciplined At</th>
+                            <th scope="col" th:text="#{Label.discipline.inactive.user.disciplinedUntil}">Disciplined Until</th>
+                            <th scope="col" th:text="#{Label.discipline.inactive.user.duration.withHours}">Duration</th>
+                            <th scope="col" th:text="#{Label.discipline.inactive.user.reason}">Reason</th>
+                            <th scope="col" th:text="#{Label.discipline.inactive.user.wasRescinded}">Was Rescinded?</th>
                         </tr>
+                    </thead>
 
-                        <tr th:each="discipline : ${inactiveDisciplines}" th:include="fragments/discipline-list-elements.html :: disicpline-inactive-list-element (${discipline})"></tr>
-
-                    </table>
-                </div>
-
-                <div th:if="${inactiveDisciplines.isEmpty()}">
-                    <p th:text="#{Label.discipline.inactive.user.none}">None</p>
-                </div>
+                    <tr th:if="${!inactiveDisciplines.isEmpty()}" th:each="discipline : ${inactiveDisciplines}"
+                        th:include="fragments/discipline-list-elements.html :: disicpline-inactive-list-element (${discipline})"></tr>
+                </table>
             </div>
         </main>
-
-        <!-- ORIGINAL BELOW-->
-<!--        <h2 th:text="#{Label.discipline.manage.header(${userDisciplineSubmissionDto.getDisciplinedUsername()})}"></h2>-->
-<!--        <hr>-->
-
-<!--        <div id="active-discipline-container">-->
-<!--            <h3 th:text="#{Label.discipline.user.currentDisciplines}">Current Bans and Suspensions</h3>-->
-
-<!--            <div th:if="${!activeDisciplines.isEmpty()}">-->
-<!--                <table style="border-collapse: separate; border-spacing: 12px 6px; border: 1px solid black;">-->
-<!--                    <tr>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.type}">Type</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.disciplinedBy}">Disciplined By</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.disciplinedAt}">Disciplined At</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.disciplinedUntil}">Disciplined Until</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.duration}">Duration</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.reason}">Reason</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.active.user.rescind}">Rescind</th>-->
-<!--                    </tr>-->
-
-<!--                    <tr th:each="discipline : ${activeDisciplines}" th:include="fragments/discipline-list-elements.html :: disicpline-active-list-element (${discipline})"></tr>-->
-
-<!--                </table>-->
-<!--            </div>-->
-
-<!--            <div th:if="${activeDisciplines.isEmpty()}">-->
-<!--                <p th:text="#{Label.discipline.active.user.none}">None</p>-->
-<!--            </div>-->
-<!--        </div>-->
-
-<!--        <hr>-->
-
-<!--        <div id="past-discipline-container">-->
-<!--            <h3 th:text="#{Label.discipline.user.previousDisciplines}">Previous Bans and Suspensions</h3>-->
-
-<!--            <div th:if="${!inactiveDisciplines.isEmpty()}">-->
-<!--                <table style="border-collapse: separate; border-spacing: 12px 6px; border: 1px solid black;">-->
-<!--                    <tr>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.type}">Type</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.disciplinedBy}">Disciplined By</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.disciplinedAt}">Disciplined At</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.disciplinedUntil}">Disciplined Until</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.duration}">Duration</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.reason}">Reason</th>-->
-<!--                        <th style="border: 1px solid black;" th:text="#{Label.discipline.inactive.user.wasRescinded}">Was Rescinded?</th>-->
-<!--                    </tr>-->
-
-<!--                    <tr th:each="discipline : ${inactiveDisciplines}" th:include="fragments/discipline-list-elements.html :: disicpline-inactive-list-element (${discipline})"></tr>-->
-
-<!--                </table>-->
-<!--            </div>-->
-
-<!--            <div th:if="${inactiveDisciplines.isEmpty()}">-->
-<!--                <p th:text="#{Label.discipline.inactive.user.none}">None</p>-->
-<!--            </div>-->
-<!--        </div>-->
-
-<!--        <hr>-->
-
-<!--        <div id="create-new-discipline-container">-->
-<!--            <form th:action="@{'/processCreateUserDiscipline'}" th:object="${userDisciplineSubmissionDto}" method="POST">-->
-<!--                <div th:if="${#fields.hasErrors('*')}" class="form-error-container">-->
-<!--                    <p style="color: red" th:text="#{Label.formErrors.correctionPrompt}">Please Correct Errors Below:</p>-->
-<!--                    <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>-->
-<!--                </div>-->
-
-<!--                <input type="hidden" name="disciplinedUsername" th:field="*{disciplinedUsername}" th:value="*{disciplinedUsername}">-->
-
-<!--                <span>-->
-<!--                    <label>Discipline Type: </label>-->
-<!--                    <span>-->
-<!--                        <input id="suspension-radio-button" type="radio" name="disciplineType" th:field="*{disciplineType}" value="Suspension" th:text="#{Label.discipline.create.suspension}">Suspension</input>-->
-<!--                        <input id="ban-radio-button" type="radio" name="disciplineType" th:field="*{disciplineType}" value="Ban" th:text="#{Label.discipline.create.ban}">Ban</input>-->
-<!--                    </span>-->
-<!--                    <div id="suspension-duration-container">-->
-<!--                        <label th:text="#{Label.discipline.create.suspension.hours}">Hours of Suspension</label>-->
-<!--                        <input id="suspension-duration-field" type="text" name="suspensionDuration" placeholder="1-720 hours" th:placeholder="#{Label.discipline.create.suspension.hours.placeholder}" th:field="*{suspensionHours}">-->
-<!--                    </div>-->
-<!--                </span>-->
-
-<!--                <div>-->
-<!--                    <label th:text="#{Label.discipline.create.reason}">Reason for Discipline</label>-->
-<!--                    <input type="text" name="reason" th:field="*{reason}" placeholder="Reason for disciplinary action" th:placeholder="#{Label.discipline.create.reason.placeholder}">-->
-<!--                </div>-->
-
-<!--                <button type="submit" th:text="#{Label.discipline.create.submit.buttonText}">Submit</button>-->
-<!--            </form>-->
-<!--        </div>-->
     </body>
 </html>

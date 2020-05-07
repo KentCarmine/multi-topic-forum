@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.dtos;
 
 import com.kentcarmine.multitopicforum.model.DisciplineType;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
@@ -9,12 +10,14 @@ import java.util.Objects;
  * DTO that contains data about a given Discipline, including if the currently logged in user can rescind that discipline.
  */
 public class DisciplineViewDto {
+    private static final String DATE_TIME_FORMAT_STRING = "MM-dd-yyyy, HH:mm z";
 
     private Long id;
     private String disciplinedUsername;
     private String discipliningUsername;
     private DisciplineType disciplineType;
-    private String disciplinedAt;
+    private Date disciplinedAt;
+    private String disciplinedAtString;
     private Date disciplinedUntil;
     private String disciplinedUntilString;
     private String disciplineDuration;
@@ -33,14 +36,16 @@ public class DisciplineViewDto {
         this.reason = reason;
         this.rescinded = rescinded;
 
-        this.disciplinedAt = disciplinedAt.toString();
+        this.disciplinedAt = disciplinedAt;
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT_STRING);
+        this.disciplinedAtString = sdf.format(disciplinedAt);
 
         if (disciplineType.equals(DisciplineType.BAN)) {
             this.disciplineDuration = "Permanent";
             this.disciplinedUntilString = "N/A";
         } else {
             this.disciplineDuration = disciplineDuration.toString();
-            this.disciplinedUntilString = disciplinedUntil.toString();
+            this.disciplinedUntilString = sdf.format(disciplinedUntil);
             this.disciplinedUntil = disciplinedUntil;
         }
     }
@@ -81,12 +86,20 @@ public class DisciplineViewDto {
         return disciplineType.getDisplayValue();
     }
 
-    public String getDisciplinedAt() {
+    public Date getDisciplinedAt() {
         return disciplinedAt;
     }
 
-    public void setDisciplinedAt(String disciplinedAt) {
+    public void setDisciplinedAt(Date disciplinedAt) {
         this.disciplinedAt = disciplinedAt;
+    }
+
+    public String getDisciplinedAtString() {
+        return disciplinedAtString;
+    }
+
+    public void setDisciplinedAtString(String disciplinedAtString) {
+        this.disciplinedAtString = disciplinedAtString;
     }
 
     public String getDisciplinedUntilString() {

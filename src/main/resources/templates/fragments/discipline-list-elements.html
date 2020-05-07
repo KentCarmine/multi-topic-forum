@@ -7,27 +7,34 @@
     <body>
 
         <tr th:fragment="disicpline-active-list-element (discipline)">
-            <td style="border: 1px solid black;" th:text="${discipline.getViewableDisciplineType()}">Type</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getDiscipliningUsername()}">Disciplined By</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getDisciplinedAt()}">Disciplined At</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getDisciplinedUntil()}">Disciplined Until</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getDisciplineDuration()}">Duration</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getReason()}">Reason</td>
-            <td style="border: 1px solid black;">
+            <td th:text="${discipline.getViewableDisciplineType()}">Type</td>
+            <td>
+                <a href="#" th:href="@{'/users/' + ${discipline.getDiscipliningUsername()}}"
+                   th:text="${discipline.getDiscipliningUsername()}"></a>
+            </td>
+            <td th:text="${discipline.getDisciplinedAtString()}">Disciplined At</td>
+            <td th:text="${discipline.getDisciplinedUntilString()}">Disciplined Until</td>
+            <td th:text="${discipline.getDisciplineDuration()}">Duration</td>
+            <td th:text="${discipline.getReason()}">Reason</td>
+            <td>
                 <form th:action="@{'/rescindDiscipline/' + ${discipline.getDisciplinedUsername()} + '/' + ${discipline.getId()}}" method="post">
-                    <button type="submit" th:disabled="${!discipline.canRescind()}" th:text="#{Label.discipline.rescind}">Rescind</button>
+                    <button class="btn btn-info btn-sm" type="submit" th:disabled="${!discipline.canRescind()}" th:text="#{Label.discipline.rescind}">Rescind</button>
                 </form>
             </td>
         </tr>
 
+
         <tr th:fragment="disicpline-inactive-list-element (discipline)">
-            <td style="border: 1px solid black;" th:text="${discipline.getViewableDisciplineType()}">Type</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getDiscipliningUsername()}">Disciplined By</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getDisciplinedAt()}">Disciplined At</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getDisciplinedUntil()}">Disciplined Until</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getDisciplineDuration()}">Duration</td>
-            <td style="border: 1px solid black;" th:text="${discipline.getReason()}">Reason</td>
-            <td style="border: 1px solid black;" th:text="${discipline.isRescinded() ? 'Yes' : 'No' }">Rescinded?</td>
+            <td th:text="${discipline.getViewableDisciplineType()}">Type</td>
+            <td>
+                <a href="#" th:href="@{'/users/' + ${discipline.getDiscipliningUsername()}}"
+                   th:text="${discipline.getDiscipliningUsername()}"></a>
+            </td>
+            <td th:text="${discipline.getDisciplinedAtString()}">Disciplined At</td>
+            <td th:text="${discipline.getDisciplinedUntilString()}">Disciplined Until</td>
+            <td th:text="${discipline.getDisciplineDuration()}">Duration</td>
+            <td th:text="${discipline.getReason()}">Reason</td>
+            <td th:text="${discipline.isRescinded() ? 'Yes' : 'No' }">Rescinded?</td>
         </tr>
 
     </body>
