@@ -1,0 +1,193 @@
+html, body {
+    /*height: 100%;*/
+    height: calc(100% - 4rem);
+}
+
+/*body {*/
+/*    !*background-color: #f5f5f5;*!*/
+/*    background-color: white;*/
+/*    !*padding-bottom: 20px;*!*/
+/*    z-index: 2;*/
+/*}*/
+
+/*.navbar {*/
+/*    margin-bottom: 20px;*/
+/*    height: 4rem;*/
+/*    z-index: 3;*/
+/*}*/
+
+.form-error-list {
+    margin-bottom: 12px;
+}
+
+.form-error-list-item {
+    font-weight: bold;
+}
+
+.flash-prompt-container {
+    width: fit-content;
+}
+
+.flash-prompt-success {
+    font-style: italic;
+}
+
+.home-page-main-text-content {
+    font-size: 1.3rem;
+    margin-top: 24px;
+}
+
+.color-darkred {
+    color: darkred;
+}
+
+.color-forestgreen {
+    color: forestgreen;
+}
+
+.color-whitesmoke {
+    color: whitesmoke;
+}
+
+.color-upvote-green {
+    color: limegreen;
+}
+
+.color-downvote-red {
+    color: darkred;
+}
+
+/*.upvote-button {*/
+/*    background-color: lime;*/
+/*    border: none;*/
+/*    color: white;*/
+/*    padding: 16px 16px;*/
+/*    font-size: 1.5rem;*/
+/*    cursor: pointer;*/
+/*}*/
+
+/*.upvote-button:hover {*/
+/*    background-color: limegreen;*/
+/*}*/
+
+/*.upvote*/
+
+
+/*.btn-circle {*/
+/*    width: 64px;*/
+/*    height: 64px;*/
+/*    line-height: 64px;*/
+/*    text-align: center;*/
+/*    padding: 0;*/
+/*    border-radius: 50%;*/
+/*    !*cursor: pointer;*!*/
+/*}*/
+
+/*.btn-circle i {*/
+/*    position: relative;*/
+/*    top: -1px;*/
+/*}*/
+
+/*.btn-circle {*/
+/*    !*width: 64px;*!*/
+/*    !*height: 64px;*!*/
+/*    !*line-height: 64px;*!*/
+/*    text-align: center;*/
+/*    color: lime;*/
+/*    border-radius: 50%;*/
+/*    border: none;*/
+/*    background: transparent;*/
+/*    cursor: pointer;*/
+/*}*/
+
+/*.btn-circle:active {*/
+/*    color: limegreen;*/
+/*}*/
+
+/*.btn-circle i {*/
+/*    position: relative;*/
+/*    top: -1px;*/
+/*}*/
+
+.btn-vote {
+    width: auto;
+    height: auto;
+    padding: 0px 0px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    text-align: center;
+}
+
+.btn-vote.btn-upvote {
+    color: lime;
+}
+
+.btn-vote.btn-upvote:hover {
+    color: darkgreen;
+}
+
+.btn-vote.btn-upvote:active {
+    color: limegreen;
+}
+
+.btn-vote.btn-downvote {
+    color: red;
+}
+
+.btn-vote.btn-downvote:hover {
+    color: darkred;
+}
+
+.btn-vote.btn-downvote:active {
+    color: #a20000;
+}
+
+.btn-vote i {
+    position: relative;
+}
+
+.btn-vote.upvote-button-selected {
+    color: lime;
+}
+
+.btn-vote.downvote-button-selected {
+    color: red;
+}
+
+.visible {
+    visibility: visible;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.displayed {
+    display: inline;
+}
+
+.not-displayed {
+    display: none;
+}
+
+.flex-truncate {
+    min-width: 0 !important
+}
+
+.d-block {
+    display: block !important
+}
+
+.text-ellipsis-overflow {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-banned-strikethough {
+    text-decoration: line-through;
+}
+
+.text-large {
+    font-size: large;
+}

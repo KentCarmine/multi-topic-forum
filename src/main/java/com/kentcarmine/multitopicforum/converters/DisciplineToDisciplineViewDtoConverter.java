@@ -10,9 +10,11 @@ public class DisciplineToDisciplineViewDtoConverter implements Converter<Discipl
 
     @Override
     public DisciplineViewDto convert(Discipline discipline) {
-        return new DisciplineViewDto(discipline.getId(), discipline.getDisciplinedUser().getUsername(),
+        DisciplineViewDto dto = new DisciplineViewDto(discipline.getId(), discipline.getDisciplinedUser().getUsername(),
                 discipline.getDiscipliningUser().getUsername(), discipline.getDisciplineType(),
                 discipline.getDisciplinedAt(), discipline.getDisciplineEndTime(),
                 discipline.getDisciplineDurationHours(), discipline.getReason(), discipline.isRescinded());
+
+        return dto;
     }
 }

@@ -2,14 +2,60 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title>Forum List Elements Fragments</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
     </head>
     <body>
-        <tr th:fragment="forum-list-element (forum)">
-            <td>
-                <a href="#" th:href="@{'/forum/' + ${forum.getName()}}" th:text="${forum.getName()}">Forum Name</a>
-            </td>
-            <td th:text="${forum.getDescription()}"></td>
-        </tr>
+
+        <div th:fragment="forum-list-element (forum,iterStat)">
+            <div class="row no-gutters align-items-center p-2 pl-3">
+                <!-- Forum name section-->
+                <div class="col" style="min-width: fit-content">
+                    <a href="#" class="text-big font-weight-semibold" th:href="@{'/forum/' + ${forum.getName()}}"
+                       th:text="${forum.getName()}">Forum Name</a>
+                </div>
+
+                <!-- Description, thread count, and recent activity sections -->
+                <div class="d-none d-md-block col-10">
+                    <div class="row no-gutters align-items-center">
+                        <!-- Description section-->
+                        <div class="col-6" th:text="${forum.getDescription()}">
+                        </div>
+
+                        <!-- Thread count section-->
+                        <div class="col-2 pl-2" th:text="${forum.getNumThreads()}">
+
+                        </div>
+
+                        <!-- Recent activity section-->
+                        <div class="col-2 align-items-center">
+                            <div class="flex-truncate">
+                                <a href="#" class="d-block text-truncate"
+                                   th:text="${forum.getMostRecentPost().getThread().getTitle()}"
+                                   th:href="@{'/forum/' + ${forum.getName()} + '/show/' + ${forum.getMostRecentPost().getThread().getId()}}">
+                                    Recently updated thread
+                                </a>
+                                <span class="text-muted small text-truncate">
+                                    <span th:text="${forum.getUpdateTimeDifferenceMessage()}">2d ago [PLACEHOLDER]</span>
+                                    <span>&nbsp;·&nbsp;</span>
+                                    <a href="#" class="text-muted"
+                                       th:text="${forum.getMostRecentPost().getUser().getUsername()}"
+                                       th:href="@{'/users/' + ${forum.getMostRecentPost().getUser().getUsername()}}">
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr th:if="${!iterStat.last}" class="m-0">
+        </div>
     </body>
 </html>

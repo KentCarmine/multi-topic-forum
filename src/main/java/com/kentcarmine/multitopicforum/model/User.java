@@ -10,10 +10,7 @@ import org.hibernate.annotations.SortNatural;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +21,7 @@ import java.util.stream.Collectors;
 public class User {
 
     @Id
-    @Size(min = 4, message = "{User.username.length}")
+    @Size(min = 4, max = 16, message = "{User.username.length}")
     @ValidCharacters(message = "{User.username.validChars}")
     @ValidUsername
     private String username;
@@ -59,7 +56,7 @@ public class User {
         this.postVotes = new HashSet<>();
     }
 
-    public User(@Size(min = 4, message = "{User.username.length}")
+    public User(@Size(min = 4, max = 16, message = "{User.username.length}")
                 @ValidCharacters(message = "{User.username.validChars}") String username,
                 @Size(min = 8, message = "{User.password.length}") String password,
                 @ValidEmail(message = "{User.email.mustBeValid}") String email,
@@ -74,7 +71,7 @@ public class User {
         this.disciplines = new HashSet<>();
     }
 
-    public User(@Size(min = 4, message = "{User.username.length}")
+    public User(@Size(min = 4, max = 16, message = "{User.username.length}")
                 @ValidCharacters(message = "{User.username.validChars}") String username,
                 @Size(min = 8, message = "{User.password.length}") String password,
                 @ValidEmail(message = "{User.email.mustBeValid}") String email) {
@@ -245,6 +242,10 @@ public class User {
         this.posts = posts;
     }
 
+    public int getPostCount() {
+        return posts.size();
+    }
+
     public Set<Discipline> getDisciplines() {
         return disciplines;
     }
@@ -329,6 +330,18 @@ public class User {
         }
 
         return mostSevere;
+    }
+
+    /**
+    * Gets the Date of the most recent activity (ie. posting) by this user.
+    */
+    public Date getMostRecentActivityDate() {
+        if (posts.isEmpty()) {
+            return null;
+        }
+
+        Post latestPost = posts.first();
+        return latestPost.getPostedAt();
     }
 
     @Override

@@ -8,7 +8,7 @@ import javax.validation.constraints.Size;
  */
 public class TopicThreadCreationDto {
 
-    @NotBlank(message = "TopicThread.title.notBlank")
+    @NotBlank(message = "{TopicThread.title.notBlank}")
     @Size(min=4, message="{TopicThread.title.length}")
     private String title;
 
@@ -19,7 +19,7 @@ public class TopicThreadCreationDto {
     }
 
     public TopicThreadCreationDto(
-            @NotBlank(message = "TopicThread.title.notBlank")
+            @NotBlank(message = "{TopicThread.title.notBlank}")
             @Size(min=4, message="{TopicThread.title.length}")
                     String title,
             @NotBlank(message = "{Post.content.notBlank}")

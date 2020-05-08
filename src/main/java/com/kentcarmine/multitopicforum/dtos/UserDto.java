@@ -14,7 +14,7 @@ import javax.validation.constraints.Size;
 @PasswordMatches
 public class UserDto implements PasswordDto {
 
-    @Size(min = 4, message = "{User.username.length}")
+    @Size(min = 4, max = 16, message = "{User.username.length}")
     @ValidCharacters(message = "{User.username.validChars}")
     @ValidUsername
     private String username;

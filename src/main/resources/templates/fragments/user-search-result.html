@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <title>User search result</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+    </head>
+
+    <body>
+        <div th:fragment="user-search-result-fragment (userSearchResult,iterStat)">
+            <div class="row no-gutters align-items-center">
+                <div class="col-md-6 pl-3 mb-1 mt-1 text-ellipsis-overflow">
+                    <a th:href="@{'/users/' + ${userSearchResult.getUsername()}}" href="#" class="text-large" th:text="${userSearchResult.getUsername()}">Username</a>
+                </div>
+
+                <div class="col-md-6 pl-2 pr-2 mb-1 mt-1 d-none d-md-block text-muted" th:text="${userSearchResult.getLastActive()}">
+                    X years ago
+                </div>
+                <hr th:if="${!iterStat.last}" class="w-100 m-0">
+            </div>
+
+        </div>
+    </body>
+</html>

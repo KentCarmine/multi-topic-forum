@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.services;
 
 
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
+import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 
@@ -24,4 +25,11 @@ public interface ForumService {
     SortedSet<TopicForum> getAllForums();
 
     SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException;
+
+    TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum);
+
+    SortedSet<TopicForumViewDto> getAllForumsAsViewDtos();
+
+    SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException;
+
 }

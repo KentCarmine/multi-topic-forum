@@ -1,8 +1,8 @@
 $(document).ready(function() {
     let errorContainer = $(".form-error-container");
 
-    // console.log("### Error Container:")
-    // console.log(errorContainer[0]);
+    console.log("### Error Container:")
+    console.log(errorContainer[0]);
 
     if (errorContainer[0]) {
         scrollTo(errorContainer);

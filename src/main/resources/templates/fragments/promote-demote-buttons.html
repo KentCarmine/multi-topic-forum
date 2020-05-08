@@ -2,28 +2,25 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
+        <script type="text/javascript" th:src="@{/js/promote-demote-user-ajax.js}"></script>
     </head>
 
     <body>
-<!--        <input type="button" class="promote-user-button" th:fragment="promote-button-fragment (userRankAdjustmentDto)"-->
-<!--               th:attr="data-username=${userRankAdjustmentDto.getUsername()}, data-promotable-rank=${userRankAdjustmentDto.getIncrementedRank()}"-->
-<!--               th:attrappend="data-promotable-rank-display=${userRankAdjustmentDto.getIncrementedRank() != null}?${userRankAdjustmentDto.getIncrementedRank().getDisplayRank()}"-->
-<!--               th:disabled="${!userRankAdjustmentDto.isPromotableByLoggedInUser()}"-->
-<!--               th:value="${userRankAdjustmentDto.getIncrementedRank() != null}?${'Promote to ' + userRankAdjustmentDto.getIncrementedRank().getDisplayRank()}:'Cannot promote'">>-->
-
-<!--        <input type="button" class="demote-user-button" th:fragment="demote-button-fragment (userRankAdjustmentDto)"-->
-<!--               th:attr="data-username=${userRankAdjustmentDto.getUsername()}, data-demotable-rank=${userRankAdjustmentDto.getDecrementedRank()}"-->
-<!--               th:attrappend="data-demotable-rank-display=${userRankAdjustmentDto.getDecrementedRank() != null}?${userRankAdjustmentDto.getDecrementedRank().getDisplayRank()}"-->
-<!--               th:disabled="${!userRankAdjustmentDto.isDemotableByLoggedInUser()}"-->
-<!--               th:value="${userRankAdjustmentDto.getDecrementedRank() != null}?${'Demote to ' + userRankAdjustmentDto.getDecrementedRank().getDisplayRank()}:'Cannot demote'">-->
-
-        <input type="button" class="promote-user-button" th:fragment="promote-button-fragment (userRankAdjustmentDto)"
+        <input type="button" class="promote-user-button btn btn-sm btn-success" th:fragment="promote-button-fragment (userRankAdjustmentDto)"
                th:attr="data-username=${userRankAdjustmentDto.getUsername()}, data-promotable-rank=${userRankAdjustmentDto.getIncrementedRank()}"
                th:attrappend="data-promotable-rank-display=${userRankAdjustmentDto.getIncrementedRank() != null}?${userRankAdjustmentDto.getIncrementedRank().getDisplayRank()}"
                th:disabled="${!userRankAdjustmentDto.isPromotableByLoggedInUser()}"
-               th:value="${userRankAdjustmentDto.getIncrementedRank() != null}?#{Label.promote.toRank(${userRankAdjustmentDto.getIncrementedRank().getDisplayRank()})}:#{Label.promote.cannot}">>
+               th:value="${userRankAdjustmentDto.getIncrementedRank() != null}?#{Label.promote.toRank(${userRankAdjustmentDto.getIncrementedRank().getDisplayRank()})}:#{Label.promote.cannot}">
 
-        <input type="button" class="demote-user-button" th:fragment="demote-button-fragment (userRankAdjustmentDto)"
+        <input type="button" class="demote-user-button btn btn-sm btn-danger" th:fragment="demote-button-fragment (userRankAdjustmentDto)"
                th:attr="data-username=${userRankAdjustmentDto.getUsername()}, data-demotable-rank=${userRankAdjustmentDto.getDecrementedRank()}"
                th:attrappend="data-demotable-rank-display=${userRankAdjustmentDto.getDecrementedRank() != null}?${userRankAdjustmentDto.getDecrementedRank().getDisplayRank()}"
                th:disabled="${!userRankAdjustmentDto.isDemotableByLoggedInUser()}"

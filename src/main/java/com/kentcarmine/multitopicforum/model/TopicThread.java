@@ -14,7 +14,7 @@ import java.util.TreeSet;
  * Entity that models a topic thread, that is, a thread of one or more posts within a given topic forum.
  */
 @Entity
-public class TopicThread {
+public class TopicThread implements ThreadUpdatedTimeable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,8 +38,6 @@ public class TopicThread {
     @ManyToOne
     @JoinColumn(name = "lockingUsername")
     private User lockingUser;
-
-    // TODO: Add methods to get creation date and creating user of thread (by getting those values from first post)
 
     public TopicThread() {
         this.posts = new TreeSet<>();
@@ -81,10 +79,18 @@ public class TopicThread {
     }
 
     public Post getFirstPost() {
+        if (getPosts().isEmpty()) {
+            return null;
+        }
+
         return getPosts().first();
     }
 
     public Post getLastPost() {
+        if (getPosts().isEmpty()) {
+            return null;
+        }
+
         return getPosts().last();
     }
 
@@ -129,11 +135,16 @@ public class TopicThread {
     @Override
     public String toString() {
         User lockingUser = this.lockingUser;
+        String forumName = null;
+        if (forum != null) {
+            forumName = forum.getName();
+        }
+
         StringBuilder sb = new StringBuilder(
                 "TopicThread{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
-                ", forum=" + forum +
+                ", forum=" + forumName +
                 ", posts=" + posts +
                 ", isLocked=" + isLocked);
 

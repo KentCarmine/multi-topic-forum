@@ -14,14 +14,20 @@ function deletePostConfirmation(event) {
 }
 
 function deletePost(event) {
+    // console.log("### deletePost fired");
     let elem = $(event.target)[0];
     let postId = $(elem).attr("data-post-id");
+
+    // console.log("### Elem: ");
+    // console.log(elem);
+    // console.log("### PostId: ");
+    // console.log(postId);
 
     let req = {
         postId: postId,
     };
-    console.log("Req:");
-    console.log(req);
+    // console.log("Req:");
+    // console.log(req);
 
     $.ajax({
         type: "POST",

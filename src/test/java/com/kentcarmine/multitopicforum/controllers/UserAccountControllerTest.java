@@ -824,7 +824,6 @@ class UserAccountControllerTest {
     @Test
     void demoteUserButton_nullLoggedInUser() throws Exception {
         when(userService.getUser(any())).thenReturn(testModerator);
-//        when(userService.getLoggedInUser()).thenReturn(null);
         when(userService.getLoggedInUserIfNotDisciplined()).thenReturn(null);
 
         MvcResult mvcResult = mockMvc.perform(get("/demoteUserButton/" + testModerator.getUsername()))

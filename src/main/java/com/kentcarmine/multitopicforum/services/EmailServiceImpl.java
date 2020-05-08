@@ -70,6 +70,7 @@ public class EmailServiceImpl implements EmailService {
      * @param token the token to send
      * @param user the user to whom the token belongs
      */
+    @Async
     @Override
     public void sendPasswordResetEmail(String appUrl, Locale locale, PasswordResetToken token, User user) {
         String resetUrl = appUrl + "/changePassword?username=" + user.getUsername() + "&token=" + token.getToken();
@@ -87,6 +88,7 @@ public class EmailServiceImpl implements EmailService {
      * @param newToken the token to send
      * @param user the user attempting to register
      */
+    @Async
     @Override
     public void sendResendVerificationTokenEmail(String appUrl, Locale locale, VerificationToken newToken, User user) {
         String confirmationUrl = appUrl + "/registrationConfirm?token=" + newToken.getToken();

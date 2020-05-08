@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.services;
 import com.kentcarmine.multitopicforum.dtos.DemoteUserResponseDto;
 import com.kentcarmine.multitopicforum.dtos.PromoteUserResponseDto;
 import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
+import com.kentcarmine.multitopicforum.dtos.UserSearchResultDto;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
 
@@ -26,9 +27,13 @@ public interface UserService {
 
     boolean usernameExists(String username);
 
-    SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException;
+//    SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException;
+//
+//    SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException;
 
-    SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException;
+    SortedSet<UserSearchResultDto> searchForUsernames(String searchText) throws UnsupportedEncodingException;
+
+    SortedSet<UserSearchResultDto> searchForUsers(String searchText) throws UnsupportedEncodingException;
 
     boolean isValidPromotionRequest(User loggedInUser, User userToPromote, UserRole promotedRank);
 

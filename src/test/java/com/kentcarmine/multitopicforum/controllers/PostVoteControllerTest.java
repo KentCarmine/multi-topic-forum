@@ -61,9 +61,6 @@ class PostVoteControllerTest {
     Post testPost;
 
     User testUser;
-//    User testModerator;
-//    User testModerator2;
-//    User testAdmin;
 
     @BeforeEach
     void setUp() {

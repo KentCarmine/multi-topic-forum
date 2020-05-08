@@ -142,17 +142,22 @@ class PostControllerTest {
 
     @Test
     void addPostToThread_validInput() throws Exception {
-        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-        when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
-
         final String content = "Test content";
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
+        final long newPostId = 20l;
+
+        Post newTestPost = new Post(content, Date.from(Instant.now()));
+        newTestPost.setId(newPostId);
+
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(postService.addNewPostToThread(any(), any(), any())).thenReturn(newTestPost);
 
         mockMvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("content", content))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForumThread.getForum().getName() + "/show/1"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForumThread.getForum().getName() + "/show/1#post_id_20"));
 
         verify(postService, times(1)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
     }

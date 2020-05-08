@@ -4,6 +4,7 @@ import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoCon
 import com.kentcarmine.multitopicforum.dtos.DemoteUserResponseDto;
 import com.kentcarmine.multitopicforum.dtos.PromoteUserResponseDto;
 import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
+import com.kentcarmine.multitopicforum.dtos.UserSearchResultDto;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
@@ -25,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -36,17 +36,19 @@ public class UserServiceImpl implements UserService {
     private final AuthorityRepository authorityRepository;
     private final UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter;
     private final MessageService messageService;
+    private final TimeCalculatorService timeCalculatorService;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
                            AuthorityRepository authorityRepository,
                            UserToUserRankAdjustmentDtoConverter userToUserRankAdjustmentDtoConverter,
-                           MessageService messageService) {
+                           MessageService messageService, TimeCalculatorService timeCalculatorService) {
         this.userRepository = userRepository;
         this.authenticationService = authenticationService;
         this.authorityRepository = authorityRepository;
         this.userToUserRankAdjustmentDtoConverter = userToUserRankAdjustmentDtoConverter;
         this.messageService = messageService;
+        this.timeCalculatorService = timeCalculatorService;
     }
 
     /**
@@ -115,18 +117,25 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username) != null;
     }
 
-    /**
-     * Searches for the names of all Users that have names that contain all tokens (delimited on double quotes and
-     * spaces, but not spaces within double quotes) of the given search text.
-     *
-     * @param searchText The text to search for
-     * @return the set of usernames of Users (ordered alphabetically) that match the search terms
-     * @throws UnsupportedEncodingException
-     */
-    public SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException {
-        SortedSet<User> users = searchForUsers(searchText);
-        SortedSet<String> usernames = new TreeSet<>(users.stream().map(User::getUsername).collect(Collectors.toList()));
-        return usernames;
+//    /**
+//     * Searches for the names of all Users that have names that contain all tokens (delimited on double quotes and
+//     * spaces, but not spaces within double quotes) of the given search text.
+//     *
+//     * @param searchText The text to search for
+//     * @return the set of usernames of Users (ordered alphabetically) that match the search terms
+//     * @throws UnsupportedEncodingException
+//     */
+//    public SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException {
+//        SortedSet<User> users = searchForUsers(searchText);
+//        SortedSet<String> usernames = new TreeSet<>(users.stream().map(User::getUsername).collect(Collectors.toList()));
+//        return usernames;
+//    }
+
+    @Override
+    public SortedSet<UserSearchResultDto> searchForUsernames(String searchText) throws UnsupportedEncodingException {
+        SortedSet<UserSearchResultDto> users = searchForUsers(searchText);
+
+        return users;
     }
 
     /**
@@ -138,30 +147,69 @@ public class UserServiceImpl implements UserService {
      * @throws UnsupportedEncodingException
      */
     @Override
-    public SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException {
-        SortedSet<User> users = new TreeSet<>((o1, o2) -> o1.getUsername().toLowerCase().compareTo(o2.getUsername().toLowerCase()));
+    public SortedSet<UserSearchResultDto> searchForUsers(String searchText) throws UnsupportedEncodingException {
+        SortedSet<UserSearchResultDto> users = new TreeSet<>();
 
         List<String> searchTerms = parseSearchText(searchText);
-        List<List<User>> searchTermResults = new ArrayList<>();
+        List<List<UserSearchResultDto>> searchTermResults = new ArrayList<>();
         for (int i = 0; i < searchTerms.size(); i++) {
-            searchTermResults.add(new ArrayList<User>());
+            searchTermResults.add(new ArrayList<UserSearchResultDto>());
         }
 
         for(int i = 0; i < searchTerms.size(); i++) {
             String st = searchTerms.get(i);
-            searchTermResults.set(i, userRepository.findByUsernameLikeIgnoreCase("%" + st + "%"));
+
+            List<User> usrRes = userRepository.findByUsernameLikeIgnoreCase("%" + st + "%");
+            searchTermResults.set(i, convertUserListToUserSearchResultDto(usrRes));
         }
 
         if (!searchTermResults.isEmpty()) {
             users.addAll(searchTermResults.get(0));
             searchTermResults.remove(0);
-            for (List<User> str : searchTermResults) {
+
+            for (List<UserSearchResultDto> str : searchTermResults) {
                 users.retainAll(str);
             }
         }
 
         return users;
     }
+
+
+
+//    /**
+//     * Searches for all Users that have names that contain all tokens (delimited on double quotes and spaces, but not
+//     * spaces within double quotes) of the given search text.
+//     *
+//     * @param searchText The text to search for
+//     * @return the set of Users (ordered alphabetically) that match the search terms
+//     * @throws UnsupportedEncodingException
+//     */
+//    @Override
+//    public SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException {
+//        SortedSet<User> users = new TreeSet<>((o1, o2) -> o1.getUsername().toLowerCase().compareTo(o2.getUsername().toLowerCase()));
+//
+//        List<String> searchTerms = parseSearchText(searchText);
+//        List<List<User>> searchTermResults = new ArrayList<>();
+//        for (int i = 0; i < searchTerms.size(); i++) {
+//            searchTermResults.add(new ArrayList<User>());
+//        }
+//
+//        for(int i = 0; i < searchTerms.size(); i++) {
+//            String st = searchTerms.get(i);
+//            searchTermResults.set(i, userRepository.findByUsernameLikeIgnoreCase("%" + st + "%"));
+//        }
+//
+//        if (!searchTermResults.isEmpty()) {
+//            users.addAll(searchTermResults.get(0));
+//            searchTermResults.remove(0);
+//            for (List<User> str : searchTermResults) {
+//                users.retainAll(str);
+//            }
+//        }
+//
+//        return users;
+//    }
 
     /**
      * Promotes the given user by one rank, then saves and returns that user.
@@ -366,5 +414,24 @@ public class UserServiceImpl implements UserService {
      */
     private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
         return SearchParserHelper.parseSearchText(searchText);
+    }
+
+    /**
+     * Helper method that converts a list of Users to a list of UserSearchResultDtos
+     *
+     * @param users the list of users to convert
+     * @return a List of UserSearchResultDtos representing the given Users
+     */
+    private List<UserSearchResultDto> convertUserListToUserSearchResultDto(List<User> users) {
+        List<UserSearchResultDto> results = new ArrayList<>();
+
+        for (User user : users) {
+            UserSearchResultDto dto = new UserSearchResultDto();
+            dto.setUsername(user.getUsername());
+            dto.setLastActive(timeCalculatorService.getTimeSinceUserLastActiveMessage(user));
+            results.add(dto);
+        }
+
+        return results;
     }
 }

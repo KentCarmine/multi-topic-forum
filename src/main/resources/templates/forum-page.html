@@ -3,28 +3,79 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title th:text="${forum.getName()}">Forum Page</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
     </head>
     <body>
-        <div th:replace="fragments/navbar.html :: navbar"></div>
-        <h2 th:text="${forum.getName()}">Forum Name</h2>
-        <div>
-            <form th:action="@{'/processSearchThreads/' + ${forum.getName()}}" th:object="${topicThreadSearchDto}" method="post">
-                <input type="text" th:field="*{searchText}" name="searchText" placeholder="Search for threads" th:placeholder="#{Label.thread.search.searchText.placeholder}">
-                <button type="submit">Search</button>
-            </form>
-        </div>
-        <div>
-            <p th:text="${forum.getDescription()}">Description goes here</p>
-        </div>
+        <nav th:replace="fragments/navbar.html :: navbar"></nav>
 
-        <div sec:authorize="isAuthenticated()">
-            <a href="#" th:href="@{'/forum/' + ${forum.getName()} + '/createThread'}" th:text="#{Label.thread.createNew}">Create Thread</a>
-            <hr>
-        </div>
+        <main class="container-fluid h-100">
+            <!-- Header section -->
+            <div class="mt-1 ml-3">
+                <!-- Forum title -->
+                <h2 th:text="${forum.getName()}">Forum Name</h2>
+                <!-- Forum description-->
+                <div>
+                    <p class="text-secondary" th:text="${forum.getDescription()}">Description goes here</p>
+                </div>
+            </div>
 
-        <div th:each="thread : ${forum.getThreads()}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread})"> <!--TODO: Add Pagination?-->
+            <!-- Create thread button and search box-->
+            <div class="d-flex flex-wrap justify-content-between">
+                <!--Create thread button (if logged in)-->
+                <div>
+                    <div sec:authorize="isAuthenticated()">
+                        <a class="btn btn-shadow btn-wide btn-primary mb-2" href="#" th:href="@{'/forum/' + ${forum.getName()} + '/createThread'}">
+                            <span class="btn-icon-wrapper pr-2 opacity-7">
+                            <i class="fa fa-plus fa-w-20"></i>
+                            </span>
+                            <span th:text="#{Label.thread.createNew}">
+                                Create Thread
+                            </span>
+                        </a>
+                    </div>
+                </div>
 
-        </div>
+                <!--Search box-->
+                <div class="col-12 col-md-3 p-0 mb-3">
+                    <form th:action="@{'/processSearchThreads/' + ${forum.getName()}}" th:object="${topicThreadSearchDto}" method="post">
+                        <input class="form-control" type="text" th:field="*{searchText}" name="searchText" placeholder="Search for threads" th:placeholder="#{Label.thread.search.searchText.placeholder}">
+                    </form>
+                </div>
+            </div>
+
+            <!-- Thread list-->
+            <div class="card mb-3">
+                <!-- Thread List Headers -->
+                <div class="card-header pl-0 pr-0">
+                        <div class="row no-gutters w-100 align-items-center">
+                        <div class="col ml-3" th:text="#{Label.forums.threads.header}">Threads</div>
+                        <div class="col-4 text-muted d-none d-md-block">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-4" th:text="#{Label.forums.thread.postCount.header}">Posts</div>
+                                <div class="col-8" th:text="#{Label.forums.thread.recentActivity.header}">Recent Activity</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thread list main body-->
+                <div th:if="${!forum.getThreads().isEmpty()}" th:each="thread,iterStat : ${forum.getThreads()}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread},${iterStat})"> <!--TODO: Add Pagination?-->
+                </div>
+                <div th:if="${forum.getThreads().isEmpty()}" class="text-info text-center mt-1 mb-2 h5">
+                    <span class="font-weight-bold text-muted" th:text="#{Label.forum.empty}">There are no threads in this forum.</span>
+                </div>
+
+            </div>
+        </main>
     </body>
 </html>

@@ -3,32 +3,55 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title th:text="#{Label.forum.createNew.header}">Create New Topic Forum</title>
-        <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
+
         <script type="text/javascript" th:src="@{/js/form-error-autoscroll.js}"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
-        <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-            <form th:action="@{/processNewForumCreation}" th:object="${topicForumDto}" method="post">
-                <div th:if="${#fields.hasErrors('all')}" class="form-error-container">
-                    <p style="color: red" th:text="#{Label.formErrors.correctionPrompt}">Please Correct Errors Below:</p>
-                    <p style="color: red" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></p>
-                </div>
+        <main class="container h-100" sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
+            <div class="card bg-light align-middle">
+                <article class="card-body mx-auto" style="max-width: 600px;">
+                    <h2 class="mb-3 font-weight-normal text-center card-title mt-1" th:text="#{Label.forum.createNew.header}">Create a New Topic Forum</h2>
 
-                <div>
-                    <label th:text="#{Label.forum.name}">Forum Name</label>
-                    <input th:field="*{name}" type="text" name="name" placeholder="forum name">
-                </div>
+                    <form th:action="@{/processNewForumCreation}" th:object="${topicForumDto}" method="POST">
+                        <div th:if="${#fields.hasErrors('all')}" class="form-error-container">
+                            <ul class="list-group form-error-list">
+                                <li th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"
+                                    class="list-group-item list-group-item-danger form-error-list-item"></li>
+                            </ul>
+                        </div>
 
-                <div>
-                    <label th:text="#{Label.forum.description}">Description</label>
-                    <input th:field="*{description}" type="text" name="description" placeholder="what is this forum about?">
-                </div>
+                        <div class="form-group input-group">
+                            <input class="form-control" th:field="*{name}" type="text" name="name"
+                                   placeholder="forum name" th:placeholder="#{Label.forum.createNew.name.placeholder}">
+                        </div>
 
-                <button type="submit" th:text="#{Label.forum.create}">Create Forum</button>
-            </form>
-        </div>
+                        <div class="form-group input-group">
+                            <textarea class="form-control" rows="10" th:field="*{description}" type="text"
+                                      name="description"
+                                      th:placeholder="#{Label.forum.createnew.description.placeholder}">
+                                What is this forum about?
+                            </textarea>
+                        </div>
+
+                        <div class="btn btn-primary btn-block">
+                            <button type="submit" class="btn btn-lg btn-primary btn-block" th:text="#{Label.forum.create}">Create Forum</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </main>
     </body>
 </html>

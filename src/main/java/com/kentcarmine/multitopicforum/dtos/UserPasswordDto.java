@@ -57,4 +57,14 @@ public class UserPasswordDto implements PasswordDto {
     public void setToken(String token) {
         this.token = token;
     }
+
+    @Override
+    public String toString() {
+        return "UserPasswordDto{" +
+                "password='" + password + '\'' +
+                ", confirmPassword='" + confirmPassword + '\'' +
+                ", username='" + username + '\'' +
+                ", token='" + token + '\'' +
+                '}';
+    }
 }

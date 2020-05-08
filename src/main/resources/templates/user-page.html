@@ -3,54 +3,118 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
-<!--        <title th:text="'Multi-Topic Forum | ' + ${user.username} + '\'s Page'">PLACEHOLDER Page</title>-->
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title th:text="#{Label.user.page.header.title(${user.username})}">PLACEHOLDER Page</title>
-        <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
         <script type="text/javascript" th:src="@{/js/promote-demote-user-ajax.js}"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
-        <h2 th:text="#{Label.user.page.header(${user.username})}"></h2>
 
-        <div th:if="${param.userDisciplined}">
-            <p style="color: greenyellow" th:text="#{Label.user.page.userDisciplined.prompt}">User disciplined.</p>
-        </div>
+        <main class="container-fluid h-100 mb-2">
 
-        <div th:if="${param.userAlreadyBanned}">
-            <p style="color: orange" th:text="#{Label.user.page.userAlreadyBanned.prompt}">User was already banned.</p>
-        </div>
+            <!-- Header section -->
+            <div class="mt-1 mb-2">
+                <!-- Alert section -->
+                <div th:if="${param.userDisciplined != null || param.userAlreadyBanned != null}"
+                     class="container-sm text-center flash-prompt-container">
 
-        <hr>
-
-        <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-            <h3 th:text="#{Label.user.page.administrativeOptions.header}">Administrative Options</h3>
-
-            <div sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-                <span id="demote-user-button-container">
-                    <div th:replace="fragments/promote-demote-buttons.html :: demote-button-fragment (${userRankAdjustmentDto})">
+                    <div th:if="${param.userDisciplined}" th:text="#{Label.user.page.userDisciplined.prompt}"
+                         class="alert alert-success">
+                        User disciplined.
                     </div>
-                </span>
 
-                <span id="promote-user-button-container">
-                    <div th:replace="fragments/promote-demote-buttons.html :: promote-button-fragment (${userRankAdjustmentDto})">
+                    <div th:if="${param.userAlreadyBanned}" th:text="#{Label.user.page.userAlreadyBanned.prompt}"
+                         class="alert alert-info">
+                        User was already banned.
                     </div>
-                </span>
+                </div>
+
+                <!-- Title/Admin section-->
+                <div class="d-flex flex-wrap justify-content-between">
+                    <!-- Title section-->
+                    <div class="col-auto pl-0">
+<!--                        <h2 th:text="#{Label.user.page.header(${user.username})}" th:classappend="${user.isBanned()} ? 'user-banned-strikethough'"></h2>-->
+                        <h2 th:text="#{Label.user.page.header(${user.username})}"></h2>
+                    </div>
+
+                    <!-- Admin section-->
+                    <div class="col ml-2 align-self-center" sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
+
+                        <span sec:authorize="hasAnyAuthority('ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
+                            <span id="demote-user-button-container">
+                                <div th:replace="fragments/promote-demote-buttons.html :: demote-button-fragment (${userRankAdjustmentDto})">
+                                </div>
+                            </span>
+
+                            <span id="promote-user-button-container" class="ml-2">
+                                <div th:replace="fragments/promote-demote-buttons.html :: promote-button-fragment (${userRankAdjustmentDto})">
+                                </div>
+                            </span>
+                        </span>
+
+                        <span th:if="${loggedInUser.isHigherAuthority(user)}" class="ml-2">
+                            <a class="btn btn-sm btn-outline-warning"
+                               th:href="@{'/manageUserDiscipline/' + ${user.getUsername()}}" href="#"
+                               th:text="#{Label.user.page.disciplineManagement}">
+                                Discipline Management
+                            </a>
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <span th:if="${loggedInUser.isHigherAuthority(user)}">
-                <a th:href="@{'/manageUserDiscipline/' + ${user.getUsername()}}" href="#" th:text="#{Label.user.page.disciplineManagement}">Discipline Management</a>
-            </span>
+            <!-- Post list section-->
+            <h4 th:text="#{Label.user.page.postList.header(${user.username},${user.getPostCount()})}"></h4>
 
-            <hr>
-        </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card">
 
-        <div>
-            <h3 th:text="#{Label.user.page.postList.header(${user.username})}"></h3>
-            <div th:if="${user.getPosts().isEmpty()}" th:text="#{Label.user.page.postList.none(${user.username})}"></div>
-            <div th:each="post : ${user.getPosts()}" th:include="fragments/post-display.html :: post-summary-fragment (post)"></div>
-        </div>
-<!--        <div th:if="${#authentication.getName() == user.username}" id="own-user-page">-->
-<!--            <p>Current user</p>-->
-<!--        </div>-->
+                        <!-- Post list header-->
+                        <div class="card-header pr-0 pl-0">
+                            <div class="row no-gutters align-items-center w-100">
+
+                                <div class="col-12 text-muted">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-md-3 pl-2" th:text="#{Label.user.page.postList.threadTitle.header}">Thread Title</div>
+                                        <div class="col-md-7 pl-2 d-none d-md-block" th:text="#{Label.user.page.postList.content.header}">Content</div>
+                                        <div class="col-md-2 pl-2 pr-2 d-none d-md-block" th:text="#{Label.user.page.postList.postedAt.header}">Posted At</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Post list body-->
+                        <div class="card-body p-0">
+                            <!-- No posts case -->
+                            <div th:if="${user.getPosts().isEmpty()}" class="row no-gutters align-items-center">
+                                <div class="text-center col">
+                                    <div th:text="#{Label.user.page.postList.none(${user.username})}" class="text-muted font-weight-bold mt-2 mb-2 pl-2 pr-2">
+                                        User has not made any posts
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Posts exist case-->
+                            <div th:if="${!user.getPosts().isEmpty()}">
+                                <div th:each="post,iterStat : ${user.getPosts()}"
+                                     th:include="fragments/post-display.html :: post-summary-fragment (${post},${iterStat})"> <!--TODO: Paginate?-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </body>
 </html>

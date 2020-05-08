@@ -146,9 +146,11 @@ public class DisciplineController {
         }
 
         Discipline greatestDurationActiveDiscipline = loggedInUser.getGreatestDurationActiveDiscipline();
+        String header = disciplineService.getLoggedInUserBannedInformationHeader(greatestDurationActiveDiscipline);
         String message = disciplineService.getLoggedInUserBannedInformationMessage(greatestDurationActiveDiscipline);
 
         model.addAttribute("username", username);
+        model.addAttribute("header", header);
         model.addAttribute("message", message);
 
         userService.forceLogOut(loggedInUser, request, response);

@@ -3,88 +3,138 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title>Post</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
     </head>
     <body>
-        <div th:fragment="post-fragment (post)"> <!--TODO: Add upvote/downvote display and arg-->
-            <div th:id="'post_id_' + ${post.getId()}">
-                <div>
-                    <span>
-                        <a href="#" th:href="@{'/users/' + ${post.getUser().getUsername()}}" th:text="${post.getUser().getUsername()}">Poster</a>
-                    </span>
-                    <span> @ </span>
-                    <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
 
-                    <span th:if="${loggedInUser == null || post.isDeleted()}">
-                        <span> | </span>
-                        <span th:text="${post.getVoteCount()}"></span>
-                    </span>
+        <div th:fragment="post-fragment (post)" >
+            <div class="container-fluid mb-2">
+                <div class="row" th:id="'post_id_' + ${post.getId()}">
+                    <div class="card w-100">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <!-- Username and post count-->
+                                <div class="col pl-2 pr-2" style="max-width: 15rem;">
+                                    <a href="#" th:href="@{'/users/' + ${post.getUser().getUsername()}}" th:text="${post.getUser().getUsername()}" class="font-weight-bold mr-3 align-middle">Poster</a>
+                                    <div class="text-muted small" th:text="#{Label.user.posts.count(${post.getUser().getPostCount()})} ">#### posts</div>
+                                </div>
 
-                    <span th:if="${!post.isDeleted() && loggedInUser != null}">
-                        <span>
-                            <input type="image" alt="Upvote" width="32" height="32" th:class="upvote-button"
-                                   th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
-                                   th:src="${voteMap.get(post.getId()) == 1} ? '/images/black-arrow-green-filled.png' : '/images/green-arrow-hollow.png'"
-                                   th:name="${'upvote-button-post-id-' + post.getId()}">
-                        </span>
+                                <!-- Vote section-->
+                                <div class="col" style="max-width: 16rem; min-width: 10rem">
+                                    <span th:if="${!post.isDeleted() && loggedInUser != null}" class="align-content-center align-middle">
+                                        <button th:if="${voteMap.get(post.getId()) != 1}" type="button" class="btn btn-vote btn-upvote upvote-button"
+                                                th:attr="data-post-id=${post.getId()}"
+                                                th:name="${'upvote-button-post-id-' + post.getId()}"
+                                                th:classappend="${voteMap.get(post.getId()) == -1}? 'invisible' : 'visible'">
 
-                        <span th:class="vote-counter" th:attr="data-post-id=${post.getId()}"
-                              th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}">
-                            ###
-                        </span>
+                                            <i th:attr="data-post-id=${post.getId()}" class="fas fa-arrow-alt-circle-up fa-3x"></i>
+                                        </button>
+                                        <span class="btn-vote upvote-button-selected align-middle"
+                                              th:attr="data-post-id=${post.getId()}"
+                                              th:classappend="${voteMap.get(post.getId()) == 1}? 'displayed' : 'not-displayed'">
+                                            <i th:attr="data-post-id=${post.getId()}" class="far fa-arrow-alt-circle-up fa-3x"></i>
+                                        </span>
 
-                        <span>
-                            <input type="image" alt="Downvote" width="32" height="32" th:class="downvote-button"
-                                   th:attr="data-post-id=${post.getId()}" th:disabled="${voteMap.get(post.getId()) != 0}"
-                                   th:src="${voteMap.get(post.getId()) == -1} ? '/images/black-arrow-red-filled.png' : '/images/red-arrow-hollow.png'"
-                                   th:name="${'downvote-button-post-id-' + post.getId()}">
-                        </span>
-                    </span>
+                                        <span th:attr="data-post-id=${post.getId()}"
+                                              th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}"
+                                              class="vote-counter font-weight-bold align-middle ml-1 mr-1">
+                                            ###
+                                        </span>
 
-                    <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-                        <span th:if="${!post.isDeleted()}">
-                            <input type="button" th:attr="data-post-id=${post.getId()}"
-                                   th:name="${'delete-button-post-id-' + post.getId()}"
-                                   th:disabled="${!post.isDeletableBy(loggedInUser)}"
-                                   class="delete-post-button"
-                                   th:value="#{Label.post.delete}">
-                        </span>
-                        <span th:if="${post.isDeleted()}">
-                            <input type="button" th:attr="data-post-id=${post.getId()}"
-                                   th:name="${'restore-button-post-id-' + post.getId()}"
-                                   th:disabled="${!post.isRestorableBy(loggedInUser)}"
-                                   class="restore-post-button"
-                                   th:value="#{Label.post.restore}">
-                        </span>
-                    </span>
-                </div>
+                                        <button th:if="${voteMap.get(post.getId()) != -1}" type="button" class="btn btn-vote btn-downvote downvote-button"
+                                                th:attr="data-post-id=${post.getId()}"
+                                                th:name="${'downvote-button-post-id-' + post.getId()}"
+                                                th:classappend="${voteMap.get(post.getId()) == 1}? 'invisible' : 'visible'">
 
-                <div th:if="${!post.isDeleted()}" th:text="${post.getContent()}">
-                    Content
-                </div>
-                <div th:if="${post.isDeleted()}">
-                    <div th:text="#{Post.deleted.success.notification}">Post has been deleted.</div>
+                                            <i th:attr="data-post-id=${post.getId()}" class="fas fa-arrow-alt-circle-down fa-3x"></i>
+                                        </button>
+                                        <span class="btn-vote downvote-button-selected align-middle"
+                                              th:attr="data-post-id=${post.getId()}"
+                                              th:classappend="${voteMap.get(post.getId()) == -1}? 'displayed' : 'not-displayed'">
+                                            <i th:attr="data-post-id=${post.getId()}" class="far fa-arrow-alt-circle-down fa-3x"></i>
+                                        </span>
 
-                    <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" th:text="#{Label.post.originalContent} + ${post.getContent()}" >
+                                    </span>
+                                    <span th:if="${post.isDeleted() || loggedInUser == null}" class="align-content-center align-middle">
+                                        <span th:attr="data-post-id=${post.getId()}"
+                                              th:text="${post.getVoteCount()}" th:name="${'vote-counter-post-id-' + post.getId()}" class="vote-counter font-weight-bold align-middle ml-1 mr-1">
+                                            ###
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <!-- Delete/restore post section-->
+                                <div class="col">
+                                    <span sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" class="ml-2 mr-2">
+                                        <button type="button" th:if="${!post.isDeleted()}" th:attr="data-post-id=${post.getId()}"
+                                                th:name="${'delete-button-post-id-' + post.getId()}"
+                                                th:disabled="${!post.isDeletableBy(loggedInUser)}"
+                                                class="btn btn-outline-danger delete-post-button">
+                                            <i class="fas fa-times" th:attr="data-post-id=${post.getId()}"></i>
+                                            <span th:text="#{Label.post.delete}" th:attr="data-post-id=${post.getId()}"></span>
+                                        </button>
+
+                                        <button type="button" th:if="${post.isDeleted()}" th:attr="data-post-id=${post.getId()}"
+                                                th:name="${'restore-button-post-id-' + post.getId()}"
+                                                th:disabled="${!post.isRestorableBy(loggedInUser)}"
+                                                class="btn btn-outline-success restore-post-button">
+                                            <i class="fas fa-check" th:attr="data-post-id=${post.getId()}"></i>
+                                            <span th:text="#{Label.post.restore}" th:attr="data-post-id=${post.getId()}"></span>
+                                        </button>
+                                    </span>
+                                </div>
+
+                                <!-- Post time section -->
+                                <div class="col text-muted small text-right text-truncate" th:text="${post.getDisplayPostedAt()}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Post content -->
+                        <div class="card-body">
+                            <div th:if="${!post.isDeleted()}" th:text="${post.getContent()}">
+                                Content
+                            </div>
+                            <div th:if="${post.isDeleted()}">
+                                <div th:text="#{Post.deleted.success.notification}" class="text-warning">Post has been deleted.</div>
+                                <hr>
+                                <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" th:text="#{Label.post.originalContent} + ${post.getContent()}" class="text-muted" >
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-                <hr>
-
             </div>
         </div>
 
-        <div th:fragment="post-summary-fragment (post)">
-            <div>
-                <span>
-                    <a href="#" th:href="@{'/forum/' + ${post.getThread().getForum().getName()} + '/show/' + ${post.getThread().getId()} + '#post_id_' + ${post.getId()}}" th:text="${post.getThread().getTitle()}">Thread Title</a>
-                </span>
-                <span> @ </span>
-                <span th:text="${post.getPostedAt().toString()}">Timestamp</span>
+        <div th:fragment="post-summary-fragment (post, iterStat)">
+            <div class="row no-gutters align-items-center mt-3 mb-3">
+
+                <!-- Post's thread title section-->
+                <div class="col-md-3 pl-2 text-ellipsis-overflow">
+                    <a href="#" class="text-large" th:href="@{'/forum/' + ${post.getThread().getForum().getName()} + '/show/' + ${post.getThread().getId()} + '#post_id_' + ${post.getId()}}"
+                       th:text="${post.getThread().getTitle()}">Thread Title</a>
+                </div>
+
+                <!-- Abbreviated post content section-->
+                <div class="col-md-7 pl-2 d-none d-md-block text-ellipsis-overflow" th:text="${post.getContent()}">
+                    Post content goes here
+                </div>
+
+                <div class="col-md-2 pl-2 pr-2 d-none d-md-block text-muted" th:text="${post.getDisplayablePostedAt()}">
+                    Posted at
+                </div>
+
             </div>
-            <div th:text="${post.getAbbreviatedContent()}"> <!--TODO: Restrict content length-->
-                Abbreviated Content
-            </div>
-            <hr>
+
+            <hr th:if="${!iterStat.last}">
+
         </div>
+
     </body>
 </html>

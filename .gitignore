@@ -32,3 +32,4 @@ build/
 
 ### Custom ###
 src/main/resources/security.properties
+src/main/resources/templates/OLD/*

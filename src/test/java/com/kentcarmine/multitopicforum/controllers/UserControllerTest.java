@@ -4,6 +4,7 @@ import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoCon
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.dtos.UserEmailDto;
 import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
+import com.kentcarmine.multitopicforum.dtos.UserSearchResultDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -177,18 +178,20 @@ class UserControllerTest {
         String searchText = "user";
         String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
 
-        SortedSet<String> usernamesResult = new TreeSet<>((o1, o2) -> o1.toLowerCase().compareTo(o2.toLowerCase()));
-        usernamesResult.add(testUser.getUsername());
-        usernamesResult.add(testUser2.getUsername());
+        SortedSet<UserSearchResultDto> searchResults = new TreeSet<>((o1, o2) -> o1.getUsername().toLowerCase().compareTo(o2.getUsername().toLowerCase()));
+        UserSearchResultDto dto1 = new UserSearchResultDto(testUser.getUsername(), null);
+        searchResults.add(dto1);
+        UserSearchResultDto dto2 = new UserSearchResultDto(testUser2.getUsername(), null);
+        searchResults.add(dto2);
 
-        when(userService.searchForUsernames(anyString())).thenReturn(usernamesResult);
+        when(userService.searchForUsernames(anyString())).thenReturn(searchResults);
 
         mockMvc.perform(get("/users?search=" + urlSafeSearchText))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-search-page"))
                 .andExpect(model().attributeExists("userSearchDto"))
-                .andExpect(model().attributeExists("usernames"))
-                .andExpect(model().attribute("usernames", IsCollectionWithSize.hasSize(usernamesResult.size())));
+                .andExpect(model().attributeExists("userSearchResults"))
+                .andExpect(model().attribute("userSearchResults", IsCollectionWithSize.hasSize(searchResults.size())));
 
         verify(userService, times(1)).searchForUsernames(anyString());
     }
@@ -199,7 +202,7 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-search-page"))
                 .andExpect(model().attributeExists("userSearchDto"))
-                .andExpect(model().attributeDoesNotExist("usernames"));
+                .andExpect(model().attributeDoesNotExist("userSearchResults"));
 
         verify(userService, times(0)).searchForUsernames(anyString());
     }
@@ -215,8 +218,8 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-search-page"))
                 .andExpect(model().attributeExists("userSearchDto"))
-                .andExpect(model().attributeExists("usernames"))
-                .andExpect(model().attribute("usernames", IsCollectionWithSize.hasSize(usernamesResult.size())));
+                .andExpect(model().attributeExists("userSearchResults"))
+                .andExpect(model().attribute("userSearchResults", IsCollectionWithSize.hasSize(usernamesResult.size())));
 
         verify(userService, times(1)).searchForUsernames(anyString());
     }

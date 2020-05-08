@@ -20,8 +20,8 @@ function restorePost(event) {
     let req = {
         postId: postId,
     };
-    console.log("Req:");
-    console.log(req);
+    // console.log("Req:");
+    // console.log(req);
 
     $.ajax({
         type: "POST",

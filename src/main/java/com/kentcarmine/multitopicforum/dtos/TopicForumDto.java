@@ -10,8 +10,8 @@ import javax.validation.constraints.Size;
  */
 public class TopicForumDto {
 
-    @NotBlank(message = "${Forum.name.notBlank}")
-    @Size(min = 4, message = "${Forum.name.minSize}")
+    @NotBlank(message = "{Forum.name.notBlank}")
+    @Size(min = 4, message = "{Forum.name.minSize}")
     @ValidCharacters(message = "{Forum.name.validChars}")
     private String name;
 
@@ -38,8 +38,8 @@ public class TopicForumDto {
         return name;
     }
 
-    public void setName(@NotBlank(message = "${Forum.name.notBlank}")
-                        @Size(min = 4, message = "${Forum.name.minSize}")
+    public void setName(@NotBlank(message = "{Forum.name.notBlank}")
+                        @Size(min = 4, message = "{Forum.name.minSize}")
                         @ValidCharacters(message = "{Forum.name.validChars}")
                                 String name) {
         this.name = name;

@@ -1,5 +1,7 @@
 package com.kentcarmine.multitopicforum.controllers;
 
+import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -21,7 +23,6 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -71,6 +72,8 @@ class TopicThreadControllerTest {
     @Mock
     DisciplineService disciplineService;
 
+    ForumHierarchyConverter forumHierarchyConverter;
+
     TopicForum testTopicForum;
     User testUser;
     private User testModerator;
@@ -85,6 +88,8 @@ class TopicThreadControllerTest {
 
         topicThreadController = new TopicThreadController(forumService, userService, topicThreadService,
                 postVoteService, disciplineService);
+
+        forumHierarchyConverter = new ForumHierarchyConverter();
 
         mockMvc = MockMvcBuilders.standaloneSetup(topicThreadController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -166,22 +171,22 @@ class TopicThreadControllerTest {
         final String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
         final String url = "/searchForumThreads/" + testTopicForum.getName() + "?search=" + urlSafeSearchText;
 
-        SortedSet<TopicThread> threadsResults  = new TreeSet<>(new Comparator<TopicThread>() {
+        SortedSet<TopicThreadViewDto> threadViewDtoResults = new TreeSet<>(new Comparator<TopicThreadViewDto>() {
             @Override
-            public int compare(TopicThread o1, TopicThread o2) {
+            public int compare(TopicThreadViewDto o1, TopicThreadViewDto o2) {
                 return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt());
             }
         });
-        threadsResults.add(testTopicForumThread);
+        threadViewDtoResults.add(forumHierarchyConverter.convertThread(testTopicForumThread, null));
 
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-        when(topicThreadService.searchTopicThreads(anyString(), anyString())).thenReturn(threadsResults);
+        when(topicThreadService.searchTopicThreads(anyString(), anyString())).thenReturn(threadViewDtoResults);
 
         mockMvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andExpect(view().name("search-threads-results-page"))
                 .andExpect(model().attributeExists("threads", "forumName", "searchText"))
-                .andExpect(model().attribute("threads", IsCollectionWithSize.hasSize(threadsResults.size())));
+                .andExpect(model().attribute("threads", IsCollectionWithSize.hasSize(threadViewDtoResults.size())));
 
         verify(forumService, times(1)).isForumWithNameExists(anyString());
         verify(topicThreadService, times(1)).searchTopicThreads(anyString(), anyString());
@@ -208,22 +213,22 @@ class TopicThreadControllerTest {
         final String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
         final String url = "/searchForumThreads/" + testTopicForum.getName() + "?search=" + urlSafeSearchText;
 
-        SortedSet<TopicThread> threadsResults  = new TreeSet<>(new Comparator<TopicThread>() {
+        SortedSet<TopicThreadViewDto> threadViewDtoResults = new TreeSet<>(new Comparator<TopicThreadViewDto>() {
             @Override
-            public int compare(TopicThread o1, TopicThread o2) {
+            public int compare(TopicThreadViewDto o1, TopicThreadViewDto o2) {
                 return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt());
             }
         });
-        threadsResults.add(testTopicForumThread);
+        threadViewDtoResults.add(forumHierarchyConverter.convertThread(testTopicForumThread, null));
 
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
-        when(topicThreadService.searchTopicThreads(anyString(), anyString())).thenReturn(threadsResults);
+        when(topicThreadService.searchTopicThreads(anyString(), anyString())).thenReturn(threadViewDtoResults);
 
         mockMvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andExpect(view().name("search-threads-results-page"))
                 .andExpect(model().attributeExists("threads", "forumName", "searchText"))
-                .andExpect(model().attribute("threads", IsCollectionWithSize.hasSize(threadsResults.size())));
+                .andExpect(model().attribute("threads", IsCollectionWithSize.hasSize(threadViewDtoResults.size())));
 
         verify(forumService, times(1)).isForumWithNameExists(anyString());
         verify(topicThreadService, times(1)).searchTopicThreads(anyString(), anyString());
@@ -566,7 +571,6 @@ class TopicThreadControllerTest {
         when(topicThreadService.getThreadById(anyLong())).thenReturn(testTopicForumThread);
 
         mockMvc.perform(post("/unlockTopicThread/1"))
-//                .andExpect(status().is3xxRedirection())
                 .andExpect(status().isUnauthorized())
                 .andExpect(view().name("redirect:/showDisciplineInfo/" + testModerator.getUsername()));
 

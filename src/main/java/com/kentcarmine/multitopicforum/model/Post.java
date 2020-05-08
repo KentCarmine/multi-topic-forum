@@ -1,19 +1,25 @@
 package com.kentcarmine.multitopicforum.model;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * Entity that models a single forum Post within a TopicThread.
  */
 @Entity
-public class Post implements Comparable<Post> {
-    private static final int ABBREVIATED_CONTENT_LENGTH = 50;
+public class Post implements Comparable<Post>, PostUpdatedTimable {
+    private static final String DATE_TIME_FORMAT_STRING = "MM-dd-yyyy, HH:mm";
+    private static final int ABBREVIATED_CONTENT_LENGTH = 50; // TODO: Move into properties file
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -79,6 +85,12 @@ public class Post implements Comparable<Post> {
 
     public void setPostedAt(Date postedAt) {
         this.postedAt = postedAt;
+    }
+
+    public String getDisplayPostedAt() {
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT_STRING);
+
+        return sdf.format(postedAt);
     }
 
     public User getUser() {
@@ -252,5 +264,11 @@ public class Post implements Comparable<Post> {
                 ", deletedAt=" + deletedAtStr +
                 ", deltedBy=" + deletedName +
                 '}';
+    }
+
+    public String getDisplayablePostedAt() {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm").withLocale(Locale.getDefault())
+                .withZone(ZoneId.systemDefault());
+        return dtf.format(postedAt.toInstant());
     }
 }

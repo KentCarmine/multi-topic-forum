@@ -224,9 +224,8 @@ public class UserAccountController {
                                          @RequestParam("token") String token) {
         User user = userService.getUser(username);
         boolean isValidResetToken = userAccountService.validatePasswordResetToken(user, token);
+
         if (user == null || !user.isEnabled() || !isValidResetToken) {
-            if (user != null) {
-            }
             return "redirect:/login?passwordResetError";
         }
 
@@ -252,7 +251,6 @@ public class UserAccountController {
 
         User user = userService.getUser(userPasswordDto.getUsername());
         boolean isValidResetToken = userAccountService.validatePasswordResetToken(user, userPasswordDto.getToken());
-
         if (!isValidResetToken || !user.hasAuthority(UserRole.CHANGE_PASSWORD_PRIVILEGE)) {
             mv = new ModelAndView("redirect:/login?passwordResetError");
             return mv;

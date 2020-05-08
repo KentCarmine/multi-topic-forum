@@ -2,56 +2,97 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title th:text="#{Label.login.header.title}">Multi-Topic Forum | Login</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/signin.css}">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
     </head>
+
     <body>
-        <div th:replace="fragments/navbar.html :: navbar"></div>
-        <form th:action="@{/processLogin}" method="POST">
-            <div th:if="${param.error}">
-                <p style="color: red" th:text="#{Label.login.error.incorrectUsernameOrPassword.prompt}">Incorrect username or password</p>
+        <nav th:replace="fragments/navbar.html :: navbar"></nav>
+
+        <div class="container-sm text-center flash-prompt-container">
+            <div th:if="${param.logout}" th:text="#{Label.login.loggedOut.success.prompt}" class="alert alert-success flash-prompt-success">
+                You have been logged out
+            </div>
+            <div th:if="${param.regEmailSent}" th:text="#{Label.login.registration.checkEmail.prompt}" class="alert alert-success flash-prompt-success">
+                Please check your email to complete your registration
+            </div>
+            <div th:if="${param.registrationSuccess}" th:text="#{Label.login.registration.success.prompt}" class="alert alert-success flash-prompt-success">
+                You successfully registered an account
+            </div>
+            <div th:if="${param.passwordUpdateSuccess}" th:text="#{Label.login.passwordReset.success.prompt}" class="alert alert-success flash-prompt-success">
+                You password has been successfully updated
+            </div>
+        </div>
+
+        <main class="container h-100">
+            <div class="card bg-light align-middle">
+
+                <div class="w-100 mt-3 text-center">
+                    <img alt="" width="72" height="72" th:src="@{images/brand-icon.png}" >
+                </div>
+
+                <article class="card-body mx-auto" style="max-width: 400px;">
+                    <h2 class="mb-3 font-weight-normal text-center card-title mt-1" th:text="#{Label.login.signIn}">Sign In</h2>
+
+                    <form th:action="@{/processLogin}" method="POST" class="form-login">
+
+                        <div th:if="${param.error != null || param.regError != null || param.passwordResetError != null}">
+                            <ul class="list-group form-error-list">
+                                <li th:if="${param.error}" class="list-group-item list-group-item-danger form-error-list-item" th:text="#{Label.login.error.incorrectUsernameOrPassword.prompt}">Incorrect username or password</li>
+                                <li th:if="${param.regError}" class="list-group-item list-group-item-danger form-error-list-item" th:text="${session[SPRING_SECURITY_LAST_EXCEPTION]}">Registration error</li>
+                                <li th:if="${param.passwordResetError}" class="list-group-item list-group-item-danger form-error-list-item" th:text="#{Label.login.error.passwordReset.prompt}">Error when attempting to reset password</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-group input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"> <i class="fa fa-user"></i> </span>
+                            </div>
+                            <input id="login-username" type="text" name="username" placeholder="username" class="form-control" autofocus>
+                        </div>
+
+                        <div class="form-group input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"> <i class="fas fa-unlock-alt"></i> </span>
+                            </div>
+                            <input id="login-password" type="password" name="password" placeholder="password" class="form-control">
+                        </div>
+
+                        <div class="checkbox mb-2 remember-me-container form-group mt-0">
+                            <label for="login-remember-me" th:text="#{Label.login.rememberMe}">Remember me? </label>
+                            <input id="login-remember-me" type="checkbox" name="remember-me" class="ml-1 align-middle">
+                        </div>
+
+                        <div class="btn btn-primary btn-block">
+                            <button type="submit" th:text="#{Label.login.submit.buttonText}" class="btn btn-lg btn-primary btn-block">Login</button>
+                        </div>
+
+                        <hr class="mb-1">
+
+                        <div class="text-center w-100 mt-0">
+                            <span>
+                                <a href="#" th:href="@{/registerUser}" th:text="#{Label.register}" class="mr-3">Register</a>
+
+                                <a href="#" th:href="@{/resetPassword}" th:text="#{Label.login.password.reset}">Reset password</a>
+                            </span>
+                        </div>
+
+                    </form>
+
+                </article>
+
             </div>
 
-            <div th:if="${param.regError}">
-                <p style="color: red" th:text="${session[SPRING_SECURITY_LAST_EXCEPTION]}"></p>
-            </div>
+        </main>
 
-            <div th:if="${param.logout}">
-                <p style="color: greenyellow" th:text="#{Label.login.loggedOut.success.prompt}">You have been logged out</p>
-            </div>
-
-            <div th:if="${param.regEmailSent}">
-                <p style="color: greenyellow" th:text="#{Label.login.registration.checkEmail.prompt}">Please check your email to complete your registration</p>
-            </div>
-
-            <div th:if="${param.registrationSuccess}">
-                <p style="color: greenyellow" th:text="#{Label.login.registration.success.prompt}">You successfully registered an account</p>
-            </div>
-
-            <div th:if="${param.passwordResetError}">
-                <p style="color: red" th:text="#{Label.login.error.passwordReset.prompt}">Error when attempting to reset password</p>
-            </div>
-
-            <div th:if="${param.passwordUpdateSuccess}">
-                <p style="color: greenyellow" th:text="#{Label.login.passwordReset.success.prompt}">You password has been successfully updated</p>
-            </div>
-
-            <div>
-                <label th:text="#{Label.login.username}">Username: </label>
-                <input type="text" name="username" placeholder="username">
-            </div>
-            <div>
-                <label th:text="#{Label.login.password}">Password: </label>
-                <input type="password" name="password" placeholder="password">
-            </div>
-            <div>
-                <a href="#" th:href="@{/resetPassword}" th:text="#{Label.login.password.reset}">Reset password</a>
-            </div>
-            <div>
-                <label th:text="#{Label.login.rememberMe}">Remember me: </label>
-                <input type="checkbox" name="remember-me">
-            </div>
-
-            <button type="submit" th:text="#{Label.login.submit.buttonText}">Login</button>
-        </form>
     </body>
 </html>

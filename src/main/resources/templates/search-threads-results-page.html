@@ -2,33 +2,68 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8">
-<!--        <title th:text="'Searching ' + ${forumName} + ' for \'' + ${searchText} + '\''">Search {FORUM} for {SEARCH_TEXT}</title>-->
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <title th:text="#{Label.thread.search.header.title.parameterized(${forumName},${searchText})}">Search {FORUM} for {SEARCH_TEXT}</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/f91e99ba28.js" crossorigin="anonymous"></script>
     </head>
     <body>
         <div th:replace="fragments/navbar.html :: navbar"></div>
 
-<!--        <h2 th:text="'Search results for \'' + ${searchText} + '\' on ' + ${forumName}">Search results for {SEARCH_TEXT} on {FORUM}</h2>-->
-<!--        <h2 th:text="#{Label.thread.search.header.parameterized(${searchText},${forumName})}">Search results for {SEARCH_TEXT} on {FORUM}</h2>-->
-        <h2 th:text="#{Label.thread.search.header.parameterized(${searchText},${forumName})}">Search results for {SEARCH_TEXT} on {FORUM}</h2>
+        <main class="container-fluid">
+            <!-- Header section -->
+            <div class="mt-2">
+                <!-- Error alert -->
+                <div class="container-sm text-center">
+                    <div th:if="${param.searchError}" th:text="#{Label.thread.search.error.invalidSearchTerms}" class="alert alert-danger">
+                        Invalid search terms
+                    </div>
+                </div>
 
-        <div th:if="${param.searchError}">
-            <p style="color: red" th:text="#{Label.thread.search.error.invalidSearchTerms}">Invalid search terms</p>
-        </div>
-
-        <div th:if="${param.search}">
-            <div th:if="${threads != null && !threads.isEmpty()}">
-                <ul>
-                    <li th:each="thread : ${threads}"
-                         th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread})"></li> <!--TODO: Add Pagination?-->
-                </ul>
+                <!-- Search term info header -->
+                <div th:if="${param.searchError == null}" class="ml-3">
+                    <h3 th:text="#{Label.thread.search.header.parameterized(${searchText},${forumName})}">Search results for {SEARCH_TEXT} on {FORUM}</h3>
+                </div>
             </div>
-            <div th:if="${threads == null || threads.isEmpty()}">
-<!--                <p th:text="'No threads found for search: \'' + ${searchText} + '\''">No threads found for search</p>-->
-                <p th:text="#{Label.thread.search.noneFound.parameterized(${searchText})}">No threads found for search</p>
-            </div>
-        </div>
 
-        </div>
+            <!-- Search result list -->
+            <div class="card mb-3 mt-4" th:if="${param.search}">
+
+                <!-- Thread List Headers -->
+                <div class="card-header pl-0 pr-0">
+                    <div class="row no-gutters w-100 align-items-center">
+                        <div class="col ml-3" th:text="#{Label.forums.threads.header}">Threads</div>
+                        <div class="col-4 text-muted d-none d-md-block">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-4" th:text="#{Label.forums.thread.postCount.header}">Posts</div>
+                                <div class="col-8" th:text="#{Label.forums.thread.recentActivity.header}">Recent Activity</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thread list main body-->
+                <div>
+                    <!-- Show results (if some exist)-->
+                    <div th:if="${threads != null && !threads.isEmpty()}">
+                        <div th:each="thread,iterStat : ${threads}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread},${iterStat})"> <!--TODO: Add Pagination?-->
+                        </div>
+                    </div>
+
+                    <!-- No results exist-->
+                    <div th:if="${threads == null || threads.isEmpty()}" class="text-info text-center mt-1 mb-2 h5">
+                        <span class="font-weight-bold" th:text="#{Label.thread.search.noneFound}">No threads found for search: </span>
+                        <span th:text="#{Label.thread.search.searchTextQuoted(${searchText})}"></span>
+                    </div>
+                </div>
+            </div>
+        </main>
     </body>
 </html>

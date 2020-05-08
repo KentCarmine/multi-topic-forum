@@ -7,8 +7,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.sql.Date;
+import java.util.Date;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 /**
@@ -47,26 +49,32 @@ public class Bootstrap implements CommandLineRunner {
         TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing.");
         topicForumRepository.save(testForum1);
 
-        TopicForum testForum2 = new TopicForum("DemoForum2", "Second forum for testing!");
+        TopicForum testForum2 = new TopicForum("DemoForum2", "Second forum for testing! This is a very " +
+                "long description. Second forum for testing! This is a very long description. Second forum for testing! " +
+                "This is a very long description. Second forum for testing! This is a very long description. Second " +
+                "forum for testing! This is a very long description. Second forum for testing! This is a very long " +
+                "description. Second forum for testing! This is a very long description.");
         topicForumRepository.save(testForum2);
 
-        TopicThread forum2Thread1 = new TopicThread("Thread1", testForum2);
+        TopicThread forum2Thread1 = new TopicThread("Thread1 this is a very long thread name, this is a very long thread name, this is a very long thread name, this is a very long thread name", testForum2);
         topicThreadRepository.save(forum2Thread1);
 
         TopicThread forum2Thread2 = new TopicThread("Thread 2", testForum2);
         topicThreadRepository.save(forum2Thread2);
 
-        Post post1 = new Post("Test content 1", Date.from(Instant.now()));
+        final long secondsIn8Hours = (60 * 60 * 8);
+        Post post1 = new Post("Test content 1", Date.from(Instant.now().minusSeconds(secondsIn8Hours)));
         post1.setUser(userRepository.findByUsername("admin"));
         post1.setThread(forum2Thread1);
         post1 = postRepository.save(post1);
 
-        Post post2 = new Post("Test content 2", Date.from(Instant.now().plusSeconds(10)));
+        Post post2 = new Post("Test content 2", Date.from(Instant.now().minusSeconds(10)));
         post2.setUser(userRepository.findByUsername("user"));
         post2.setThread(forum2Thread1);
         post2 = postRepository.save(post2);
 
-        Post post5 = new Post("Test content 2", Date.from(Instant.now().plusSeconds(60)));
+        final long secondsIn12Mins = (60 * 12);
+        Post post5 = new Post("Test content 2", Date.from(Instant.now().minusSeconds(secondsIn12Mins)));
         post5.setUser(userRepository.findByUsername("admin2"));
         post5.setThread(forum2Thread2);
         post5 = postRepository.save(post5);
@@ -74,17 +82,20 @@ public class Bootstrap implements CommandLineRunner {
         TopicThread forum1Thread1 = new TopicThread("Thread2", testForum1);
         topicThreadRepository.save(forum1Thread1);
 
-        Post post3 = new Post("Test content 3", Date.from(Instant.now().plusSeconds(5)));
+        final long secondsIn3Years20Days = (60 * 60 * 24 * 365 * 3) + (60 * 60 * 24 * 20);
+        Post post3 = new Post("Test content 3", Date.from(Instant.now().minusSeconds(secondsIn3Years20Days)));
         post3.setUser(userRepository.findByUsername("user2"));
         post3.setThread(forum1Thread1);
         post3 = postRepository.save(post3);
 
-        Post post4 = new Post("Test content 4", Date.from(Instant.now().plusSeconds(15)));
+        final long secondsIn70Days = (60 * 60 * 24 * 70);
+        Post post4 = new Post("Test content 4", Date.from(Instant.now().minusSeconds(secondsIn70Days)));
         post4.setUser(userRepository.findByUsername("admin2"));
         post4.setThread(forum1Thread1);
         post4 = postRepository.save(post4);
 
-        Post post6 = new Post("Test content 6", Date.from(Instant.now().plusSeconds(20)));
+        final long secondsIn16Days = (60 * 60 * 24 * 16);
+        Post post6 = new Post("Test content 6", Date.from(Instant.now().minusSeconds(secondsIn16Days)));
         post6.setUser(userRepository.findByUsername("moderator2"));
         post6.setThread(forum1Thread1);
         post6 = postRepository.save(post6);
@@ -96,7 +107,7 @@ public class Bootstrap implements CommandLineRunner {
                 "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa " +
                 "qui officia deserunt mollit anim id est laborum.";
         for (int i = 0; i < 100; i++) {
-            Post post = new Post("Dynamic test content " + i + ". " + lorem, java.util.Date.from(Instant.now().plusSeconds(120 + i)));
+            Post post = new Post("Dynamic test content " + i + ". " + lorem, java.util.Date.from(Instant.now().minusSeconds(120 - i)));
             post.setUser(admin);
             post.setThread(forum2Thread1);
             postRepository.save(post);
@@ -114,9 +125,12 @@ public class Bootstrap implements CommandLineRunner {
         PostVote vote4 = new PostVote(PostVoteState.UPVOTE, userRepository.findByUsername("moderator2"), post1);
         vote4 = postVoteRepository.save(vote4);
 
+        forum2Thread1.lock(userRepository.findByUsername("superadmin"));
+        topicThreadRepository.save(forum2Thread1);
+
 //        post1 = postRepository.findById(post1.getId()).get();
 //        System.out.println("### " + postVoteRepository.findByUserAndPost(userRepository.findByUsername("admin2"), post1));
-//        System.out.println("### " + post1.getPostVotes().get(0).toString());
+//        System.out.println("### " + post1.getPostVotes().get(0).toString());\
     }
 
     private void createUsers() {
