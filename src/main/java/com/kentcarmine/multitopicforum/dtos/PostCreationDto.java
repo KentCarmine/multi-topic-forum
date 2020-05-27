@@ -10,7 +10,10 @@ public class PostCreationDto {
     @NotBlank(message = "Post content must not be blank")
     private String content;
 
+    private int postPageNum;
+
     public PostCreationDto() {
+        this.postPageNum = 1;
     }
 
     public PostCreationDto(String content) {
@@ -23,5 +26,13 @@ public class PostCreationDto {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public int getPostPageNum() {
+        return postPageNum;
+    }
+
+    public void setPostPageNum(int postPageNum) {
+        this.postPageNum = postPageNum;
     }
 }

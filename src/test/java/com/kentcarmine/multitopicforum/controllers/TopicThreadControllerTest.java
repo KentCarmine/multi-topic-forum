@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,6 +24,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -371,6 +374,9 @@ class TopicThreadControllerTest {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
+        Page<Post> page = new PageImpl<Post>(testTopicForumThread.getPosts().stream().collect(Collectors.toList()));
+        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(page);
+
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
                 .andExpect(status().isOk())
@@ -381,6 +387,7 @@ class TopicThreadControllerTest {
                 .andExpect(model().attributeExists("posts"))
                 .andExpect(model().attributeDoesNotExist("postCreationDto", "loggedInUser", "voteMap",
                         "canLock", "canUnlock"));
+
     }
 
     @Test
@@ -388,6 +395,9 @@ class TopicThreadControllerTest {
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+
+        Page<Post> page = new PageImpl<Post>(testTopicForumThread.getPosts().stream().collect(Collectors.toList()));
+        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(page);
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
@@ -431,6 +441,8 @@ class TopicThreadControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(view().name("forum-not-found"))
                 .andExpect(model().attributeExists("message"));
+
+        verify(topicThreadService, times(0)).getPostPage(any(), anyInt(), anyInt());
     }
 
     @Test
@@ -444,6 +456,8 @@ class TopicThreadControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(view().name("thread-not-found"))
                 .andExpect(model().attributeExists("message"));
+
+        verify(topicThreadService, times(0)).getPostPage(any(), anyInt(), anyInt());
     }
 
     @Test

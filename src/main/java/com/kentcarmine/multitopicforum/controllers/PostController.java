@@ -8,6 +8,8 @@ import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,9 @@ import javax.validation.Valid;
  */
 @Controller
 public class PostController {
+
+    @Value("${spring.data.web.pageable.default-page-size}")
+    private int POSTS_PER_PAGE;
 
     private final ForumService forumService;
     private final UserService userService;
@@ -68,15 +73,23 @@ public class PostController {
             throw new TopicThreadNotFoundException();
         }
 
+        int userLastViewingPageNum = 1; // TODO: Update this (last page number the user was looking at, for error path)
+
         if (bindingResult.hasErrors()) {
             System.out.println("### in addPostToThread(). hasErrors() case");
             bindingResult.getAllErrors().stream().forEach(System.out::println);
+
+            Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
+
             mv = new ModelAndView("topic-thread-page", "postCreationDto", postCreationDto);
             mv.addObject("forumName", forumName);
             mv.addObject("threadTitle", thread.getTitle());
             mv.addObject("threadId", threadId);
-            mv.addObject("posts", thread.getPosts());
             mv.addObject("threadIsLocked", thread.isLocked());
+//            mv.addObject("posts", thread.getPosts());
+            mv.addObject("posts", posts);
+
+            // TODO: Add url param to mv of userLastViewingPageNum; [NOTE: Probably not needed, as is being passed in via DTO]
 
             User loggedInUser = userService.getLoggedInUser();
 
@@ -97,7 +110,10 @@ public class PostController {
         Post newPost = postService.addNewPostToThread(postCreationDto, loggedInUser, thread);
         String newPostId = "#post_id_" + newPost.getId();
 
-        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId + newPostId);
+        Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
+        int finalPageNum = posts.getTotalPages(); // TODO: Update this (maximum page number, for happy path) [NOTE: Check that newly added post is counted correctly if it results in the creation of a new page]
+
+        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId + newPostId); // TODO: Update with finalPageNum url param
         return mv;
     }
 
