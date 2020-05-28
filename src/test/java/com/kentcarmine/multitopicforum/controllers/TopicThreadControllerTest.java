@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -391,6 +392,23 @@ class TopicThreadControllerTest {
     }
 
     @Test
+    void showThread_validThread_invalidPageNumber() throws Exception {
+        when(userService.getLoggedInUser()).thenReturn(testUser);
+        when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
+        when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(null);
+
+        String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId() + "?page=217";
+        mockMvc.perform(get(url))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("general-error-page"))
+                .andExpect(model().attributeDoesNotExist("postCreationDto", "loggedInUser", "voteMap",
+                        "canLock", "canUnlock", "posts", "threadTitle", "threadTitle", "threadId", "forumName"));
+
+        verify(topicThreadService, times(1)).getPostPage(any(), anyInt(), anyInt());
+    }
+
+    @Test
     void showThread_validThread_loggedIn() throws Exception {
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
@@ -423,6 +441,7 @@ class TopicThreadControllerTest {
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(new PageImpl<Post>(new ArrayList<Post>()));
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
@@ -468,7 +487,7 @@ class TopicThreadControllerTest {
 
         mockMvc.perform(post("/lockTopicThread/1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?threadLocked"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?threadLocked&page=1"));
 
         verify(userService, times(1)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());
@@ -502,7 +521,7 @@ class TopicThreadControllerTest {
 
         mockMvc.perform(post("/lockTopicThread/1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?lockThreadError"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?lockThreadError&page=1"));
 
         verify(userService, times(1)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());
@@ -516,7 +535,7 @@ class TopicThreadControllerTest {
 
         mockMvc.perform(post("/lockTopicThread/1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?lockThreadError"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?lockThreadError&page=1"));
 
         verify(userService, times(1)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());
@@ -548,7 +567,7 @@ class TopicThreadControllerTest {
 
         mockMvc.perform(post("/lockTopicThread/1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?threadLocked"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?threadLocked&page=1"));
 
         verify(userService, times(1)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());
@@ -565,7 +584,7 @@ class TopicThreadControllerTest {
 
         mockMvc.perform(post("/unlockTopicThread/1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?threadUnlocked"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?threadUnlocked&page=1"));
 
         verify(userService, times(1)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());
@@ -600,7 +619,7 @@ class TopicThreadControllerTest {
 
         mockMvc.perform(post("/unlockTopicThread/1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?threadUnlocked"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?threadUnlocked&page=1"));
 
         verify(userService, times(1)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());
@@ -616,7 +635,7 @@ class TopicThreadControllerTest {
 
         mockMvc.perform(post("/unlockTopicThread/1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?unlockThreadError"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?unlockThreadError&page=1"));
 
         verify(userService, times(1)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());
@@ -651,7 +670,7 @@ class TopicThreadControllerTest {
 
         mockMvc.perform(post("/unlockTopicThread/1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?unlockThreadError"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForum.getName() + "/show/1?unlockThreadError&page=1"));
 
         verify(userService, times(1)).getLoggedInUser();
         verify(topicThreadService, times(1)).getThreadById(anyLong());

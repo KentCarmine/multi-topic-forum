@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
+import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.ResourceNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.model.Post;
@@ -82,7 +83,7 @@ public class PostController {
 
             Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
             if (posts == null) {
-                throw new ResourceNotFoundException();
+                throw new PageNotFoundException();
             }
 
             mv = new ModelAndView("topic-thread-page", "postCreationDto", postCreationDto);
@@ -108,6 +109,7 @@ public class PostController {
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
             return mv;
         }
+
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);
 

@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
+import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.ResourceNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -165,7 +166,7 @@ public class TopicThreadController {
 
         Page<Post> posts = topicThreadService.getPostPage(thread, page, POSTS_PER_PAGE);
         if (posts == null) {
-            throw new ResourceNotFoundException();
+            throw new PageNotFoundException();
         }
 
         model.addAttribute("forumName", forumName);

@@ -66,6 +66,14 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         return "thread-not-found";
     }
 
+    @ExceptionHandler(PageNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handlePageNotFound(Model model, PageNotFoundException ex) {
+        String msg = messageService.getMessage(ex.getMessage());
+        model.addAttribute("message", msg);
+        return "general-error-page";
+    }
+
     @ExceptionHandler({InsufficientAuthorityException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public String handleInsufficientAuthority(InsufficientAuthorityException e) {

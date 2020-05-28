@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -18,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -343,5 +346,43 @@ class TopicThreadServiceTest {
 
         verify(topicThreadRepository, times(0)).save(any());
     }
+
+    @Test
+    void getPostPage_valid() throws Exception {
+        Page<Post> postPage = new PageImpl<Post>(testTopicThread.getPosts().stream().collect(Collectors.toList()));
+        when(postRepository.findAllByThread(any(), any())).thenReturn(postPage);
+
+        Page<Post> result = topicThreadService.getPostPage(testTopicThread, 1, 25);
+
+        assertEquals(postPage.getNumberOfElements(), result.getNumberOfElements());
+
+        verify(postRepository, times(1)).findAllByThread(any(), any());
+    }
+
+    @Test
+    void getPostPage_negativePageNumber() throws Exception {
+        Page<Post> postPage = new PageImpl<Post>(testTopicThread.getPosts().stream().collect(Collectors.toList()));
+        when(postRepository.findAllByThread(any(), any())).thenReturn(postPage);
+
+        Page<Post> result = topicThreadService.getPostPage(testTopicThread, -1, 25);
+
+        assertNull(result);
+
+        verify(postRepository, times(0)).findAllByThread(any(), any());
+    }
+
+    @Test
+    void getPostPage_abovePageCountPageNumber() throws Exception {
+        Page<Post> postPage = new PageImpl<Post>(testTopicThread.getPosts().stream().collect(Collectors.toList()));
+        when(postRepository.findAllByThread(any(), any())).thenReturn(postPage);
+
+        Page<Post> result = topicThreadService.getPostPage(testTopicThread, 2, 25);
+
+        assertNull(result);
+
+        verify(postRepository, times(1)).findAllByThread(any(), any());
+
+    }
+
 
 }

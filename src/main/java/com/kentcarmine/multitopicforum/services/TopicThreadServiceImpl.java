@@ -100,6 +100,11 @@ public class TopicThreadServiceImpl implements TopicThreadService {
      */
     @Override
     public Page<Post> getPostPage(TopicThread thread, int pageNum, int postsPerPage) {
+        if (pageNum - 1 < 0) {
+            System.out.println("### Negative page number");
+            return null;
+        }
+
         Pageable pageReq = PageRequest.of(pageNum - 1, postsPerPage, Sort.by("postedAt").ascending());
         Page<Post> postsPage = postRepository.findAllByThread(thread, pageReq);
 
