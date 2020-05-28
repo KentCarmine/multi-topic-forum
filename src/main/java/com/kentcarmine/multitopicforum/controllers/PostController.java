@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
+import com.kentcarmine.multitopicforum.exceptions.ResourceNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicThread;
@@ -73,20 +74,23 @@ public class PostController {
             throw new TopicThreadNotFoundException();
         }
 
-        int userLastViewingPageNum = 1; // TODO: Update this (last page number the user was looking at, for error path)
+        int userLastViewingPageNum = postCreationDto.getPostPageNum();
 
         if (bindingResult.hasErrors()) {
-            System.out.println("### in addPostToThread(). hasErrors() case");
+//            System.out.println("### in addPostToThread(). hasErrors() case");
             bindingResult.getAllErrors().stream().forEach(System.out::println);
 
             Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
+            if (posts == null) {
+                throw new ResourceNotFoundException();
+            }
 
             mv = new ModelAndView("topic-thread-page", "postCreationDto", postCreationDto);
             mv.addObject("forumName", forumName);
             mv.addObject("threadTitle", thread.getTitle());
             mv.addObject("threadId", threadId);
             mv.addObject("threadIsLocked", thread.isLocked());
-//            mv.addObject("posts", thread.getPosts());
+
             mv.addObject("posts", posts);
 
             // TODO: Add url param to mv of userLastViewingPageNum; [NOTE: Probably not needed, as is being passed in via DTO]
@@ -94,7 +98,7 @@ public class PostController {
             User loggedInUser = userService.getLoggedInUser();
 
             if (loggedInUser != null) {
-                System.out.println("### in addPostToThread(). has loggedInUser case");
+//                System.out.println("### in addPostToThread(). has loggedInUser case");
                 mv.addObject("loggedInUser", loggedInUser);
                 mv.addObject("voteMap", postVoteService.generateVoteMap(loggedInUser, thread));
                 mv.addObject("canLock", topicThreadService.canUserLockThread(loggedInUser, thread));
@@ -111,9 +115,10 @@ public class PostController {
         String newPostId = "#post_id_" + newPost.getId();
 
         Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
-        int finalPageNum = posts.getTotalPages(); // TODO: Update this (maximum page number, for happy path) [NOTE: Check that newly added post is counted correctly if it results in the creation of a new page]
+        int finalPageNum = posts.getTotalPages();
+        String finalPageUrlStr = "?page=" + finalPageNum;
 
-        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId + newPostId); // TODO: Update with finalPageNum url param
+        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId + finalPageUrlStr + newPostId);
         return mv;
     }
 

@@ -90,17 +90,24 @@ public class TopicThreadServiceImpl implements TopicThreadService {
 
     /**
      * Gets Page number pageNum of Posts belonging to the given TopicThread and sorted by posting date order. The page
-     * will contain postsPerPage elements (or less, if its the last page).
+     * will contain postsPerPage elements (or less, if its the last page). If the given page number does not exist,
+     * returns null
      *
      * @param thread The TopicThread to get posts for
      * @param pageNum the number of the page to get (will be decremented by 1)
      * @param postsPerPage the maximum number of posts per page
-     * @return the Page of Posts
+     * @return the Page of Posts, or null, if the numbered page does not exist
      */
     @Override
     public Page<Post> getPostPage(TopicThread thread, int pageNum, int postsPerPage) {
         Pageable pageReq = PageRequest.of(pageNum - 1, postsPerPage, Sort.by("postedAt").ascending());
         Page<Post> postsPage = postRepository.findAllByThread(thread, pageReq);
+
+        if (pageNum > postsPage.getTotalPages()) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
+
         return postsPage;
     }
 

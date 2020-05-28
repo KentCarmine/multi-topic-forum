@@ -63,14 +63,14 @@
 
                 <!-- Lock/unlock thread button section-->
                 <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-                    <form th:if="${canLock}" th:action="@{'/lockTopicThread/' + ${threadId}}" method="POST">
+                    <form th:if="${canLock}" th:action="@{'/lockTopicThread/' + ${threadId} + '?page=' + ${posts.getNumber()+1}}" method="POST">
                         <button type="submit" class="btn btn-sm btn-danger">
                             <i class="fa fa-lock color-whitesmoke"></i>
                             <span th:text="#{Label.thread.lock.buttonText}">Lock Thread</span>
                         </button>
                     </form>
 
-                    <form th:if="${canUnlock}" th:action="@{'/unlockTopicThread/' + ${threadId}}" method="POST">
+                    <form th:if="${canUnlock}" th:action="@{'/unlockTopicThread/' + ${threadId} + '?page=' + ${posts.getNumber()+1}}" method="POST">
                         <button type="submit" class="btn btn-sm btn-success">
                             <i class="fa fa-lock-open color-whitesmoke"></i>
                             <span th:text="#{Label.thread.unlock.buttonText}">Unlock Thread</span>
@@ -94,6 +94,8 @@
                             <li class="list-group-item list-group-item-danger form-error-list-item" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></li>
                         </ul>
                     </div>
+
+                    <input type="hidden" id="postPageNum" name="postPageNum" th:field="*{postPageNum}">
 
                     <div class="form-group">
                         <textarea class="form-control" id="new-post-content" rows="10" th:field="*{content}"

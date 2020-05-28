@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
+import com.kentcarmine.multitopicforum.exceptions.ResourceNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.Post;
@@ -163,6 +164,9 @@ public class TopicThreadController {
         }
 
         Page<Post> posts = topicThreadService.getPostPage(thread, page, POSTS_PER_PAGE);
+        if (posts == null) {
+            throw new ResourceNotFoundException();
+        }
 
         model.addAttribute("forumName", forumName);
         model.addAttribute("threadTitle", thread.getTitle());
@@ -174,7 +178,10 @@ public class TopicThreadController {
         disciplineService.handleDisciplinedUser(loggedInUser);
 
         if (loggedInUser != null) {
-            model.addAttribute("postCreationDto", new PostCreationDto());
+            PostCreationDto dto = new PostCreationDto();
+            dto.setPostPageNum(page);
+            model.addAttribute("postCreationDto", dto);
+
             model.addAttribute("loggedInUser", loggedInUser);
             model.addAttribute("voteMap", postVoteService.generateVoteMap(loggedInUser, thread));
             model.addAttribute("canLock", topicThreadService.canUserLockThread(loggedInUser, thread));
@@ -188,7 +195,8 @@ public class TopicThreadController {
      * Handles processing of a request to lock the thread with the given ID
      */
     @PostMapping("/lockTopicThread/{threadId}")
-    public String processLockThread(@PathVariable Long threadId) {
+    public String processLockThread(@PathVariable Long threadId,
+                                    @RequestParam(required = false, defaultValue = "1") int page) {
         TopicThread thread = topicThreadService.getThreadById(threadId);
 
         if (thread == null) {
@@ -201,20 +209,22 @@ public class TopicThreadController {
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);
 
+        String pageUrlParamAppend = "&page=" + page;
+
         if (loggedInUser == null) {
-            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError";
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError" + pageUrlParamAppend;
         }
 
         if (thread.isLocked()) {
-            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadLocked";
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadLocked" + pageUrlParamAppend;
         }
 
         boolean isLockSuccessful = topicThreadService.lockThread(loggedInUser, thread);
 
         if (isLockSuccessful) {
-            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadLocked";
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadLocked" + pageUrlParamAppend;
         } else {
-            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError";
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?lockThreadError" + pageUrlParamAppend;
         }
     }
 
@@ -222,7 +232,8 @@ public class TopicThreadController {
      * Handles processing of a request to unlock the thread with the given ID
      */
     @PostMapping("/unlockTopicThread/{threadId}")
-    public String processUnlockThread(@PathVariable Long threadId) {
+    public String processUnlockThread(@PathVariable Long threadId,
+                                      @RequestParam(required = false, defaultValue = "1") int page) {
         TopicThread thread = topicThreadService.getThreadById(threadId);
 
         if (thread == null) {
@@ -235,20 +246,22 @@ public class TopicThreadController {
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);
 
+        String pageUrlParamAppend = "&page=" + page;
+
         if (loggedInUser == null) {
-            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError";
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError" + pageUrlParamAppend;
         }
 
         if (!thread.isLocked()) {
-            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadUnlocked";
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadUnlocked" + pageUrlParamAppend;
         }
 
         boolean isUnlockSuccessful = topicThreadService.unlockThread(loggedInUser, thread);
 
         if (isUnlockSuccessful) {
-            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadUnlocked";
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?threadUnlocked" + pageUrlParamAppend;
         } else {
-            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError";
+            return "redirect:/forum/" + forum.getName() + "/show/" + threadId + "?unlockThreadError" + pageUrlParamAppend;
         }
     }
 
