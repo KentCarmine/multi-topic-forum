@@ -63,14 +63,14 @@
 
                 <!-- Lock/unlock thread button section-->
                 <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
-                    <form th:if="${canLock}" th:action="@{'/lockTopicThread/' + ${threadId}}" method="POST">
+                    <form th:if="${canLock}" th:action="@{'/lockTopicThread/' + ${threadId} + '?page=' + ${posts.getNumber()+1}}" method="POST">
                         <button type="submit" class="btn btn-sm btn-danger">
                             <i class="fa fa-lock color-whitesmoke"></i>
                             <span th:text="#{Label.thread.lock.buttonText}">Lock Thread</span>
                         </button>
                     </form>
 
-                    <form th:if="${canUnlock}" th:action="@{'/unlockTopicThread/' + ${threadId}}" method="POST">
+                    <form th:if="${canUnlock}" th:action="@{'/unlockTopicThread/' + ${threadId} + '?page=' + ${posts.getNumber()+1}}" method="POST">
                         <button type="submit" class="btn btn-sm btn-success">
                             <i class="fa fa-lock-open color-whitesmoke"></i>
                             <span th:text="#{Label.thread.unlock.buttonText}">Unlock Thread</span>
@@ -85,6 +85,22 @@
                 <div th:each="post : ${posts}" th:include="fragments/post-display.html :: post-fragment (${post})"></div>
             </div>
 
+            <div id="pagination-container" class="mt-3">
+                <nav th:replace="fragments/pagination.html :: pagination-fragment (${posts},@{'/forum/' + ${forumName} + '/show/' + ${threadId}})"></nav>
+<!--                <nav aria-label="pagination">-->
+<!--                    <ul class="pagination">-->
+<!--                        <li class="page-item" th:classappend="${posts.isFirst()} ? 'disabled'"><a class="page-link" th:tabindex="${posts.isFirst()} ? '-1'" href="#" th:href="@{'/forum/' + ${forumName} + '/show/' + ${threadId} + '?page=1'}" th:text="#{Label.pagination.link.first}">First</a></li>-->
+<!--                        <li th:if="${posts.getNumber() + 1 > 2}" class="page-item disabled"><span class="page-link">...</span></li>-->
+<!--                        <li th:if="${posts.hasPrevious()}" class="page-item"><a class="page-link" href="#" th:href="@{'/forum/' + ${forumName} + '/show/' + ${threadId} + '?page=' + ${posts.getNumber()}}" th:text="${posts.getNumber()}">[PREV_PH]</a></li>-->
+<!--                        <li class="page-item active"><span class="page-link" th:text="${posts.getNumber() + 1}">[CURRENT_PH]</span></li>-->
+<!--                        <li th:if="${posts.hasNext()}" class="page-item"><a class="page-link" href="#" th:href="@{'/forum/' + ${forumName} + '/show/' + ${threadId} + '?page=' + ${posts.getNumber() + 2}}" th:text="${posts.getNumber() + 2}">[NEXT_PH]</a></li>-->
+<!--                        <li th:if="${posts.getTotalPages() > posts.getNumber() + 2}"class="page-item disabled"><span class="page-link">...</span></li>-->
+<!--                        <li class="page-item" th:classappend="${posts.isLast()} ? 'disabled'"><a class="page-link" th:tabindex="${posts.isLast()} ? '-1'" href="#" th:href="@{'/forum/' + ${forumName} + '/show/' + ${threadId} + '?page=' + ${posts.getTotalPages()}}" th:text="#{Label.pagination.link.last}">Last</a></li>-->
+<!--                    </ul>-->
+<!--                </nav>-->
+            </div>
+
+
             <!-- Create new reply post section -->
             <div sec:authorize="isAuthenticated()" th:if="${!threadIsLocked}">
 
@@ -94,6 +110,8 @@
                             <li class="list-group-item list-group-item-danger form-error-list-item" th:each="error : ${#fields.allDetailedErrors()}" th:text="${error.getMessage()}"></li>
                         </ul>
                     </div>
+
+                    <input type="hidden" id="postPageNum" name="postPageNum" th:field="*{postPageNum}">
 
                     <div class="form-group">
                         <textarea class="form-control" id="new-post-content" rows="10" th:field="*{content}"

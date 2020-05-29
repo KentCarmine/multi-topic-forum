@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,6 +25,7 @@ import java.sql.Date;
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -153,11 +156,17 @@ class PostControllerTest {
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
         when(postService.addNewPostToThread(any(), any(), any())).thenReturn(newTestPost);
 
+        Page<Post> testPage = new PageImpl<Post>(testTopicForumThread.getPosts().stream().collect(Collectors.toList()));
+        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(testPage);
+        int pageNum = testPage.getNumber() + 1;
+        System.out.println("### Test Page Num = " + testPage.getNumber());
+
         mockMvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("content", content))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/forum/" + testTopicForumThread.getForum().getName() + "/show/1#post_id_20"));
+                .andExpect(view().name("redirect:/forum/" + testTopicForumThread.getForum().getName()
+                        + "/show/1?page=" + pageNum + "#post_id_20"));
 
         verify(postService, times(1)).addNewPostToThread(any(), any(), eq(testTopicForumThread));
     }
@@ -189,6 +198,8 @@ class PostControllerTest {
     void addPostToThread_blankContent() throws Exception {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
+        Page<Post> postPage = new PageImpl<Post>(testTopicForumThread.getPosts().stream().collect(Collectors.toList()));
+        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(postPage);
 
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
 

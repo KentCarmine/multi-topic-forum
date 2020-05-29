@@ -2,12 +2,16 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
+import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
+import com.kentcarmine.multitopicforum.exceptions.ResourceNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +30,9 @@ import javax.validation.Valid;
  */
 @Controller
 public class PostController {
+
+    @Value("${spring.data.web.pageable.default-page-size}")
+    private int POSTS_PER_PAGE;
 
     private final ForumService forumService;
     private final UserService userService;
@@ -68,20 +75,31 @@ public class PostController {
             throw new TopicThreadNotFoundException();
         }
 
+        int userLastViewingPageNum = postCreationDto.getPostPageNum();
+
         if (bindingResult.hasErrors()) {
-            System.out.println("### in addPostToThread(). hasErrors() case");
+//            System.out.println("### in addPostToThread(). hasErrors() case");
             bindingResult.getAllErrors().stream().forEach(System.out::println);
+
+            Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
+            if (posts == null) {
+                throw new PageNotFoundException();
+            }
+
             mv = new ModelAndView("topic-thread-page", "postCreationDto", postCreationDto);
             mv.addObject("forumName", forumName);
             mv.addObject("threadTitle", thread.getTitle());
             mv.addObject("threadId", threadId);
-            mv.addObject("posts", thread.getPosts());
             mv.addObject("threadIsLocked", thread.isLocked());
+
+            mv.addObject("posts", posts);
+
+            // TODO: Add url param to mv of userLastViewingPageNum; [NOTE: Probably not needed, as is being passed in via DTO]
 
             User loggedInUser = userService.getLoggedInUser();
 
             if (loggedInUser != null) {
-                System.out.println("### in addPostToThread(). has loggedInUser case");
+//                System.out.println("### in addPostToThread(). has loggedInUser case");
                 mv.addObject("loggedInUser", loggedInUser);
                 mv.addObject("voteMap", postVoteService.generateVoteMap(loggedInUser, thread));
                 mv.addObject("canLock", topicThreadService.canUserLockThread(loggedInUser, thread));
@@ -91,13 +109,18 @@ public class PostController {
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
             return mv;
         }
+
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);
 
         Post newPost = postService.addNewPostToThread(postCreationDto, loggedInUser, thread);
         String newPostId = "#post_id_" + newPost.getId();
 
-        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId + newPostId);
+        Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
+        int finalPageNum = posts.getTotalPages();
+        String finalPageUrlStr = "?page=" + finalPageNum;
+
+        mv = new ModelAndView("redirect:/forum/" + forumName + "/show/" + threadId + finalPageUrlStr + newPostId);
         return mv;
     }
 

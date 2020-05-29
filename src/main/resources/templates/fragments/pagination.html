@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <title>Pagination</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" th:href="@{/css/custom.css}">
+    </head>
+    <body>
+        <nav th:fragment="pagination-fragment (currentPageObj, baseUrl)" aria-label="pagination">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${currentPageObj.isFirst()} ? 'disabled'">
+                    <a class="page-link" th:tabindex="${currentPageObj.isFirst()} ? '-1'" href="#"
+                       th:href="@{${baseUrl} + '?page=1'}" th:text="#{Label.pagination.link.first}">First</a>
+                </li>
+
+                <li th:if="${currentPageObj.getNumber() + 1 > 2}" class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+
+                <li th:if="${currentPageObj.hasPrevious()}" class="page-item">
+                    <a class="page-link" href="#" th:href="@{${baseUrl} + '?page=' + ${currentPageObj.getNumber()}}"
+                       th:text="${currentPageObj.getNumber()}">[PREV_PH]</a>
+                </li>
+
+                <li class="page-item active">
+                    <span class="page-link" th:text="${currentPageObj.getNumber() + 1}">[CURRENT_PH]</span>
+                </li>
+
+                <li th:if="${currentPageObj.hasNext()}" class="page-item">
+                    <a class="page-link" href="#" th:href="@{${baseUrl} + '?page=' + ${currentPageObj.getNumber() + 2}}"
+                       th:text="${currentPageObj.getNumber() + 2}">[NEXT_PH]</a>
+                </li>
+
+                <li th:if="${currentPageObj.getTotalPages() > currentPageObj.getNumber() + 2}"class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPageObj.isLast()} ? 'disabled'">
+                    <a class="page-link" th:tabindex="${currentPageObj.isLast()} ? '-1'" href="#"
+                       th:href="@{${baseUrl} + '?page=' + ${currentPageObj.getTotalPages()}}"
+                       th:text="#{Label.pagination.link.last}">Last</a>
+                </li>
+            </ul>
+        </nav>
+
+    </body>
+</html>
