@@ -2,12 +2,17 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
 import com.kentcarmine.multitopicforum.dtos.UserSearchDto;
+import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
+import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.services.DisciplineService;
+import com.kentcarmine.multitopicforum.services.TopicThreadService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -28,34 +33,46 @@ import java.util.SortedSet;
 @Controller
 public class UserController {
 
+    @Value("${spring.data.web.pageable.default-page-size}")
+    private int POSTS_PER_PAGE;
+
     private final UserService userService;
     private final DisciplineService disciplineService;
+    private final TopicThreadService topicThreadService;
 
     @Autowired
-    public UserController(UserService userService, DisciplineService disciplineService) {
+    public UserController(UserService userService, DisciplineService disciplineService, TopicThreadService topicThreadService) {
         this.userService = userService;
         this.disciplineService = disciplineService;
+        this.topicThreadService = topicThreadService;
     }
 
     /**
      * Show the profile page of the user with the given name, or throw a UserNotFoundException if no such user exists
      */
     @GetMapping("/users/{username}")
-    public String showUserPage(Model model, @PathVariable String username) {
+    public String showUserPage(Model model, @PathVariable String username, @RequestParam(required = false, defaultValue = "1") int page) {
         if (userService.usernameExists(username)) {
             User user = userService.getUser(username);
             User loggedInUser = userService.getLoggedInUser();
             disciplineService.handleDisciplinedUser(loggedInUser);
 
+            Page<Post> posts = topicThreadService.getPostPageByUser(user, page, POSTS_PER_PAGE);
+            if (posts == null) {
+                throw new PageNotFoundException();
+            }
+
             model.addAttribute("user", user);
             model.addAttribute("loggedInUser", loggedInUser);
+            model.addAttribute("posts", posts);
+
             if (loggedInUser != null) {
                 UserRankAdjustmentDto userRankAdjustmentDto = userService.getUserRankAdjustmentDtoForUser(user, loggedInUser);
                 model.addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
             }
+
             return "user-page";
         } else {
-//            throw new UserNotFoundException("User with name " + username + " was not found");
             throw new UserNotFoundException("Exception.user.notfound", username);
         }
     }

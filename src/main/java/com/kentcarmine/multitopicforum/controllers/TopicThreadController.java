@@ -6,7 +6,6 @@ import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
-import com.kentcarmine.multitopicforum.exceptions.ResourceNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.Post;
@@ -17,6 +16,7 @@ import com.kentcarmine.multitopicforum.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,8 +27,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.ServletRequest;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.SortedSet;
 
 /**
@@ -152,9 +150,9 @@ public class TopicThreadController {
      * Display a page that shows a given thread and all its posts
      */
     @GetMapping("/forum/{forumName}/show/{threadId}")
-    public String showThread(Model model, @PathVariable String forumName, @PathVariable Long threadId, @RequestParam(required = false, defaultValue = "1") int page) {
+    public String showThread(Model model, @PathVariable String forumName, @PathVariable Long threadId,
+                             @RequestParam(required = false, defaultValue = "1") int page) {
         if (!forumService.isForumWithNameExists(forumName)) {
-//            throw new ForumNotFoundException("Forum " + forumName + " does not exist");
             throw new ForumNotFoundException();
         }
 
@@ -164,7 +162,7 @@ public class TopicThreadController {
             throw new TopicThreadNotFoundException();
         }
 
-        Page<Post> posts = topicThreadService.getPostPage(thread, page, POSTS_PER_PAGE);
+        Page<Post> posts = topicThreadService.getPostPageByThread(thread, page, POSTS_PER_PAGE);
         if (posts == null) {
             throw new PageNotFoundException();
         }
@@ -190,6 +188,27 @@ public class TopicThreadController {
         }
 
         return "topic-thread-page";
+    }
+
+    /**
+     * Helper route that redirects to the correct thread page and it's pagination page showing the post with the given
+     * ID
+     */
+    @GetMapping("/forum/{forumName}/thread/{threadId}/post/{postId}")
+    public String showThread(@PathVariable String forumName, @PathVariable Long threadId, @PathVariable Long postId) { // TODO: Test route
+        if (!forumService.isForumWithNameExists(forumName)) {
+            throw new ForumNotFoundException();
+        }
+
+        TopicThread thread = topicThreadService.getThreadByForumNameAndId(forumName, threadId);
+
+        if (thread == null) {
+            throw new TopicThreadNotFoundException();
+        }
+
+        int postPage = topicThreadService.getPostPageNumberOnThreadByPostId(postId);
+
+        return "redirect:/forum/" + forumName + "/show/" + thread.getId() + "?page=" + postPage + "#post_id_" + postId;
     }
 
     /**

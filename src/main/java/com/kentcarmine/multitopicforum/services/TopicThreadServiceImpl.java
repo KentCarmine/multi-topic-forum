@@ -14,19 +14,20 @@ import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TopicThreadServiceImpl implements TopicThreadService {
+
+    @Value("${spring.data.web.pageable.default-page-size}")
+    private int POSTS_PER_PAGE;
 
     private final TopicForumRepository topicForumRepository;
     private final TopicThreadRepository topicThreadRepository;
@@ -99,7 +100,7 @@ public class TopicThreadServiceImpl implements TopicThreadService {
      * @return the Page of Posts, or null, if the numbered page does not exist
      */
     @Override
-    public Page<Post> getPostPage(TopicThread thread, int pageNum, int postsPerPage) {
+    public Page<Post> getPostPageByThread(TopicThread thread, int pageNum, int postsPerPage) {
         if (pageNum - 1 < 0) {
             System.out.println("### Negative page number");
             return null;
@@ -114,6 +115,61 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
 
         return postsPage;
+    }
+
+    /**
+     * Gets Page number pageNum of Posts belonging to the given User and sorted by posting date order. The page
+     * will contain postsPerPage elements (or less, if its the last page). If the given page number does not exist,
+     * returns null
+     *
+     * @param user The User to get posts for
+     * @param pageNum the number of the page to get (will be decremented by 1)
+     * @param postsPerPage the maximum number of posts per page
+     * @return the Page of Posts, or null, if the numbered page does not exist
+     */
+    @Override
+    public Page<Post> getPostPageByUser(User user, int pageNum, int postsPerPage) {
+        if (pageNum - 1 < 0) {
+            System.out.println("### Negative page number");
+            return null;
+        }
+
+        Pageable pageReq = PageRequest.of(pageNum - 1, postsPerPage, Sort.by("postedAt").descending());
+        Page<Post> postsPage = postRepository.findAllByUser(user, pageReq);
+
+        if (postsPage.getTotalElements() == 0) {
+            return new PageImpl<Post>(new ArrayList<Post>());
+        }
+
+        if (pageNum > postsPage.getTotalPages()) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
+
+        return postsPage;
+    }
+
+    /**
+     * Helper method that determines the pagination page number (on the user page) of the post with the given ID
+     * @param postId
+     * @return
+     */
+    @Override
+    public int getPostPageNumberOnThreadByPostId(Long postId) {
+        Optional<Post> postOpt = postRepository.findById(postId);
+
+        if (postOpt.isEmpty()) {
+            return -1;
+        }
+
+        Post post = postOpt.get();
+
+        List<Post> sortedPostsOnThread = post.getThread().getPosts().stream().collect(Collectors.toList());
+        int postIndex = sortedPostsOnThread.indexOf(post);
+
+        int pageNum = (postIndex / POSTS_PER_PAGE) + 1;
+
+        return pageNum;
     }
 
     /**

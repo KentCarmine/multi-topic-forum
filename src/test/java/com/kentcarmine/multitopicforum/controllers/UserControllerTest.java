@@ -9,10 +9,7 @@ import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
-import com.kentcarmine.multitopicforum.services.DisciplineService;
-import com.kentcarmine.multitopicforum.services.EmailService;
-import com.kentcarmine.multitopicforum.services.MessageService;
-import com.kentcarmine.multitopicforum.services.UserService;
+import com.kentcarmine.multitopicforum.services.*;
 import org.assertj.core.data.TemporalUnitOffset;
 import org.assertj.core.internal.bytebuddy.matcher.CollectionSizeMatcher;
 import org.hamcrest.collection.IsCollectionWithSize;
@@ -22,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
@@ -35,6 +33,7 @@ import java.sql.Date;
 import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
+import java.util.ArrayList;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -76,6 +75,9 @@ class UserControllerTest {
     @Mock
     DisciplineService disciplineService;
 
+    @Mock
+    TopicThreadService topicThreadService;
+
     User testUser;
     User testUser2;
     User testAdmin;
@@ -88,7 +90,7 @@ class UserControllerTest {
         MockitoAnnotations.initMocks(this);
         userToUserRankAdjustmentDtoConverter = new UserToUserRankAdjustmentDtoConverter();
 
-        userController = new UserController(userService, disciplineService);
+        userController = new UserController(userService, disciplineService, topicThreadService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(userController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -109,6 +111,7 @@ class UserControllerTest {
     void showUserPage_validUser_noOneLoggedIn() throws Exception {
         when(userService.usernameExists(anyString())).thenReturn(true);
         when(userService.getUser(any())).thenReturn(testUser);
+        when(topicThreadService.getPostPageByUser(any(), anyInt(), anyInt())).thenReturn(new PageImpl<Post>(new ArrayList<Post>()));
 
         mockMvc.perform(get("/users/" + testUser.getUsername()))
                 .andExpect(status().isOk())
@@ -127,6 +130,7 @@ class UserControllerTest {
         when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getUserRankAdjustmentDtoForUser(any(), any())).thenReturn(userRankAdjustmentDto);
+        when(topicThreadService.getPostPageByUser(any(), anyInt(), anyInt())).thenReturn(new PageImpl<Post>(new ArrayList<Post>()));
 
         mockMvc.perform(get("/users/" + testUser.getUsername()))
                 .andExpect(status().isOk())

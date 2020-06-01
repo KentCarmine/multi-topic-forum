@@ -352,7 +352,7 @@ class TopicThreadServiceTest {
         Page<Post> postPage = new PageImpl<Post>(testTopicThread.getPosts().stream().collect(Collectors.toList()));
         when(postRepository.findAllByThread(any(), any())).thenReturn(postPage);
 
-        Page<Post> result = topicThreadService.getPostPage(testTopicThread, 1, 25);
+        Page<Post> result = topicThreadService.getPostPageByThread(testTopicThread, 1, 25);
 
         assertEquals(postPage.getNumberOfElements(), result.getNumberOfElements());
 
@@ -364,7 +364,7 @@ class TopicThreadServiceTest {
         Page<Post> postPage = new PageImpl<Post>(testTopicThread.getPosts().stream().collect(Collectors.toList()));
         when(postRepository.findAllByThread(any(), any())).thenReturn(postPage);
 
-        Page<Post> result = topicThreadService.getPostPage(testTopicThread, -1, 25);
+        Page<Post> result = topicThreadService.getPostPageByThread(testTopicThread, -1, 25);
 
         assertNull(result);
 
@@ -376,7 +376,7 @@ class TopicThreadServiceTest {
         Page<Post> postPage = new PageImpl<Post>(testTopicThread.getPosts().stream().collect(Collectors.toList()));
         when(postRepository.findAllByThread(any(), any())).thenReturn(postPage);
 
-        Page<Post> result = topicThreadService.getPostPage(testTopicThread, 2, 25);
+        Page<Post> result = topicThreadService.getPostPageByThread(testTopicThread, 2, 25);
 
         assertNull(result);
 
