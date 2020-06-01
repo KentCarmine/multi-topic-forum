@@ -15,7 +15,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -157,7 +156,7 @@ class PostControllerTest {
         when(postService.addNewPostToThread(any(), any(), any())).thenReturn(newTestPost);
 
         Page<Post> testPage = new PageImpl<Post>(testTopicForumThread.getPosts().stream().collect(Collectors.toList()));
-        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(testPage);
+        when(topicThreadService.getPostPageByThread(any(), anyInt(), anyInt())).thenReturn(testPage);
         int pageNum = testPage.getNumber() + 1;
         System.out.println("### Test Page Num = " + testPage.getNumber());
 
@@ -199,7 +198,7 @@ class PostControllerTest {
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
         Page<Post> postPage = new PageImpl<Post>(testTopicForumThread.getPosts().stream().collect(Collectors.toList()));
-        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(postPage);
+        when(topicThreadService.getPostPageByThread(any(), anyInt(), anyInt())).thenReturn(postPage);
 
         final String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/1/createPost";
 

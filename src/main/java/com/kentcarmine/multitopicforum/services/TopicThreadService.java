@@ -30,5 +30,9 @@ public interface TopicThreadService {
 
     TopicThread getThreadById(Long id);
 
-    Page<Post> getPostPage(TopicThread thread, int pageNum, int postsPerPage);
+    Page<Post> getPostPageByThread(TopicThread thread, int pageNum, int postsPerPage);
+
+    Page<Post> getPostPageByUser(User user, int pageNum, int postsPerPage);
+
+    int getPostPageNumberOnThreadByPostId(Long postId);
 }

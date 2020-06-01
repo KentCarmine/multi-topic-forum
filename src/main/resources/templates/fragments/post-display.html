@@ -117,7 +117,7 @@
 
                 <!-- Post's thread title section-->
                 <div class="col-md-3 pl-2 text-ellipsis-overflow">
-                    <a href="#" class="text-large" th:href="@{'/forum/' + ${post.getThread().getForum().getName()} + '/show/' + ${post.getThread().getId()} + '#post_id_' + ${post.getId()}}"
+                    <a href="#" class="text-large" th:href="@{'/forum/' + ${post.getThread().getForum().getName()} + '/thread/' + ${post.getThread().getId()} + '/post/' + ${post.getId()}}"
                        th:text="${post.getThread().getTitle()}">Thread Title</a>
                 </div>
 

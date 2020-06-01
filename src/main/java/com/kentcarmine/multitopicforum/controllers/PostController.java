@@ -3,7 +3,6 @@ package com.kentcarmine.multitopicforum.controllers;
 import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
-import com.kentcarmine.multitopicforum.exceptions.ResourceNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicThread;
@@ -81,7 +80,7 @@ public class PostController {
 //            System.out.println("### in addPostToThread(). hasErrors() case");
             bindingResult.getAllErrors().stream().forEach(System.out::println);
 
-            Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
+            Page<Post> posts = topicThreadService.getPostPageByThread(thread, userLastViewingPageNum, POSTS_PER_PAGE);
             if (posts == null) {
                 throw new PageNotFoundException();
             }
@@ -93,8 +92,6 @@ public class PostController {
             mv.addObject("threadIsLocked", thread.isLocked());
 
             mv.addObject("posts", posts);
-
-            // TODO: Add url param to mv of userLastViewingPageNum; [NOTE: Probably not needed, as is being passed in via DTO]
 
             User loggedInUser = userService.getLoggedInUser();
 
@@ -116,7 +113,7 @@ public class PostController {
         Post newPost = postService.addNewPostToThread(postCreationDto, loggedInUser, thread);
         String newPostId = "#post_id_" + newPost.getId();
 
-        Page<Post> posts = topicThreadService.getPostPage(thread, userLastViewingPageNum, POSTS_PER_PAGE);
+        Page<Post> posts = topicThreadService.getPostPageByThread(thread, userLastViewingPageNum, POSTS_PER_PAGE);
         int finalPageNum = posts.getTotalPages();
         String finalPageUrlStr = "?page=" + finalPageNum;
 

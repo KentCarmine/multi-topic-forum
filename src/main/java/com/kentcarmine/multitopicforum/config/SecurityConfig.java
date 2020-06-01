@@ -63,7 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/forums").permitAll()
                 .antMatchers("/searchTopicForums**").permitAll()
                 .antMatchers("/forum/*/show/*/createPost").authenticated()
-                .antMatchers("/forum/*/show/*").permitAll()
+                .antMatchers("/forum/*/show/*", "/forum/*/thread/*/post/*").permitAll()
                 .antMatchers("/forum/*/createThread", "/forum/*/processCreateThread").authenticated()
                 .antMatchers("/forum/**").permitAll()
                 .antMatchers("/processSearchThreads/*", "/searchForumThreads/**").permitAll()

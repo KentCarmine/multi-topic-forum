@@ -376,7 +376,7 @@ class TopicThreadControllerTest {
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         Page<Post> page = new PageImpl<Post>(testTopicForumThread.getPosts().stream().collect(Collectors.toList()));
-        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(page);
+        when(topicThreadService.getPostPageByThread(any(), anyInt(), anyInt())).thenReturn(page);
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
@@ -396,7 +396,7 @@ class TopicThreadControllerTest {
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
-        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(null);
+        when(topicThreadService.getPostPageByThread(any(), anyInt(), anyInt())).thenReturn(null);
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId() + "?page=217";
         mockMvc.perform(get(url))
@@ -405,7 +405,7 @@ class TopicThreadControllerTest {
                 .andExpect(model().attributeDoesNotExist("postCreationDto", "loggedInUser", "voteMap",
                         "canLock", "canUnlock", "posts", "threadTitle", "threadTitle", "threadId", "forumName"));
 
-        verify(topicThreadService, times(1)).getPostPage(any(), anyInt(), anyInt());
+        verify(topicThreadService, times(1)).getPostPageByThread(any(), anyInt(), anyInt());
     }
 
     @Test
@@ -415,7 +415,7 @@ class TopicThreadControllerTest {
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
 
         Page<Post> page = new PageImpl<Post>(testTopicForumThread.getPosts().stream().collect(Collectors.toList()));
-        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(page);
+        when(topicThreadService.getPostPageByThread(any(), anyInt(), anyInt())).thenReturn(page);
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
@@ -441,7 +441,7 @@ class TopicThreadControllerTest {
         when(userService.getLoggedInUser()).thenReturn(testUser);
         when(forumService.isForumWithNameExists(anyString())).thenReturn(true);
         when(topicThreadService.getThreadByForumNameAndId(anyString(), anyLong())).thenReturn(testTopicForumThread);
-        when(topicThreadService.getPostPage(any(), anyInt(), anyInt())).thenReturn(new PageImpl<Post>(new ArrayList<Post>()));
+        when(topicThreadService.getPostPageByThread(any(), anyInt(), anyInt())).thenReturn(new PageImpl<Post>(new ArrayList<Post>()));
 
         String url = "/forum/" + testTopicForumThread.getForum().getName() + "/show/" + testTopicForumThread.getId();
         mockMvc.perform(get(url))
@@ -461,7 +461,7 @@ class TopicThreadControllerTest {
                 .andExpect(view().name("forum-not-found"))
                 .andExpect(model().attributeExists("message"));
 
-        verify(topicThreadService, times(0)).getPostPage(any(), anyInt(), anyInt());
+        verify(topicThreadService, times(0)).getPostPageByThread(any(), anyInt(), anyInt());
     }
 
     @Test
@@ -476,7 +476,7 @@ class TopicThreadControllerTest {
                 .andExpect(view().name("thread-not-found"))
                 .andExpect(model().attributeExists("message"));
 
-        verify(topicThreadService, times(0)).getPostPage(any(), anyInt(), anyInt());
+        verify(topicThreadService, times(0)).getPostPageByThread(any(), anyInt(), anyInt());
     }
 
     @Test
