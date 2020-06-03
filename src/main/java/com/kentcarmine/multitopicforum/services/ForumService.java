@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.model.TopicForum;
+import org.springframework.data.domain.Page;
 
 import java.io.UnsupportedEncodingException;
 import java.util.SortedSet;
@@ -31,5 +32,9 @@ public interface ForumService {
     SortedSet<TopicForumViewDto> getAllForumsAsViewDtos();
 
     SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException;
+
+    Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum);
+
+    Page<TopicForumViewDto> searchTopicForumsForViewDtosPaginated(String searchText, int page) throws UnsupportedEncodingException;
 
 }

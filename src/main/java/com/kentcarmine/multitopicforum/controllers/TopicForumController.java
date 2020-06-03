@@ -5,10 +5,14 @@ import com.kentcarmine.multitopicforum.dtos.TopicForumSearchDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
+import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.services.ForumService;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +24,7 @@ import javax.servlet.ServletRequest;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 /**
  * Controller for TopicForum-related actions
@@ -40,14 +45,20 @@ public class TopicForumController {
      * and informs the user the search was invalid.
      */
     @GetMapping("/forums")
-    public String showForumsPage(ServletRequest request, Model model, @RequestParam(required = false) String search,
+    public String showForumsPage(ServletRequest request, Model model,
+                                 @RequestParam(required = false, defaultValue = "1") int page,
+                                 @RequestParam(required = false) String search,
                                  @RequestParam(required = false) String searchError) throws UnsupportedEncodingException {
-        SortedSet<TopicForumViewDto> forums;
 
+        Page<TopicForumViewDto> forums;
         if (search == null || search.equals("") || request.getParameterMap().containsKey("searchError")) {
-            forums = forumService.getAllForumsAsViewDtos();
+            forums = forumService.getForumsAsViewDtosPaginated(page);
         } else {
-            forums = forumService.searchTopicForumsForViewDtos(search);
+            forums = forumService.searchTopicForumsForViewDtosPaginated(search, page);
+        }
+
+        if(forums == null) {
+            throw new PageNotFoundException();
         }
 
         model.addAttribute("forums", forums);

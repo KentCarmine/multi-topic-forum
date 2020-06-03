@@ -74,9 +74,11 @@
 
                             <!-- Forums exist case -->
                             <div th:if="${!forums.isEmpty()}">
-                                <div th:each="forum,iterStat : ${forums}"
-                                     th:include="fragments/forum-list-elements.html :: forum-list-element (${forum},${iterStat})"> <!--TODO: Paginate?-->
+                                <div th:each="forum,iterStat : ${forums.getContent()}"
+                                     th:include="fragments/forum-list-elements.html :: forum-list-element (${forum},${iterStat})">
                                 </div>
+
+                                <!--TODO: Add pagination?-->
                             </div>
                         </div>
                     </div>

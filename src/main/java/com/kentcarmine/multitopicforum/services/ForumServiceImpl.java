@@ -11,17 +11,23 @@ import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service that provides actions related to TopicForums.
  */
 @Service
 public class ForumServiceImpl implements ForumService {
+
+    @Value("${spring.data.web.pageable.default-page-size}") // TODO: Replace this
+    private int forumsPerPage;
 
     private final TopicForumRepository topicForumRepository;
     private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
@@ -119,6 +125,41 @@ public class ForumServiceImpl implements ForumService {
     }
 
     /**
+     * Return a Page that is a slice of all forums as ForumViewDtos sorted in alphabetical order by name (ignoring case)
+     *
+     * @param pageNum the page number to get
+     * @return a Page that is a slice of all forums as ForumViewDtos sorted in alphabetical order by name (ignoring case)
+     */
+    @Override
+    public Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum) {
+        if (pageNum - 1 < 0) {
+            return null;
+        }
+
+        Pageable pageReq = PageRequest.of(pageNum - 1, forumsPerPage,
+                Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+        Page<TopicForum> forumPage = topicForumRepository.findAll(pageReq);
+
+        if (pageNum > forumPage.getTotalPages()) {
+            return null;
+        }
+
+        List<TopicForumViewDto> forumDtoList = new ArrayList<>();
+
+        for (TopicForum forum : forumPage) {
+            TopicForumViewDto forumDto = forumHierarchyConverter.convertForum(forum);
+            String mostRecentUpdateMsg = timeCalculatorService.getTimeSinceForumUpdatedMessage(forumDto);
+            forumDto.setUpdateTimeDifferenceMessage(mostRecentUpdateMsg);
+            forumDtoList.add(forumDto);
+        }
+
+        Page<TopicForumViewDto> forumViewDtoPage =
+                new PageImpl<TopicForumViewDto>(forumDtoList, pageReq, forumPage.getTotalElements());
+
+        return forumViewDtoPage;
+    }
+
+    /**
      * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
      * double quotes and spaces, but not spaces within double quotes) of the given search text.
      *
@@ -155,6 +196,40 @@ public class ForumServiceImpl implements ForumService {
         }
 
         return forums;
+    }
+
+    /**
+     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
+     * double quotes and spaces, but not spaces within double quotes) of the given search text. Returns the page
+     * (with the given page number) of those results as TopicForumViewDtos.
+     *
+     * @param searchText The text to search for
+     * @return the Page of TopicForumViewDto (ordered alphabetically) that match the search terms and page number
+     * @throws UnsupportedEncodingException
+     */
+    @Override
+    public Page<TopicForumViewDto> searchTopicForumsForViewDtosPaginated(String searchText, int page) throws UnsupportedEncodingException {
+        if (page - 1 < 0) {
+            return null;
+        }
+
+        PageRequest pageReq = PageRequest.of(page - 1, forumsPerPage, Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+
+        List<TopicForumViewDto> allSearchMatches = searchTopicForumsForViewDtos(searchText).stream().collect(Collectors.toList());
+        if (allSearchMatches.isEmpty()) {
+            return new PageImpl<TopicForumViewDto>(new ArrayList<TopicForumViewDto>());
+        }
+
+        int sliceStart = (page - 1) * forumsPerPage;
+
+        if (sliceStart >= allSearchMatches.size()) {
+            return null;
+        }
+
+        int sliceEnd = Math.min(sliceStart + forumsPerPage, allSearchMatches.size());
+        List<TopicForumViewDto> pageSearchMatches = allSearchMatches.subList(sliceStart, sliceEnd);
+
+        return new PageImpl<TopicForumViewDto>(pageSearchMatches, pageReq, allSearchMatches.size());
     }
 
     /**

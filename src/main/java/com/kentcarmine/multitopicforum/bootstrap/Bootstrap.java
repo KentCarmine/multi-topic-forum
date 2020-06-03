@@ -56,6 +56,9 @@ public class Bootstrap implements CommandLineRunner {
                 "description. Second forum for testing! This is a very long description.");
         topicForumRepository.save(testForum2);
 
+        TopicForum testForum3 = new TopicForum("zzz_TestForum3", "Another empty forum for testing");
+        topicForumRepository.save(testForum3);
+
         TopicThread forum2Thread1 = new TopicThread("Thread1 this is a very long thread name, this is a very long thread name, this is a very long thread name, this is a very long thread name", testForum2);
         topicThreadRepository.save(forum2Thread1);
 
@@ -191,7 +194,6 @@ public class Bootstrap implements CommandLineRunner {
         inactiveBannedUserDiscipline2 = disciplineRepository.save(inactiveBannedUserDiscipline2);
 
         bannedUser = userRepository.save(bannedUser);
-
 
         User suspendedAdmin = new User("suspendedAdmin", "$2a$10$bWQBSibD0D2Vp4b65kE/guKzq8nHHWJQodvIji/9lETe25cG/9VNe", "suspendedAdmin@test.com");
         suspendedAdmin.setEnabled(true);
