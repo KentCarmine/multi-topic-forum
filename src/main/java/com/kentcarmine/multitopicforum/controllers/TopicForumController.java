@@ -61,6 +61,7 @@ public class TopicForumController {
             throw new PageNotFoundException();
         }
 
+        model.addAttribute("search", search);
         model.addAttribute("forums", forums);
         model.addAttribute("topicForumSearchDto", new TopicForumSearchDto());
         return "forums-list-page";

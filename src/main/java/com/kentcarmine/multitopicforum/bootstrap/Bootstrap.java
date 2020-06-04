@@ -46,7 +46,7 @@ public class Bootstrap implements CommandLineRunner {
     }
 
     private void createTopicForums() {
-        TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing.");
+        TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing. 123");
         topicForumRepository.save(testForum1);
 
         TopicForum testForum2 = new TopicForum("DemoForum2", "Second forum for testing! This is a very " +
@@ -56,7 +56,7 @@ public class Bootstrap implements CommandLineRunner {
                 "description. Second forum for testing! This is a very long description.");
         topicForumRepository.save(testForum2);
 
-        TopicForum testForum3 = new TopicForum("zzz_TestForum3", "Another empty forum for testing");
+        TopicForum testForum3 = new TopicForum("zzz_TestForum3", "Another empty forum for testing. 123");
         topicForumRepository.save(testForum3);
 
         TopicThread forum2Thread1 = new TopicThread("Thread1 this is a very long thread name, this is a very long thread name, this is a very long thread name, this is a very long thread name", testForum2);
