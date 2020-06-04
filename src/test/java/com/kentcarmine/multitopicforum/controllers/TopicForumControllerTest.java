@@ -14,6 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,9 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.sql.Date;
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -250,28 +251,40 @@ class TopicForumControllerTest {
 
     @Test
     void showForumsPage_allForums() throws Exception {
+        List<TopicForumViewDto> forumList = new ArrayList<>();
+        forumList.add(forumHierarchyConverter.convertForum(testTopicForum));
+
+        when(forumService.getForumsAsViewDtosPaginated(1)).thenReturn(new PageImpl<TopicForumViewDto>(forumList));
+
         mockMvc.perform(get("/forums"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("forums-list-page"))
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getAllForumsAsViewDtos();
+        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
         verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
     }
 
     @Test
     void showForumsPage_validForumSearch() throws Exception {
         String searchString = URLEncoderDecoderHelper.encode(" \"Description of test \"   ");
-        SortedSet<TopicForum> forumsResults = new TreeSet<>(new Comparator<TopicForum>() {
-            @Override
-            public int compare(TopicForum o1, TopicForum o2) {
-                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
-            }
-        });
-        forumsResults.add(testTopicForum);
+//        SortedSet<TopicForum> forumsResults = new TreeSet<>(new Comparator<TopicForum>() {
+//            @Override
+//            public int compare(TopicForum o1, TopicForum o2) {
+//                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+//            }
+//        });
+//        forumsResults.add(testTopicForum);
 
-        when(forumService.searchTopicForums(anyString())).thenReturn(forumsResults);
+        List<TopicForumViewDto> forumList = new ArrayList<>();
+        forumList.add(forumHierarchyConverter.convertForum(testTopicForum));
+        PageRequest pageReq = PageRequest.of(0, 25);
+
+        Page<TopicForumViewDto> resPage = new PageImpl<TopicForumViewDto>(forumList, pageReq,1);
+
+//        when(forumService.searchTopicForums(anyString())).thenReturn(forumsResults);
+        when (forumService.searchTopicForumsForViewDtosPaginated(anyString(), anyInt())).thenReturn(resPage);
 
         mockMvc.perform(get("/forums?search=" + searchString))
                 .andExpect(status().isOk())
@@ -280,30 +293,38 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
         verify(forumService, times(0)).getAllForumsAsViewDtos();
-        verify(forumService, times(1)).searchTopicForumsForViewDtos(anyString());
+//        verify(forumService, times(1)).searchTopicForumsForViewDtos(anyString());
+        verify(forumService, times(1)).searchTopicForumsForViewDtosPaginated(anyString(), anyInt());
     }
 
     @Test
     void showForumsPage_invalidForumSearch() throws Exception {
+        when(forumService.getForumsAsViewDtosPaginated(1)).thenReturn(new PageImpl<TopicForumViewDto>(new ArrayList<>()));
+
         mockMvc.perform(get("/forums?searchError"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("forums-list-page"))
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getAllForumsAsViewDtos();
+        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
         verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
     }
 
     @Test
     void showForumsPage_emptyStringForumSearch() throws Exception {
+        List<TopicForumViewDto> forumList = new ArrayList<>();
+        forumList.add(forumHierarchyConverter.convertForum(testTopicForum));
+
+        when(forumService.getForumsAsViewDtosPaginated(1)).thenReturn(new PageImpl<TopicForumViewDto>(forumList));
+
         mockMvc.perform(get("/forums?search="))
                 .andExpect(status().isOk())
                 .andExpect(view().name("forums-list-page"))
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getAllForumsAsViewDtos();
+        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
         verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
     }
 

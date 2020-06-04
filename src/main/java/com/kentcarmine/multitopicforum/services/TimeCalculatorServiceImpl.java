@@ -121,6 +121,9 @@ public class TimeCalculatorServiceImpl implements TimeCalculatorService {
 
     @Override
     public String getTimeSinceForumUpdatedMessage(TopicForumViewDto topicForumViewDto) {
+        if (topicForumViewDto.getNumThreads() < 1) {
+            return messageService.getMessage("TopicForum.lastUpdated.never");
+        }
         return getTimeSinceThreadUpdatedMessage(topicForumViewDto.getThreads().first());
     }
 

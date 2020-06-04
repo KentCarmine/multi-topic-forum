@@ -36,7 +36,11 @@
 
                         <!-- Recent activity section-->
                         <div class="col-2 align-items-center">
-                            <div class="flex-truncate">
+                            <div th:if="${forum.getNumThreads() < 1}" class="flex-truncate d-block text-truncate text-muted">
+                                N/A
+                            </div>
+
+                            <div th:if="${forum.getNumThreads() >= 1}" class="flex-truncate">
                                 <a href="#" class="d-block text-truncate"
                                    th:text="${forum.getMostRecentPost().getThread().getTitle()}"
                                    th:href="@{'/forum/' + ${forum.getName()} + '/show/' + ${forum.getMostRecentPost().getThread().getId()}}">
