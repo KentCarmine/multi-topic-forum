@@ -94,6 +94,10 @@ public class TopicThreadController {
             throw new ForumNotFoundException();
         }
 
+        if ((search == null || search.isBlank()) && !request.getParameterMap().containsKey("searchError")) {
+            return "redirect:/forum/" + name;
+        }
+
         if (request.getParameterMap().containsKey("search")) {
             String searchText = URLEncoderDecoderHelper.decode(search);
 
