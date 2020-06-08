@@ -13,7 +13,7 @@ import java.util.List;
  * Repository the provides database access to TopicForums.
  */
 @Repository
-public interface TopicForumRepository extends PagingAndSortingRepository<TopicForum, String> {
+public interface TopicForumRepository extends PagingAndSortingRepository<TopicForum, String>, SearchTopicForumRepository {
     TopicForum findByName(String name);
 
     List<TopicForum> findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(String searchTerm, String duplicateSearchTerm);

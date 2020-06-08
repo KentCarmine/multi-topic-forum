@@ -46,7 +46,7 @@ public class Bootstrap implements CommandLineRunner {
     }
 
     private void createTopicForums() {
-        TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing. 123");
+        TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing. 23");
         topicForumRepository.save(testForum1);
 
         TopicForum testForum2 = new TopicForum("DemoForum2", "Second forum for testing! This is a very " +

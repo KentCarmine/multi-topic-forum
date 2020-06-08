@@ -23,18 +23,21 @@ public interface ForumService {
 
     TopicForum createForum(TopicForum topicForum) throws DuplicateForumNameException;
 
-    SortedSet<TopicForum> getAllForums();
+//    SortedSet<TopicForum> getAllForums();
 
-    SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException;
+//    SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException;
 
     TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum);
 
-    SortedSet<TopicForumViewDto> getAllForumsAsViewDtos();
-
-    SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException;
+//    SortedSet<TopicForumViewDto> getAllForumsAsViewDtos();
+//
+//    SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException;
 
     Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum);
 
-    Page<TopicForumViewDto> searchTopicForumsForViewDtosPaginated(String searchText, int page) throws UnsupportedEncodingException;
+//    Page<TopicForumViewDto> searchTopicForumsForViewDtosPaginated(String searchText, int page) throws UnsupportedEncodingException;
 
+    Page<TopicForum> searchTopicForumsWithCustomQuery(String searchText, int page);
+
+    Page<TopicForumViewDto> searchTopicForumsForViewDtosWithCustomQuery(String searchText, int page);
 }

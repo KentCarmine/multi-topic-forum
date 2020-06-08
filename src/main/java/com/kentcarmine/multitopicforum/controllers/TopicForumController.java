@@ -54,7 +54,7 @@ public class TopicForumController {
         if (search == null || search.equals("") || request.getParameterMap().containsKey("searchError")) {
             forums = forumService.getForumsAsViewDtosPaginated(page);
         } else {
-            forums = forumService.searchTopicForumsForViewDtosPaginated(search, page);
+            forums = forumService.searchTopicForumsForViewDtosWithCustomQuery(search, page);
         }
 
         if(forums == null) {

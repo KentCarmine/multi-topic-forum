@@ -263,7 +263,8 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
         verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
-        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
+//        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
+        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt());
     }
 
     @Test
@@ -284,7 +285,8 @@ class TopicForumControllerTest {
         Page<TopicForumViewDto> resPage = new PageImpl<TopicForumViewDto>(forumList, pageReq,1);
 
 //        when(forumService.searchTopicForums(anyString())).thenReturn(forumsResults);
-        when (forumService.searchTopicForumsForViewDtosPaginated(anyString(), anyInt())).thenReturn(resPage);
+//        when(forumService.searchTopicForumsForViewDtosPaginated(anyString(), anyInt())).thenReturn(resPage);
+        when(forumService.searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt())).thenReturn(resPage);
 
         mockMvc.perform(get("/forums?search=" + searchString))
                 .andExpect(status().isOk())
@@ -292,9 +294,11 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(0)).getAllForumsAsViewDtos();
+//        verify(forumService, times(0)).getAllForumsAsViewDtos();
+        verify(forumService, times(0)).getForumsAsViewDtosPaginated(anyInt());
 //        verify(forumService, times(1)).searchTopicForumsForViewDtos(anyString());
-        verify(forumService, times(1)).searchTopicForumsForViewDtosPaginated(anyString(), anyInt());
+//        verify(forumService, times(1)).searchTopicForumsForViewDtosPaginated(anyString(), anyInt());
+        verify(forumService, times(1)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt());
     }
 
     @Test
@@ -308,7 +312,8 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
         verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
-        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
+//        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
+        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt());
     }
 
     @Test
@@ -325,7 +330,8 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
         verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
-        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
+//        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
+        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt());
     }
 
 }
