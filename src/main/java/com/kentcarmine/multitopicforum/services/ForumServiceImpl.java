@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 @Service
 public class ForumServiceImpl implements ForumService {
 
-    @Value("${spring.data.web.pageable.default-page-size}")
-    private int forumsPerPage;
+//    @Value("${spring.data.web.pageable.default-page-size}")
+//    private int forumsPerPage;
 
     private final TopicForumRepository topicForumRepository;
     private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
@@ -132,12 +132,12 @@ public class ForumServiceImpl implements ForumService {
      * @return a Page that is a slice of all forums as ForumViewDtos sorted in alphabetical order by name (ignoring case)
      */
     @Override
-    public Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum) {
+    public Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum, int resultsPerPage) {
         if (pageNum - 1 < 0) {
             return null;
         }
 
-        Pageable pageReq = PageRequest.of(pageNum - 1, forumsPerPage,
+        Pageable pageReq = PageRequest.of(pageNum - 1, resultsPerPage,
                 Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
         Page<TopicForum> forumPage = topicForumRepository.findAll(pageReq);
 
@@ -209,8 +209,8 @@ public class ForumServiceImpl implements ForumService {
      * page number, or null if no such page exists.
      */
     @Override
-    public Page<TopicForumViewDto> searchTopicForumsForViewDtosWithCustomQuery(String searchText, int page) {
-        Page<TopicForum> entityResults = searchTopicForumsWithCustomQuery(searchText, page);
+    public Page<TopicForumViewDto> searchTopicForumsForViewDtosWithCustomQuery(String searchText, int page, int resultsPerPage) {
+        Page<TopicForum> entityResults = searchTopicForumsWithCustomQuery(searchText, page, resultsPerPage);
 
         if (entityResults == null) {
             return null;
@@ -240,12 +240,12 @@ public class ForumServiceImpl implements ForumService {
      * page exists.
      */
     @Override
-    public Page<TopicForum> searchTopicForumsWithCustomQuery(String searchText, int page) {
+    public Page<TopicForum> searchTopicForumsWithCustomQuery(String searchText, int page, int resultsPerPage) {
         if (page - 1 < 0) {
             return null;
         }
 
-        PageRequest pageReq = PageRequest.of(page - 1, forumsPerPage);
+        PageRequest pageReq = PageRequest.of(page - 1, resultsPerPage, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
         Page<TopicForum> pageResult = topicForumRepository.searchTopicForumsPaginated(searchText, pageReq);
 
         if (pageResult.getTotalElements() > 0 && page > pageResult.getTotalPages()) {
@@ -348,4 +348,9 @@ public class ForumServiceImpl implements ForumService {
     private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
         return SearchParserHelper.parseSearchText(searchText);
     }
+
+//    @Override
+//    public int getForumsPerPage() {
+//        return forumsPerPage;
+//    }
 }

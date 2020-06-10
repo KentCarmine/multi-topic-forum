@@ -33,11 +33,13 @@ public interface ForumService {
 //
 //    SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException;
 
-    Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum);
+    Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum, int resultsPerPage);
 
 //    Page<TopicForumViewDto> searchTopicForumsForViewDtosPaginated(String searchText, int page) throws UnsupportedEncodingException;
 
-    Page<TopicForum> searchTopicForumsWithCustomQuery(String searchText, int page);
+    Page<TopicForum> searchTopicForumsWithCustomQuery(String searchText, int page, int resultsPerPage);
 
-    Page<TopicForumViewDto> searchTopicForumsForViewDtosWithCustomQuery(String searchText, int page);
+    Page<TopicForumViewDto> searchTopicForumsForViewDtosWithCustomQuery(String searchText, int page, int resultsPerPage);
+
+//    int getForumsPerPage();
 }

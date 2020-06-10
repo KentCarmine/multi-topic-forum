@@ -254,7 +254,7 @@ class TopicForumControllerTest {
         List<TopicForumViewDto> forumList = new ArrayList<>();
         forumList.add(forumHierarchyConverter.convertForum(testTopicForum));
 
-        when(forumService.getForumsAsViewDtosPaginated(1)).thenReturn(new PageImpl<TopicForumViewDto>(forumList));
+        when(forumService.getForumsAsViewDtosPaginated(anyInt(), anyInt())).thenReturn(new PageImpl<TopicForumViewDto>(forumList));
 
         mockMvc.perform(get("/forums"))
                 .andExpect(status().isOk())
@@ -262,9 +262,9 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
+        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt(), anyInt());
 //        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
-        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt());
+        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt(), anyInt());
     }
 
     @Test
@@ -286,7 +286,7 @@ class TopicForumControllerTest {
 
 //        when(forumService.searchTopicForums(anyString())).thenReturn(forumsResults);
 //        when(forumService.searchTopicForumsForViewDtosPaginated(anyString(), anyInt())).thenReturn(resPage);
-        when(forumService.searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt())).thenReturn(resPage);
+        when(forumService.searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt(), anyInt())).thenReturn(resPage);
 
         mockMvc.perform(get("/forums?search=" + searchString))
                 .andExpect(status().isOk())
@@ -295,15 +295,15 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
 //        verify(forumService, times(0)).getAllForumsAsViewDtos();
-        verify(forumService, times(0)).getForumsAsViewDtosPaginated(anyInt());
+        verify(forumService, times(0)).getForumsAsViewDtosPaginated(anyInt(), anyInt());
 //        verify(forumService, times(1)).searchTopicForumsForViewDtos(anyString());
 //        verify(forumService, times(1)).searchTopicForumsForViewDtosPaginated(anyString(), anyInt());
-        verify(forumService, times(1)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt());
+        verify(forumService, times(1)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt(), anyInt());
     }
 
     @Test
     void showForumsPage_invalidForumSearch() throws Exception {
-        when(forumService.getForumsAsViewDtosPaginated(1)).thenReturn(new PageImpl<TopicForumViewDto>(new ArrayList<>()));
+        when(forumService.getForumsAsViewDtosPaginated(anyInt(), anyInt())).thenReturn(new PageImpl<TopicForumViewDto>(new ArrayList<>()));
 
         mockMvc.perform(get("/forums?searchError"))
                 .andExpect(status().isOk())
@@ -311,9 +311,9 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
+        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt(), anyInt());
 //        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
-        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt());
+        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt(), anyInt());
     }
 
     @Test
@@ -321,7 +321,7 @@ class TopicForumControllerTest {
         List<TopicForumViewDto> forumList = new ArrayList<>();
         forumList.add(forumHierarchyConverter.convertForum(testTopicForum));
 
-        when(forumService.getForumsAsViewDtosPaginated(1)).thenReturn(new PageImpl<TopicForumViewDto>(forumList));
+        when(forumService.getForumsAsViewDtosPaginated(anyInt(), anyInt())).thenReturn(new PageImpl<TopicForumViewDto>(forumList));
 
         mockMvc.perform(get("/forums?search="))
                 .andExpect(status().isOk())
@@ -329,9 +329,9 @@ class TopicForumControllerTest {
                 .andExpect(model().attributeExists("forums"))
                 .andExpect(model().attributeExists("topicForumSearchDto"));
 
-        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt());
+        verify(forumService, times(1)).getForumsAsViewDtosPaginated(anyInt(), anyInt());
 //        verify(forumService, times(0)).searchTopicForumsForViewDtos(anyString());
-        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt());
+        verify(forumService, times(0)).searchTopicForumsForViewDtosWithCustomQuery(anyString(), anyInt(), anyInt());
     }
 
 }

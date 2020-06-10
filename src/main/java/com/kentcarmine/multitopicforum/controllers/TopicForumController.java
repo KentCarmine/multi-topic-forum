@@ -11,6 +11,7 @@ import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.services.ForumService;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,9 @@ import java.util.stream.Collectors;
 @Controller
 public class TopicForumController {
 
+    @Value("${spring.data.web.pageable.default-page-size}")
+    private int resultsPerPage;
+
     private final ForumService forumService;
 
     @Autowired
@@ -52,9 +56,9 @@ public class TopicForumController {
 
         Page<TopicForumViewDto> forums;
         if (search == null || search.equals("") || request.getParameterMap().containsKey("searchError")) {
-            forums = forumService.getForumsAsViewDtosPaginated(page);
+            forums = forumService.getForumsAsViewDtosPaginated(page, resultsPerPage);
         } else {
-            forums = forumService.searchTopicForumsForViewDtosWithCustomQuery(search, page);
+            forums = forumService.searchTopicForumsForViewDtosWithCustomQuery(search, page, resultsPerPage);
         }
 
         if(forums == null) {

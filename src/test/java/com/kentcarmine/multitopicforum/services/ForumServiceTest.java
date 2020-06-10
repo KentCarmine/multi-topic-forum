@@ -10,6 +10,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -216,5 +220,89 @@ class ForumServiceTest {
 //    }
 
     // TODO: Add searching tests
+
+    @Test
+    void searchTopicForumsWithCustomQuery_valid_withResults() throws Exception {
+        List<TopicForum> resultList = new ArrayList<>();
+        resultList.add(testTopicForum);
+        resultList.add(testTopicForum2);
+        resultList.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+
+        PageRequest pageReq = PageRequest.of(0, 2, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
+        Page<TopicForum> expectedPage = new PageImpl<TopicForum>(resultList, pageReq, resultList.size());
+
+//        System.out.println("### expectedPage total elems: " + expectedPage.getTotalElements());
+//        System.out.println("### expectedPage page elems: " + expectedPage.getNumberOfElements());
+//        System.out.println("### expectedPage total pages: " + expectedPage.getTotalPages());
+//        System.out.println("### expectedPage page number: " + expectedPage.getNumber());
+//        System.out.println("### content: ");
+//        System.out.println(expectedPage.getContent().toString());
+//        System.out.println();
+
+        when(topicForumRepository.searchTopicForumsPaginated(any(), any())).thenReturn(expectedPage);
+
+        Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("test", 1, 2);
+
+//        System.out.println("### result total elems: " + result.getTotalElements());
+//        System.out.println("### result page elems: " + result.getNumberOfElements());
+//        System.out.println("### result total pages: " + result.getTotalPages());
+//        System.out.println("### result page number: " + result.getNumber());
+//        System.out.println("### content: ");
+//        System.out.println(result.getContent().toString());
+
+        assertEquals(expectedPage.getNumberOfElements(), result.getNumberOfElements());
+        assertEquals(expectedPage.getTotalElements(), result.getTotalElements());
+        assertEquals(expectedPage.getTotalPages(), result.getTotalPages());
+        assertEquals(expectedPage.getNumber(), result.getNumber());
+        assertEquals(testTopicForum, result.getContent().get(0));
+        assertEquals(testTopicForum2, result.getContent().get(1));
+
+    }
+
+    @Test
+    void searchTopicForumsWithCustomQuery_valid_noResults() throws Exception {
+        List<TopicForum> resultList = new ArrayList<>();
+
+        PageRequest pageReq = PageRequest.of(0, 2, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
+        Page<TopicForum> expectedPage = new PageImpl<TopicForum>(resultList, pageReq, resultList.size());
+
+        when(topicForumRepository.searchTopicForumsPaginated(any(), any())).thenReturn(expectedPage);
+
+        Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("test", 1, 2);
+
+        assertEquals(0, result.getNumberOfElements());
+        assertEquals(0, result.getTotalElements());
+        assertEquals(0, result.getTotalPages());
+        assertEquals(0, result.getNumber());
+        assertEquals(0, result.getContent().size());
+
+    }
+
+    @Test
+    void searchTopicForumsWithCustomQuery_invalid_lowPageNum() throws Exception {
+
+        Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("poasgog", 0, 2);
+
+        assertNull(result);
+    }
+
+    @Test
+    void searchTopicForumsWithCustomQuery_invalid_highPageNum() throws Exception {
+        List<TopicForum> resultList = new ArrayList<>();
+        resultList.add(testTopicForum);
+        resultList.add(testTopicForum2);
+        resultList.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+
+        PageRequest pageReq = PageRequest.of(0, 2, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
+        Page<TopicForum> expectedPage = new PageImpl<TopicForum>(resultList, pageReq, resultList.size());
+
+        when(topicForumRepository.searchTopicForumsPaginated(any(), any())).thenReturn(expectedPage);
+
+        Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("tesasghashgt", 17, 2);
+
+        assertNull(result);
+    }
+
+
 
 }
