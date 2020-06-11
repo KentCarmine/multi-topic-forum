@@ -12,6 +12,7 @@ import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
@@ -170,6 +171,27 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         int pageNum = (postIndex / POSTS_PER_PAGE) + 1;
 
         return pageNum;
+    }
+
+    @Override
+    public Page<TopicThread> searchTopicThreadsPaginated(String forumName, String searchText) {
+        // TODO: For testing
+//        PageRequest pageReq = PageRequest.of(0, 1);
+//        Page<TopicThread> searchResults = topicThreadRepository.searchForTopicThreadsInForum(forumName, searchText, pageReq);
+//        System.out.println("### in searchTopicThread");
+//        System.out.println("### searchResults = " + searchResults);
+//        System.out.println("### content = " + searchResults.getContent());
+//        System.out.println("### page number = " + searchResults.getNumber());
+//        System.out.println("### count pages = " + searchResults.getTotalPages());
+//        System.out.println("### count elements on page = " + searchResults.getNumberOfElements());
+//        System.out.println("### count total elements = " + searchResults.getTotalElements());
+
+        throw new NotYetImplementedException(); // TODO: Implement
+    }
+
+    @Override
+    public Page<TopicThreadViewDto> searchTopicThreadsAsViewDtos(String forumName, String searchText) {
+        throw new NotYetImplementedException(); // TODO: Implement
     }
 
     /**
