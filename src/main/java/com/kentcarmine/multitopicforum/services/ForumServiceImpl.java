@@ -2,10 +2,7 @@ package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
 import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
-import com.kentcarmine.multitopicforum.dtos.PostViewDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.TopicForum;
@@ -319,19 +316,55 @@ public class ForumServiceImpl implements ForumService {
 //        return forumDtos;
 //    }
 
+//    @Override
+//    public TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum) {
+//        TopicForumViewDto forumViewDto = forumHierarchyConverter.convertForum(topicForum);
+////        System.out.println("### in getTopicForumViewDtoForTopicForum, starting forumViewDto = " + forumViewDto);
+//
+//        for (TopicThreadViewDto threadViewDto : forumViewDto.getThreads()) {
+//
+//            for (PostViewDto postViewDto : threadViewDto.getPosts()) {
+//                postViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(postViewDto));
+//            }
+//
+//            threadViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadViewDto));
+//            threadViewDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadViewDto));
+//        }
+//
+//        return forumViewDto;
+//    }
+
     @Override
-    public TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum) {
-        TopicForumViewDto forumViewDto = forumHierarchyConverter.convertForum(topicForum);
-//        System.out.println("### in getTopicForumViewDtoForTopicForum, starting forumViewDto = " + forumViewDto);
+    public TopicForumViewDtoLight getTopicForumViewDtoLightForTopicForum(TopicForum topicForum) {
+//        System.out.println("### in getTopicForumViewDtoLightForTopicForum()");
+//        System.out.println("### topicForum = " + topicForum);
 
-        for (TopicThreadViewDto threadViewDto : forumViewDto.getThreads()) {
+        TopicForumViewDtoLight forumViewDto = forumHierarchyConverter.convertForumLight(topicForum);
 
-            for (PostViewDto postViewDto : threadViewDto.getPosts()) {
-                postViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(postViewDto));
-            }
+//        System.out.println("### forumViewDto = " + forumViewDto);
+
+        PostViewDto mostRecentPost = forumViewDto.getMostRecentPost();
+
+//        System.out.println("### mostRecentPost = " + mostRecentPost);
+
+        AbstractTopicThreadViewDto threadViewDto = null;
+
+        if (mostRecentPost != null) {
+            threadViewDto = mostRecentPost.getThread();
 
             threadViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadViewDto));
             threadViewDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadViewDto));
+
+            PostViewDto firstPost = threadViewDto.getFirstPost();
+            PostViewDto lastPost = threadViewDto.getLastPost();
+
+            if (firstPost != null) {
+                firstPost.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(firstPost));
+            }
+
+            if (lastPost != null) {
+                lastPost.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(lastPost));
+            }
         }
 
         return forumViewDto;

@@ -384,5 +384,38 @@ class TopicThreadServiceTest {
 
     }
 
+    @Test
+    void getTopicThreadsByForumPaginated_valid_withThreads() throws Exception {
+        // TODO: Fill in
+    }
 
+    @Test
+    void getTopicThreadsByForumPaginated_valid_noThreads() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getTopicThreadsByForumPaginated_lowPageNumber() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getTopicThreadsByForumPaginated_highPageNumber() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getTopicThreadViewDtosLightByForumPaginated_valid_withThreads() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getTopicThreadViewDtosLightByForumPaginated_lowPageNumber() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getTopicThreadViewDtosLightByForumPaginated__highPageNumber() throws Exception {
+        // TODO: Fill in
+    }
 }

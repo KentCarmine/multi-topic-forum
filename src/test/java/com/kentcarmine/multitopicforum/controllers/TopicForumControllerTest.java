@@ -2,12 +2,16 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
 import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
+import com.kentcarmine.multitopicforum.dtos.TopicForumViewDtoLight;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDtoLight;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.services.ForumService;
 import com.kentcarmine.multitopicforum.services.MessageService;
+import com.kentcarmine.multitopicforum.services.TopicThreadService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -61,6 +66,9 @@ class TopicForumControllerTest {
     ForumService forumService;
 
     @Mock
+    TopicThreadService topicThreadService;
+
+    @Mock
     MessageService messageService;
 
     ForumHierarchyConverter forumHierarchyConverter;
@@ -79,7 +87,7 @@ class TopicForumControllerTest {
 
         forumHierarchyConverter = new ForumHierarchyConverter();
 
-        topicForumController = new TopicForumController(forumService);
+        topicForumController = new TopicForumController(forumService, topicThreadService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(topicForumController).setControllerAdvice(new CustomResponseEntityExceptionHandler(messageService)).build();
 
@@ -207,15 +215,23 @@ class TopicForumControllerTest {
 
     @Test
     void showForum_existingForum() throws Exception {
-        TopicForumViewDto topicForumDto = forumHierarchyConverter.convertForum(testTopicForum);
+        TopicForumViewDtoLight topicForumDto = forumHierarchyConverter.convertForumLight(testTopicForum);
 
         when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
-        when(forumService.getTopicForumViewDtoForTopicForum(any())).thenReturn(topicForumDto);
+        when(forumService.getTopicForumViewDtoLightForTopicForum(any())).thenReturn(topicForumDto);
+
+        TopicThreadViewDtoLight threadDto = forumHierarchyConverter.convertThreadLight(testTopicForumThread, topicForumDto);
+        List<TopicThreadViewDtoLight> threadsContent = new ArrayList<>();
+        threadsContent.add(threadDto);
+        Pageable pageReq = PageRequest.of(0, 1);
+        Page<TopicThreadViewDtoLight> threadPage = new PageImpl<TopicThreadViewDtoLight>(threadsContent, pageReq, threadsContent.size());
+
+        when(topicThreadService.getTopicThreadViewDtosLightByForumPaginated(any(), anyInt(), anyInt())).thenReturn(threadPage);
 
         mockMvc.perform(get("/forum/" + testTopicForum.getName()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("forum-page"))
-                .andExpect(model().attributeExists("forum", "topicThreadSearchDto"));
+                .andExpect(model().attributeExists("forum", "topicThreadSearchDto", "threads"));
     }
 
     @Test

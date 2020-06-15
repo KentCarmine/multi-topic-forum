@@ -1,14 +1,13 @@
 package com.kentcarmine.multitopicforum.controllers;
 
-import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumSearchDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
 import com.kentcarmine.multitopicforum.model.TopicForum;
+import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.services.ForumService;
+import com.kentcarmine.multitopicforum.services.TopicThreadService;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,10 +36,12 @@ public class TopicForumController {
     private int resultsPerPage;
 
     private final ForumService forumService;
+    private final TopicThreadService topicThreadService;
 
     @Autowired
-    public TopicForumController(ForumService forumService) {
+    public TopicForumController(ForumService forumService, TopicThreadService topicThreadService) {
         this.forumService = forumService;
+        this.topicThreadService = topicThreadService;
     }
 
     /**
@@ -105,15 +106,25 @@ public class TopicForumController {
      * Show the root page of the given forum, if it exists, or an error page, if it doesnt.
      */
     @GetMapping("/forum/{name}")
-    public String showForum(Model model, @PathVariable String name) {
+    public String showForum(Model model, @PathVariable String name, @RequestParam(required = false, defaultValue = "1") int page) {
         TopicForum forum = forumService.getForumByName(name);
 
         if (forum == null) {
             throw new ForumNotFoundException();
         }
 
+        TopicForumViewDtoLight forumDto = forumService.getTopicForumViewDtoLightForTopicForum(forum);
+
+        Page<TopicThreadViewDtoLight> threadsPage = topicThreadService.getTopicThreadViewDtosLightByForumPaginated(forum, page, resultsPerPage);
+
+        if (threadsPage == null) {
+            throw new PageNotFoundException();
+        }
+
         model.addAttribute("topicThreadSearchDto", new TopicThreadSearchDto());
-        model.addAttribute("forum", forumService.getTopicForumViewDtoForTopicForum(forum));
+//        model.addAttribute("forum", forumService.getTopicForumViewDtoForTopicForum(forum));
+        model.addAttribute("forum", forumDto);
+        model.addAttribute("threads", threadsPage);
         return "forum-page";
     }
 

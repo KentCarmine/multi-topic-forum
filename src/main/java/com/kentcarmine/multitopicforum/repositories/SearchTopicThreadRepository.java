@@ -8,4 +8,6 @@ public interface SearchTopicThreadRepository {
 
     Page<TopicThread> searchForTopicThreadsInForum(String forumName, String searchText, Pageable pageable);
 
+    Page<TopicThread> getAllTopicThreadsPaginated(String forumName, Pageable pageable);
+
 }

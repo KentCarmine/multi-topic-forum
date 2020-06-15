@@ -303,6 +303,23 @@ class ForumServiceTest {
         assertNull(result);
     }
 
+    @Test
+    void getForumsAsViewDtosPaginated_valid() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getForumsAsViewDtosPaginated_lowPageNumber() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getForumsAsViewDtosPaginated_highPageNumber() throws Exception {
+        // TODO: Fill in
+    }
+
+
+
 
 
 }

@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
+import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +21,12 @@ import java.util.Optional;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
+    private final TopicThreadRepository threadRepository;
 
     @Autowired
-    public PostServiceImpl(PostRepository postRepository) {
+    public PostServiceImpl(PostRepository postRepository, TopicThreadRepository threadRepository) {
         this.postRepository = postRepository;
+        this.threadRepository = threadRepository;
     }
 
     /**
@@ -37,8 +40,15 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public Post addNewPostToThread(PostCreationDto postCreationDto, User creatingUser, TopicThread thread) {
-        Post post = new Post(postCreationDto.getContent(), getCurrentDate());
+        Date currentDate = getCurrentDate();
+
+        Post post = new Post(postCreationDto.getContent(), currentDate);
         post.setUser(creatingUser);
+
+        thread.setUpdatedAt(currentDate);
+
+        thread = threadRepository.save(thread);
+
         post.setThread(thread);
 
         return postRepository.save(post);

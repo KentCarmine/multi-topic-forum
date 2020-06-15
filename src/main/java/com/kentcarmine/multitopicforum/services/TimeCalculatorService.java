@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.dtos.AbstractTopicThreadViewDto;
 import com.kentcarmine.multitopicforum.dtos.PostViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
@@ -12,9 +13,9 @@ import com.kentcarmine.multitopicforum.model.User;
 public interface TimeCalculatorService {
     String getTimeSincePostCreationMessage(PostViewDto postViewDto);
 
-    String getTimeSinceThreadCreationMessage(TopicThreadViewDto threadViewDto);
+    String getTimeSinceThreadCreationMessage(AbstractTopicThreadViewDto threadViewDto);
 
-    String getTimeSinceThreadUpdatedMessage(TopicThreadViewDto threadViewDto);
+    String getTimeSinceThreadUpdatedMessage(AbstractTopicThreadViewDto threadViewDto);
 
     String getTimeSinceForumUpdatedMessage(TopicForumViewDto topicForumViewDto);
 

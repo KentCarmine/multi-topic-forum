@@ -17,7 +17,7 @@ public class PostViewDto implements Comparable<PostViewDto>, PostUpdatedTimable 
     private Long id;
 
     @NotNull
-    private TopicThreadViewDto thread;
+    private AbstractTopicThreadViewDto thread;
 
     @NotBlank(message = "{Post.content.notBlank}")
     private String content;
@@ -55,11 +55,11 @@ public class PostViewDto implements Comparable<PostViewDto>, PostUpdatedTimable 
         this.id = id;
     }
 
-    public TopicThreadViewDto getThread() {
+    public AbstractTopicThreadViewDto getThread() {
         return thread;
     }
 
-    public void setThread(TopicThreadViewDto thread) {
+    public void setThread(AbstractTopicThreadViewDto thread) {
         this.thread = thread;
     }
 

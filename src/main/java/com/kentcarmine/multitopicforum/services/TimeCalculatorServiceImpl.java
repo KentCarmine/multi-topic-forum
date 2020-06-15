@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.dtos.AbstractTopicThreadViewDto;
 import com.kentcarmine.multitopicforum.dtos.PostViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
@@ -110,12 +111,12 @@ public class TimeCalculatorServiceImpl implements TimeCalculatorService {
     }
 
     @Override
-    public String getTimeSinceThreadCreationMessage(TopicThreadViewDto threadViewDto) {
+    public String getTimeSinceThreadCreationMessage(AbstractTopicThreadViewDto threadViewDto) {
         return getTimeSincePostCreationMessage(threadViewDto.getFirstPost());
     }
 
     @Override
-    public String getTimeSinceThreadUpdatedMessage(TopicThreadViewDto threadViewDto) {
+    public String getTimeSinceThreadUpdatedMessage(AbstractTopicThreadViewDto threadViewDto) {
         return getTimeSincePostCreationMessage(threadViewDto.getLastPost());
     }
 

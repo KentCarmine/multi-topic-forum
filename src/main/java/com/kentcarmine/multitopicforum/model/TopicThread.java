@@ -39,6 +39,9 @@ public class TopicThread implements ThreadUpdatedTimeable {
     @JoinColumn(name = "lockingUsername")
     private User lockingUser;
 
+    private Date createdAt;
+    private Date updatedAt;
+
     public TopicThread() {
         this.posts = new TreeSet<>();
     }
@@ -94,12 +97,29 @@ public class TopicThread implements ThreadUpdatedTimeable {
         return getPosts().last();
     }
 
+//    public Date getCreatedAt() {
+//        return getFirstPost().getPostedAt();
+//    }
+//
+//    public User getCreator() {
+//        return getFirstPost().getUser();
+//    }
+
+
     public Date getCreatedAt() {
-        return getFirstPost().getPostedAt();
+        return createdAt;
     }
 
-    public User getCreator() {
-        return getFirstPost().getUser();
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public TopicForum getForum() {
@@ -153,6 +173,9 @@ public class TopicThread implements ThreadUpdatedTimeable {
         } else {
             sb.append(", lockingUser=null");
         }
+
+        sb.append(", createdAt= " + createdAt);
+        sb.append(", updatedAt= " + updatedAt);
 
         sb.append('}');
 

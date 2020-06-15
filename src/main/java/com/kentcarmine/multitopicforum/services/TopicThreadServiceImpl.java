@@ -1,9 +1,7 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
-import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
@@ -62,10 +60,14 @@ public class TopicThreadServiceImpl implements TopicThreadService {
     @Transactional
     @Override
     public TopicThread createNewTopicThread(TopicThreadCreationDto topicThreadCreationDto, User creatingUser, TopicForum owningForum) {
+        Date currentDate = getCurrentDate();
+
         TopicThread topicThread = new TopicThread(topicThreadCreationDto.getTitle(), owningForum);
+        topicThread.setCreatedAt(currentDate);
+        topicThread.setUpdatedAt(currentDate);
         topicThread = topicThreadRepository.save(topicThread);
 
-        Post post = new Post(topicThreadCreationDto.getFirstPostContent(), getCurrentDate());
+        Post post = new Post(topicThreadCreationDto.getFirstPostContent(), currentDate);
         post.setThread(topicThread);
         post.setUser(creatingUser);
         post = postRepository.save(post);
@@ -175,23 +177,55 @@ public class TopicThreadServiceImpl implements TopicThreadService {
 
     @Override
     public Page<TopicThread> searchTopicThreadsPaginated(String forumName, String searchText) {
-        // TODO: For testing
-//        PageRequest pageReq = PageRequest.of(0, 1);
-//        Page<TopicThread> searchResults = topicThreadRepository.searchForTopicThreadsInForum(forumName, searchText, pageReq);
-//        System.out.println("### in searchTopicThread");
-//        System.out.println("### searchResults = " + searchResults);
-//        System.out.println("### content = " + searchResults.getContent());
-//        System.out.println("### page number = " + searchResults.getNumber());
-//        System.out.println("### count pages = " + searchResults.getTotalPages());
-//        System.out.println("### count elements on page = " + searchResults.getNumberOfElements());
-//        System.out.println("### count total elements = " + searchResults.getTotalElements());
-
         throw new NotYetImplementedException(); // TODO: Implement
     }
 
     @Override
     public Page<TopicThreadViewDto> searchTopicThreadsAsViewDtos(String forumName, String searchText) {
         throw new NotYetImplementedException(); // TODO: Implement
+    }
+
+    @Override
+    public Page<TopicThread> getTopicThreadsByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage) {
+        if (pageNum - 1 < 0) {
+            System.out.println("### Negative page number");
+            return null;
+        }
+
+        Pageable pageReq = PageRequest.of(pageNum - 1, threadsPerPage);
+        Page<TopicThread> threadsPage = topicThreadRepository.getAllTopicThreadsPaginated(forum.getName(), pageReq);
+
+//        System.out.println("### in getTopicThreadsByForumPaginated");
+//        System.out.println("### threads page = " + threadsPage);
+//        System.out.println("### content = " + threadsPage.getContent());
+//        System.out.println("### page number = " + threadsPage.getNumber());
+//        System.out.println("### count pages = " + threadsPage.getTotalPages());
+//        System.out.println("### count elements on page = " + threadsPage.getNumberOfElements());
+//        System.out.println("### count total elements = " + threadsPage.getTotalElements());
+
+        if (threadsPage.getTotalElements() == 0) {
+            return new PageImpl<TopicThread>(new ArrayList<TopicThread>());
+        }
+
+        if (pageNum > threadsPage.getTotalPages()) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
+
+        return threadsPage;
+    }
+
+    @Override
+    public Page<TopicThreadViewDtoLight> getTopicThreadViewDtosLightByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage) {
+        Page<TopicThread> threads = getTopicThreadsByForumPaginated(forum, pageNum, threadsPerPage);
+
+        if (threads == null) {
+            return null;
+        }
+
+        return convertThreadsToThreadViewDtos(threads, forum);
+
+//        throw new NotYetImplementedException();
     }
 
     /**
@@ -272,6 +306,24 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
 
         return threadDtos;
+    }
+
+    private Page<TopicThreadViewDtoLight> convertThreadsToThreadViewDtos(Page<TopicThread> threads, TopicForum forum) {
+        TopicForumViewDtoLight forumViewDto = forumHierarchyConverter.convertForumLight(forum);
+
+        List<TopicThreadViewDtoLight> threadDtos = new ArrayList<>();
+
+        for (TopicThread thread : threads) {
+            TopicThreadViewDtoLight threadDto = forumHierarchyConverter.convertThreadLight(thread, forumViewDto);
+            threadDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadDto));
+            threadDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadDto));
+
+            threadDtos.add(threadDto);
+        }
+
+        Page<TopicThreadViewDtoLight> threadDtoPage = new PageImpl<TopicThreadViewDtoLight>(threadDtos, threads.getPageable(), threads.getTotalElements());
+
+        return threadDtoPage;
     }
 
     /**

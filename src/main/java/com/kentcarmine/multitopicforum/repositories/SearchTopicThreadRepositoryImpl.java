@@ -1,5 +1,6 @@
 package com.kentcarmine.multitopicforum.repositories;
 
+import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicThread;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -47,6 +48,31 @@ public class SearchTopicThreadRepositoryImpl extends AbstractSearchRepository im
         typedQuery.setMaxResults(pageable.getPageSize());
 
         Page<TopicThread> result = new PageImpl<TopicThread>(typedQuery.getResultList(), pageable, totalElements);
+
+        return result;
+    }
+
+    public Page<TopicThread> getAllTopicThreadsPaginated(String forumName, Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<TopicThread> query = criteriaBuilder.createQuery(TopicThread.class);
+        Root<TopicThread> topicThreadRoot = query.from(TopicThread.class);
+
+        Path<String> forumNamePath = topicThreadRoot.get("forum").get("name");
+
+        Predicate forumNamePredicate = criteriaBuilder.equal(forumNamePath, forumName);
+
+        CriteriaQuery<TopicThread> fullQuery = query.select(topicThreadRoot)
+                .where(forumNamePredicate)
+                .orderBy(criteriaBuilder.desc(topicThreadRoot.get("updatedAt")));
+
+        TypedQuery<TopicThread> typedQuery = entityManager.createQuery(fullQuery);
+
+        int totalElements = typedQuery.getResultList().size();
+
+        typedQuery.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        Page<TopicThread> result = new PageImpl<>(typedQuery.getResultList(), pageable, totalElements);
 
         return result;
     }

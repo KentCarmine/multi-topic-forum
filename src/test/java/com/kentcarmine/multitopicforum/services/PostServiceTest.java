@@ -47,6 +47,9 @@ class PostServiceTest {
     @Mock
     PostRepository postRepository;
 
+    @Mock
+    TopicThreadRepository topicThreadRepository;
+
     PostService postService;
 
     private TopicForum testTopicForum;
@@ -62,7 +65,7 @@ class PostServiceTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        postService = new PostServiceImpl(postRepository);
+        postService = new PostServiceImpl(postRepository, topicThreadRepository);
 
         testUser = new User(TEST_USERNAME, TEST_USER_PASSWORD, TEST_USER_EMAIL);
         testUser.addAuthority(UserRole.USER);
@@ -95,6 +98,7 @@ class PostServiceTest {
         postService.addNewPostToThread(postCreationDto, testUser, testTopicThread);
 
         verify(postRepository, times(1)).save(any());
+        verify(topicThreadRepository, times(1)).save(any());
     }
 
     @Test

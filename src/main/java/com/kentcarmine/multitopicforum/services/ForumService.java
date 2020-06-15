@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
 import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
+import com.kentcarmine.multitopicforum.dtos.TopicForumViewDtoLight;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import org.springframework.data.domain.Page;
@@ -27,7 +28,7 @@ public interface ForumService {
 
 //    SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException;
 
-    TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum);
+//    TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum);
 
 //    SortedSet<TopicForumViewDto> getAllForumsAsViewDtos();
 //
@@ -40,6 +41,8 @@ public interface ForumService {
     Page<TopicForum> searchTopicForumsWithCustomQuery(String searchText, int page, int resultsPerPage);
 
     Page<TopicForumViewDto> searchTopicForumsForViewDtosWithCustomQuery(String searchText, int page, int resultsPerPage);
+
+    TopicForumViewDtoLight getTopicForumViewDtoLightForTopicForum(TopicForum topicForum);
 
 //    int getForumsPerPage();
 }
