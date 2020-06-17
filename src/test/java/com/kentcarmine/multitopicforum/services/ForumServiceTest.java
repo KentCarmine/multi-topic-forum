@@ -10,10 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -98,6 +95,7 @@ class ForumServiceTest {
         testPost.setUser(testUser);
         testTopicThread.getPosts().add(testPost);
         testTopicForum.addThread(testTopicThread);
+        testPost.setThread(testTopicThread);
 
         testTopicForum2 = new TopicForum(TEST_TOPIC_FORUM_NAME_2, TEST_TOPIC_FORUM_DESC_2);
     }
@@ -305,19 +303,103 @@ class ForumServiceTest {
 
     @Test
     void getForumsAsViewDtosPaginated_valid() throws Exception {
-        // TODO: Fill in
+        int resultsPerPage = 2;
+
+        Pageable pageReq = PageRequest.of(0, resultsPerPage,
+                Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+        List<TopicForum> forumList = new ArrayList<>();
+        forumList.add(testTopicForum);
+        Page<TopicForum> forumPageExpected = new PageImpl<TopicForum>(forumList, pageReq, forumList.size());
+
+        when(topicForumRepository.findAll(any(Pageable.class))).thenReturn(forumPageExpected);
+        when(timeCalculatorService.getTimeSinceForumUpdatedMessage(any())).thenReturn("testPlaceholderText");
+
+        Page<TopicForumViewDto> result = forumService.getForumsAsViewDtosPaginated(1, resultsPerPage);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(1, result.getNumberOfElements());
+        assertEquals(0, result.getNumber());
+
+        TopicForumViewDto resultContent = result.toList().get(0);
+
+        assertEquals(1, resultContent.getNumThreads());
+        assertEquals(testTopicThread.getId(), resultContent.getThreads().first().getId());
+        assertEquals(testTopicForum.getThreads().first().getPosts().first().getId(), resultContent.getMostRecentPost().getId());
+
+        verify(topicForumRepository, times(1)).findAll(any(Pageable.class));
+        verify(timeCalculatorService, times(1)).getTimeSinceForumUpdatedMessage(any());
     }
 
     @Test
     void getForumsAsViewDtosPaginated_lowPageNumber() throws Exception {
-        // TODO: Fill in
+        int resultsPerPage = 25;
+
+        Pageable pageReq = PageRequest.of(0, resultsPerPage,
+                Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+        List<TopicForum> forumList = new ArrayList<>();
+        forumList.add(testTopicForum);
+        forumList.add(testTopicForum2);
+        Page<TopicForum> forumPageExpected = new PageImpl<TopicForum>(forumList, pageReq, 2);
+
+        when(topicForumRepository.findAll(pageReq)).thenReturn(forumPageExpected);
+
+        Page<TopicForumViewDto> result = forumService.getForumsAsViewDtosPaginated(0, resultsPerPage);
+
+        assertNull(result);
     }
 
     @Test
     void getForumsAsViewDtosPaginated_highPageNumber() throws Exception {
-        // TODO: Fill in
+        int resultsPerPage = 25;
+
+        Pageable pageReq = PageRequest.of(0, resultsPerPage,
+                Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+        List<TopicForum> forumList = new ArrayList<>();
+        forumList.add(testTopicForum);
+        forumList.add(testTopicForum2);
+        Page<TopicForum> forumPageExpected = new PageImpl<TopicForum>(forumList, pageReq, 2);
+
+        when(topicForumRepository.findAll(any(Pageable.class))).thenReturn(forumPageExpected);
+
+        Page<TopicForumViewDto> result = forumService.getForumsAsViewDtosPaginated(17, resultsPerPage);
+
+        assertNull(result);
     }
 
+    @Test
+    void getTopicForumViewDtoLightForTopicForum_valid() throws Exception {
+        TopicForumViewDtoLight expected = forumHierarchyConverter.convertForumLight(testTopicForum);
+
+        when(timeCalculatorService.getTimeSinceThreadCreationMessage(any())).thenReturn("1 hour ago");
+        when(timeCalculatorService.getTimeSinceThreadUpdatedMessage(any())).thenReturn("1 hour ago");
+        when(timeCalculatorService.getTimeSincePostCreationMessage(any())).thenReturn("1 hour ago");
+
+        TopicForumViewDtoLight result = forumService.getTopicForumViewDtoLightForTopicForum(testTopicForum);
+
+        assertEquals(expected.getName(), result.getName());
+        assertEquals(expected.getDescription(), result.getDescription());
+        assertTrue(result.hasThreads());
+        assertEquals(1, result.getNumThreads());
+        assertEquals(expected.getMostRecentPost().getId(), result.getMostRecentPost().getId());
+
+    }
+
+    @Test
+    void getTopicForumViewDtoLightForTopicForum_noPosts() throws Exception {
+        TopicForumViewDtoLight expected = forumHierarchyConverter.convertForumLight(testTopicForum2);
+
+        TopicForumViewDtoLight result = forumService.getTopicForumViewDtoLightForTopicForum(testTopicForum2);
+
+        assertEquals(expected.getName(), result.getName());
+        assertEquals(expected.getDescription(), result.getDescription());
+        assertFalse(result.hasThreads());
+        assertNull(result.getMostRecentPost());
+
+        verify(timeCalculatorService, times(0)).getTimeSinceThreadCreationMessage(any());
+        verify(timeCalculatorService, times(0)).getTimeSinceThreadUpdatedMessage(any());
+        verify(timeCalculatorService, times(0)).getTimeSincePostCreationMessage(any());
+    }
 
 
 
