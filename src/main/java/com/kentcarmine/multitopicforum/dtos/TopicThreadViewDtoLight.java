@@ -4,6 +4,10 @@ import com.kentcarmine.multitopicforum.model.User;
 
 import java.util.Date;
 
+/**
+ * Lightweight thread model DTO that does not include the lists of posts belonging to the thread, only the first and
+ * last posts and a count of the total posts.
+ */
 public class TopicThreadViewDtoLight extends AbstractTopicThreadViewDto {
 
 //    private User creator;
