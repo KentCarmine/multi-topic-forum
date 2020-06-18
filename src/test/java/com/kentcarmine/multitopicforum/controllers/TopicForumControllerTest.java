@@ -246,6 +246,35 @@ class TopicForumControllerTest {
     }
 
     @Test
+    void showForum_lowPageNumber() throws Exception {
+        TopicForumViewDtoLight topicForumDto = forumHierarchyConverter.convertForumLight(testTopicForum);
+
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(forumService.getTopicForumViewDtoLightForTopicForum(any())).thenReturn(topicForumDto);
+
+        when(topicThreadService.getTopicThreadViewDtosLightByForumPaginated(any(), anyInt(), anyInt())).thenReturn(null);
+
+        mockMvc.perform(get("/forum/" + testTopicForum.getName() + "?page=0"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("general-error-page"));
+    }
+
+    @Test
+    void showForum_highPageNumber() throws Exception {
+        TopicForumViewDtoLight topicForumDto = forumHierarchyConverter.convertForumLight(testTopicForum);
+
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(forumService.getTopicForumViewDtoLightForTopicForum(any())).thenReturn(topicForumDto);
+
+        when(topicThreadService.getTopicThreadViewDtosLightByForumPaginated(any(), anyInt(), anyInt())).thenReturn(null);
+
+        mockMvc.perform(get("/forum/" + testTopicForum.getName() + "?page=127"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("general-error-page"));
+    }
+
+
+    @Test
     void processTopicForumSearch_validSearch() throws Exception {
         final String searchText = "  \"Description of test \"  ";
         mockMvc.perform(post("/searchTopicForums")
@@ -254,6 +283,7 @@ class TopicForumControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/forums?search=" + URLEncoderDecoderHelper.encode(searchText.trim())));
     }
+
 
     @Test
     void processTopicForumSearch_invalidSearch() throws Exception {
