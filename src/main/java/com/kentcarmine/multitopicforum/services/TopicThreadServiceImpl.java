@@ -185,6 +185,14 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         throw new NotYetImplementedException(); // TODO: Implement
     }
 
+    /**
+     * Get the Page indexed by pageNum consisting of up to threadsPerPage TopicThreads on the given forum.
+     *
+     * @param forum the forum to get threads for
+     * @param pageNum the number of the Page to get
+     * @param threadsPerPage the maximum number of threads per page
+     * @return the Page indexed by pageNum consisting of up to threadsPerPage TopicThreads on the given forum.
+     */
     @Override
     public Page<TopicThread> getTopicThreadsByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage) {
         if (pageNum - 1 < 0) {
@@ -215,6 +223,16 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         return threadsPage;
     }
 
+    /**
+     * Get the Page indexed by pageNum consisting of up to threadsPerPage TopicThreadViewDtoLights representing
+     * TopicThreads on the given forum.
+     *
+     * @param forum the forum to get threads for
+     * @param pageNum the number of the Page to get
+     * @param threadsPerPage the maximum number of threads per page
+     * @return the Page indexed by pageNum consisting of up to threadsPerPage TopicThreadViewDtoLights representing
+     * TopicThreads on the given forum.
+     */
     @Override
     public Page<TopicThreadViewDtoLight> getTopicThreadViewDtosLightByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage) {
         Page<TopicThread> threads = getTopicThreadsByForumPaginated(forum, pageNum, threadsPerPage);
@@ -224,8 +242,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
 
         return convertThreadsToThreadViewDtos(threads, forum);
-
-//        throw new NotYetImplementedException();
     }
 
     /**
@@ -308,6 +324,14 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         return threadDtos;
     }
 
+    /**
+     * Helper method that converts a Page of TopicThreads from the given forum into a Page of TopicThreadViewDtoLights
+     * representing those TopicThreads
+     *
+     * @param threads the Page of TopicThreads to convert
+     * @param forum the forum the TopicThreads belong to
+     * @return the page of TopicThreadViewDtoLights representing threads
+     */
     private Page<TopicThreadViewDtoLight> convertThreadsToThreadViewDtos(Page<TopicThread> threads, TopicForum forum) {
         TopicForumViewDtoLight forumViewDto = forumHierarchyConverter.convertForumLight(forum);
 
