@@ -64,7 +64,7 @@ public class TopicThreadServiceImpl implements TopicThreadService {
 
         TopicThread topicThread = new TopicThread(topicThreadCreationDto.getTitle(), owningForum);
         topicThread.setCreatedAt(currentDate);
-        topicThread.setUpdatedAt(currentDate);
+//        topicThread.setUpdatedAt(currentDate);
         topicThread = topicThreadRepository.save(topicThread);
 
         Post post = new Post(topicThreadCreationDto.getFirstPostContent(), currentDate);
@@ -175,14 +175,62 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         return pageNum;
     }
 
+    /**
+     * Get the Page of TopicThreads belonging to the forum with the given name with the given pageNum index that are
+     * the results of a search with the given search text, up to a maximum of threadsPerPage
+     *
+     * @param forumName the forum to search threads for
+     * @param searchText the text to search for
+     * @param pageNum the number of the page
+     * @param threadsPerPage the maximum number of threads per page
+     * @return the Page of TopicThreads resulting from the search, or null, if the pageNum was invalid
+     */
     @Override
-    public Page<TopicThread> searchTopicThreadsPaginated(String forumName, String searchText) {
-        throw new NotYetImplementedException(); // TODO: Implement
+    public Page<TopicThread> searchTopicThreadsPaginated(String forumName, String searchText, int pageNum, int threadsPerPage) {
+        if (pageNum - 1 < 0) {
+            System.out.println("### Negative page number");
+            return null;
+        }
+
+        Pageable pageReq = PageRequest.of(pageNum - 1, threadsPerPage);
+        Page<TopicThread> threadsPage = topicThreadRepository.searchForTopicThreadsInForum(forumName, searchText, pageReq);
+
+        if (threadsPage.getTotalElements() == 0) {
+            return new PageImpl<TopicThread>(new ArrayList<TopicThread>());
+        }
+
+        if (pageNum > threadsPage.getTotalPages()) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
+
+        return threadsPage;
     }
 
+    /**
+     * Get the Page of TopicThreadViewDtoLight representing TopicThreads belonging to the forum with the given name with
+     * the given pageNum index that are the results of a search with the given search text, up to a maximum of
+     * threadsPerPage
+     *
+     * @param forumName the forum to search threads for
+     * @param searchText the text to search for
+     * @param pageNum the number of the page
+     * @param threadsPerPage the maximum number of threads per page
+     * @return the Page of TopicThreads resulting from the search, or null, if the pageNum was invalid
+     */
     @Override
-    public Page<TopicThreadViewDto> searchTopicThreadsAsViewDtos(String forumName, String searchText) {
-        throw new NotYetImplementedException(); // TODO: Implement
+    public Page<TopicThreadViewDtoLight> searchTopicThreadsAsViewDtos(String forumName, String searchText, int pageNum, int threadsPerPage) {
+        Page<TopicThread> threadsPage = searchTopicThreadsPaginated(forumName, searchText, pageNum, threadsPerPage);
+
+        if (threadsPage == null) {
+            return null;
+        }
+
+        TopicForum forum = forumService.getForumByName(forumName);
+
+        Page<TopicThreadViewDtoLight> threadsDtoPage = convertThreadsToThreadViewDtos(threadsPage, forum);
+
+        return threadsDtoPage;
     }
 
     /**

@@ -38,9 +38,9 @@ public interface TopicThreadService {
 
     int getPostPageNumberOnThreadByPostId(Long postId);
 
-    Page<TopicThread> searchTopicThreadsPaginated(String forumName, String searchText);
+    Page<TopicThread> searchTopicThreadsPaginated(String forumName, String searchText, int pageNum, int threadsPerPage);
 
-    Page<TopicThreadViewDto> searchTopicThreadsAsViewDtos(String forumName, String searchText);
+    Page<TopicThreadViewDtoLight> searchTopicThreadsAsViewDtos(String forumName, String searchText, int pageNum, int threadsPerPage);
 
     Page<TopicThreadViewDtoLight> getTopicThreadViewDtosLightByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage);
 

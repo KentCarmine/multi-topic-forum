@@ -112,6 +112,7 @@ public class TopicThread implements ThreadUpdatedTimeable {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+        setUpdatedAt(createdAt);
     }
 
     public Date getUpdatedAt() {

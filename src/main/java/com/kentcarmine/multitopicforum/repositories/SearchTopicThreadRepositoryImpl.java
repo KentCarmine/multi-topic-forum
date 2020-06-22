@@ -38,7 +38,8 @@ public class SearchTopicThreadRepositoryImpl extends AbstractSearchRepository im
 
         CriteriaQuery<TopicThread> fullQuery = query.select(topicThreadRoot)
                 .where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])))
-                .orderBy(criteriaBuilder.desc(titlePath));
+//                .orderBy(criteriaBuilder.desc(titlePath));
+                .orderBy(criteriaBuilder.desc(topicThreadRoot.get("updatedAt")));
 
         TypedQuery<TopicThread> typedQuery = entityManager.createQuery(fullQuery);
 
