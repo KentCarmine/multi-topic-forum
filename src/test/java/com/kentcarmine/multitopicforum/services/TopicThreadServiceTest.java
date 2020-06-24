@@ -499,4 +499,44 @@ class TopicThreadServiceTest {
         assertNull(resultThreads);
         verify(topicThreadRepository, times(1)).getAllTopicThreadsPaginated(anyString(), any());
     }
+
+    @Test
+    void searchTopicThreadsPaginated_valid_withResults() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void searchTopicThreadsPaginated_valid_noResults() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void searchTopicThreadsPaginated_invalid_lowPageNumber() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void searchTopicThreadsPaginated_invalid_highPageNumber() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void searchTopicThreadsAsViewDtos_valid_withResults() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void searchTopicThreadsAsViewDtos_valid_noResults() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void searchTopicThreadsAsViewDtos_invalid_lowPageNumber() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void searchTopicThreadsAsViewDtos_invalid_highPageNumber() throws Exception {
+        // TODO: Fill in
+    }
 }
