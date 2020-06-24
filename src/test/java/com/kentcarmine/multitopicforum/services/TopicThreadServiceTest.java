@@ -3,6 +3,7 @@ package com.kentcarmine.multitopicforum.services;
 import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDtoLight;
 import com.kentcarmine.multitopicforum.model.*;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
@@ -13,13 +14,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -384,5 +384,258 @@ class TopicThreadServiceTest {
 
     }
 
+    @Test
+    void getTopicThreadsByForumPaginated_valid_withThreads() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<TopicThread>(List.of(testTopicThread));
 
+        when(topicThreadRepository.getAllTopicThreadsPaginated(anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThread> resultThreads = topicThreadService.getTopicThreadsByForumPaginated(testTopicForum, 1, 25);
+
+        assertEquals(expectedThreads.getTotalPages(), resultThreads.getTotalPages());
+        assertEquals(expectedThreads.getTotalElements(), resultThreads.getTotalElements());
+        assertEquals(expectedThreads.getNumber(), resultThreads.getNumber());
+        assertEquals(expectedThreads.getNumberOfElements(), resultThreads.getNumberOfElements());
+        assertEquals(expectedThreads.getContent().get(0), resultThreads.getContent().get(0));
+    }
+
+    @Test
+    void getTopicThreadsByForumPaginated_valid_noThreads() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<TopicThread>(new ArrayList<TopicThread>());
+
+        when(topicThreadRepository.getAllTopicThreadsPaginated(anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThread> resultThreads = topicThreadService.getTopicThreadsByForumPaginated(testTopicForum, 1, 25);
+
+        assertEquals(expectedThreads.getTotalPages(), resultThreads.getTotalPages());
+        assertEquals(0, resultThreads.getTotalElements());
+        assertEquals(0, resultThreads.getNumber());
+        assertEquals(0, resultThreads.getNumberOfElements());
+        assertTrue(resultThreads.isEmpty());
+    }
+
+    @Test
+    void getTopicThreadsByForumPaginated_lowPageNumber() throws Exception {
+        when(topicThreadRepository.getAllTopicThreadsPaginated(anyString(), any())).thenReturn(null);
+
+        Page<TopicThread> resultThreads = topicThreadService.getTopicThreadsByForumPaginated(testTopicForum, 0, 25);
+
+        assertNull(resultThreads);
+
+        verify(topicThreadRepository, times(0)).getAllTopicThreadsPaginated(anyString(), any());
+    }
+
+    @Test
+    void getTopicThreadsByForumPaginated_highPageNumber() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<TopicThread>(List.of(testTopicThread));
+
+        when(topicThreadRepository.getAllTopicThreadsPaginated(anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThread> resultThreads = topicThreadService.getTopicThreadsByForumPaginated(testTopicForum, 2, 25);
+
+        assertNull(resultThreads);
+        verify(topicThreadRepository, times(1)).getAllTopicThreadsPaginated(anyString(), any());
+    }
+
+    @Test
+    void getTopicThreadViewDtosLightByForumPaginated_valid_withThreads() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<TopicThread>(List.of(testTopicThread));
+
+        when(topicThreadRepository.getAllTopicThreadsPaginated(anyString(), any())).thenReturn(expectedThreads);
+        when(timeCalculatorService.getTimeSinceThreadCreationMessage(any())).thenReturn("3 days");
+        when(timeCalculatorService.getTimeSinceThreadUpdatedMessage(any())).thenReturn("3 days");
+
+        Page<TopicThreadViewDtoLight> resultThreads =
+                topicThreadService.getTopicThreadViewDtosLightByForumPaginated(testTopicForum, 1,
+                        25);
+
+        assertEquals(1, resultThreads.getTotalPages());
+        assertEquals(1, resultThreads.getTotalElements());
+        assertEquals(0, resultThreads.getNumber());
+        assertEquals(1, resultThreads.getNumberOfElements());
+        assertEquals(testTopicThread.getId(), resultThreads.getContent().get(0).getId());
+    }
+
+    @Test
+    void getTopicThreadViewDtosLightByForumPaginated_valid_noThreads() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<TopicThread>(new ArrayList<TopicThread>());
+
+        when(topicThreadRepository.getAllTopicThreadsPaginated(anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThreadViewDtoLight> resultThreads =
+                topicThreadService.getTopicThreadViewDtosLightByForumPaginated(testTopicForum, 1,
+                        25);
+
+        assertEquals(expectedThreads.getTotalPages(), resultThreads.getTotalPages());
+        assertEquals(0, resultThreads.getTotalElements());
+        assertEquals(0, resultThreads.getNumber());
+        assertEquals(0, resultThreads.getNumberOfElements());
+        assertTrue(resultThreads.isEmpty());
+    }
+
+    @Test
+    void getTopicThreadViewDtosLightByForumPaginated_lowPageNumber() throws Exception {
+        when(topicThreadRepository.getAllTopicThreadsPaginated(anyString(), any())).thenReturn(null);
+
+        Page<TopicThreadViewDtoLight> resultThreads =
+                topicThreadService.getTopicThreadViewDtosLightByForumPaginated(testTopicForum, 0,
+                        25);
+
+        assertNull(resultThreads);
+
+        verify(topicThreadRepository, times(0)).getAllTopicThreadsPaginated(anyString(), any());
+    }
+
+    @Test
+    void getTopicThreadViewDtosLightByForumPaginated__highPageNumber() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<TopicThread>(List.of(testTopicThread));
+
+        when(topicThreadRepository.getAllTopicThreadsPaginated(anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThreadViewDtoLight> resultThreads =
+                topicThreadService.getTopicThreadViewDtosLightByForumPaginated(testTopicForum, 2,
+                        25);
+
+        assertNull(resultThreads);
+        verify(topicThreadRepository, times(1)).getAllTopicThreadsPaginated(anyString(), any());
+    }
+
+    @Test
+    void searchTopicThreadsPaginated_valid_withResults() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<>(List.of(testTopicThread));
+
+        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThread> resultThreads = topicThreadService.searchTopicThreadsPaginated(testTopicForum.getName(), "Thread", 1, 25);
+
+        assertEquals(1, resultThreads.getTotalPages());
+        assertEquals(1, resultThreads.getTotalElements());
+        assertEquals(0, resultThreads.getNumber());
+        assertEquals(1, resultThreads.getNumberOfElements());
+        assertEquals(testTopicThread.getId(), resultThreads.getContent().get(0).getId());
+
+        verify(topicThreadRepository, times(1)).searchForTopicThreadsInForum(anyString(), anyString(), any());
+    }
+
+    @Test
+    void searchTopicThreadsPaginated_valid_noResults() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<>(List.of());
+
+        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThread> resultThreads = topicThreadService.searchTopicThreadsPaginated(testTopicForum.getName(), "Thread", 1, 25);
+
+        assertEquals(1, resultThreads.getTotalPages());
+        assertEquals(0, resultThreads.getTotalElements());
+        assertEquals(0, resultThreads.getNumber());
+        assertEquals(0, resultThreads.getNumberOfElements());
+        assertTrue(resultThreads.isEmpty());
+
+        verify(topicThreadRepository, times(1)).searchForTopicThreadsInForum(anyString(), anyString(), any());
+    }
+
+    @Test
+    void searchTopicThreadsPaginated_invalid_lowPageNumber() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<>(List.of(testTopicThread));
+
+        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThread> resultThreads = topicThreadService.searchTopicThreadsPaginated(testTopicForum.getName(), "Thread", 0, 25);
+
+        assertNull(resultThreads);
+        verify(topicThreadRepository, times(0)).searchForTopicThreadsInForum(anyString(), anyString(), any());
+    }
+
+    @Test
+    void searchTopicThreadsPaginated_invalid_highPageNumber() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<>(List.of(testTopicThread));
+
+        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThread> resultThreads = topicThreadService.searchTopicThreadsPaginated(testTopicForum.getName(), "Thread", 2, 25);
+
+        assertNull(resultThreads);
+        verify(topicThreadRepository, times(1)).searchForTopicThreadsInForum(anyString(), anyString(), any());
+    }
+
+    @Test
+    void searchTopicThreadsAsViewDtos_valid_withResults() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<>(List.of(testTopicThread));
+
+        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(timeCalculatorService.getTimeSinceThreadCreationMessage(any())).thenReturn("3 days");
+        when(timeCalculatorService.getTimeSinceThreadUpdatedMessage(any())).thenReturn("3 days");
+
+        Page<TopicThreadViewDtoLight> resultThreads =
+                topicThreadService.searchTopicThreadsAsViewDtos(testTopicForum.getName(),
+                        "Thread", 1, 25);
+
+        assertEquals(1, resultThreads.getTotalPages());
+        assertEquals(1, resultThreads.getTotalElements());
+        assertEquals(0, resultThreads.getNumber());
+        assertEquals(1, resultThreads.getNumberOfElements());
+        assertEquals(testTopicThread.getId(), resultThreads.getContent().get(0).getId());
+
+        verify(topicThreadRepository, times(1)).searchForTopicThreadsInForum(anyString(), anyString(), any());
+    }
+
+    @Test
+    void searchTopicThreadsAsViewDtos_valid_noResults() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<>(List.of());
+
+        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
+        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+        when(timeCalculatorService.getTimeSinceThreadCreationMessage(any())).thenReturn("3 days");
+        when(timeCalculatorService.getTimeSinceThreadUpdatedMessage(any())).thenReturn("3 days");
+
+        Page<TopicThreadViewDtoLight> resultThreads =
+                topicThreadService.searchTopicThreadsAsViewDtos(testTopicForum.getName(),
+                        "Thread", 1, 25);
+
+        assertEquals(1, resultThreads.getTotalPages());
+        assertEquals(0, resultThreads.getTotalElements());
+        assertEquals(0, resultThreads.getNumber());
+        assertEquals(0, resultThreads.getNumberOfElements());
+        assertTrue(resultThreads.isEmpty());
+
+        verify(topicThreadRepository, times(1)).searchForTopicThreadsInForum(anyString(), anyString(), any());
+    }
+
+    @Test
+    void searchTopicThreadsAsViewDtos_invalid_lowPageNumber() throws Exception {
+//        Page<TopicThread> expectedThreads = new PageImpl<>(List.of());
+
+//        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
+//        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
+//        when(timeCalculatorService.getTimeSinceThreadCreationMessage(any())).thenReturn("3 days");
+//        when(timeCalculatorService.getTimeSinceThreadUpdatedMessage(any())).thenReturn("3 days");
+
+        Page<TopicThreadViewDtoLight> resultThreads =
+                topicThreadService.searchTopicThreadsAsViewDtos(testTopicForum.getName(),
+                        "Thread", 0, 25);
+
+//        assertEquals(1, resultThreads.getTotalPages());
+//        assertEquals(0, resultThreads.getTotalElements());
+//        assertEquals(0, resultThreads.getNumber());
+//        assertEquals(0, resultThreads.getNumberOfElements());
+        assertNull(resultThreads);
+
+        verify(topicThreadRepository, times(0)).searchForTopicThreadsInForum(anyString(), anyString(), any());
+    }
+
+    @Test
+    void searchTopicThreadsAsViewDtos_invalid_highPageNumber() throws Exception {
+        Page<TopicThread> expectedThreads = new PageImpl<>(List.of(testTopicThread));
+
+        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
+
+        Page<TopicThreadViewDtoLight> resultThreads =
+                topicThreadService.searchTopicThreadsAsViewDtos(testTopicForum.getName(),
+                        "Thread", 2, 25);
+
+        assertNull(resultThreads);
+
+        verify(topicThreadRepository, times(1)).searchForTopicThreadsInForum(anyString(), anyString(), any());
+    }
 }

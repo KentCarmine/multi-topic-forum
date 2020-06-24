@@ -1,9 +1,7 @@
 package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
-import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
@@ -12,6 +10,7 @@ import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.repositories.PostRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import com.kentcarmine.multitopicforum.repositories.TopicThreadRepository;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
@@ -61,10 +60,14 @@ public class TopicThreadServiceImpl implements TopicThreadService {
     @Transactional
     @Override
     public TopicThread createNewTopicThread(TopicThreadCreationDto topicThreadCreationDto, User creatingUser, TopicForum owningForum) {
+        Date currentDate = getCurrentDate();
+
         TopicThread topicThread = new TopicThread(topicThreadCreationDto.getTitle(), owningForum);
+        topicThread.setCreatedAt(currentDate);
+//        topicThread.setUpdatedAt(currentDate);
         topicThread = topicThreadRepository.save(topicThread);
 
-        Post post = new Post(topicThreadCreationDto.getFirstPostContent(), getCurrentDate());
+        Post post = new Post(topicThreadCreationDto.getFirstPostContent(), currentDate);
         post.setThread(topicThread);
         post.setUser(creatingUser);
         post = postRepository.save(post);
@@ -173,6 +176,123 @@ public class TopicThreadServiceImpl implements TopicThreadService {
     }
 
     /**
+     * Get the Page of TopicThreads belonging to the forum with the given name with the given pageNum index that are
+     * the results of a search with the given search text, up to a maximum of threadsPerPage
+     *
+     * @param forumName the forum to search threads for
+     * @param searchText the text to search for
+     * @param pageNum the number of the page
+     * @param threadsPerPage the maximum number of threads per page
+     * @return the Page of TopicThreads resulting from the search, or null, if the pageNum was invalid
+     */
+    @Override
+    public Page<TopicThread> searchTopicThreadsPaginated(String forumName, String searchText, int pageNum, int threadsPerPage) {
+        if (pageNum - 1 < 0) {
+            System.out.println("### Negative page number");
+            return null;
+        }
+
+        Pageable pageReq = PageRequest.of(pageNum - 1, threadsPerPage);
+        Page<TopicThread> threadsPage = topicThreadRepository.searchForTopicThreadsInForum(forumName, searchText, pageReq);
+
+        if (threadsPage.getTotalElements() == 0) {
+            return new PageImpl<TopicThread>(new ArrayList<TopicThread>());
+        }
+
+        if (pageNum > threadsPage.getTotalPages()) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
+
+        return threadsPage;
+    }
+
+    /**
+     * Get the Page of TopicThreadViewDtoLight representing TopicThreads belonging to the forum with the given name with
+     * the given pageNum index that are the results of a search with the given search text, up to a maximum of
+     * threadsPerPage
+     *
+     * @param forumName the forum to search threads for
+     * @param searchText the text to search for
+     * @param pageNum the number of the page
+     * @param threadsPerPage the maximum number of threads per page
+     * @return the Page of TopicThreads resulting from the search, or null, if the pageNum was invalid
+     */
+    @Override
+    public Page<TopicThreadViewDtoLight> searchTopicThreadsAsViewDtos(String forumName, String searchText, int pageNum, int threadsPerPage) {
+        Page<TopicThread> threadsPage = searchTopicThreadsPaginated(forumName, searchText, pageNum, threadsPerPage);
+
+        if (threadsPage == null) {
+            return null;
+        }
+
+        TopicForum forum = forumService.getForumByName(forumName);
+
+        Page<TopicThreadViewDtoLight> threadsDtoPage = convertThreadsToThreadViewDtos(threadsPage, forum);
+
+        return threadsDtoPage;
+    }
+
+    /**
+     * Get the Page indexed by pageNum consisting of up to threadsPerPage TopicThreads on the given forum.
+     *
+     * @param forum the forum to get threads for
+     * @param pageNum the number of the Page to get
+     * @param threadsPerPage the maximum number of threads per page
+     * @return the Page indexed by pageNum consisting of up to threadsPerPage TopicThreads on the given forum.
+     */
+    @Override
+    public Page<TopicThread> getTopicThreadsByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage) {
+        if (pageNum - 1 < 0) {
+            System.out.println("### Negative page number");
+            return null;
+        }
+
+        Pageable pageReq = PageRequest.of(pageNum - 1, threadsPerPage);
+        Page<TopicThread> threadsPage = topicThreadRepository.getAllTopicThreadsPaginated(forum.getName(), pageReq);
+
+//        System.out.println("### in getTopicThreadsByForumPaginated");
+//        System.out.println("### threads page = " + threadsPage);
+//        System.out.println("### content = " + threadsPage.getContent());
+//        System.out.println("### page number = " + threadsPage.getNumber());
+//        System.out.println("### count pages = " + threadsPage.getTotalPages());
+//        System.out.println("### count elements on page = " + threadsPage.getNumberOfElements());
+//        System.out.println("### count total elements = " + threadsPage.getTotalElements());
+
+        if (threadsPage.getTotalElements() == 0) {
+            return new PageImpl<TopicThread>(new ArrayList<TopicThread>());
+        }
+
+        if (pageNum > threadsPage.getTotalPages()) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
+
+        return threadsPage;
+    }
+
+    /**
+     * Get the Page indexed by pageNum consisting of up to threadsPerPage TopicThreadViewDtoLights representing
+     * TopicThreads on the given forum.
+     *
+     * @param forum the forum to get threads for
+     * @param pageNum the number of the Page to get
+     * @param threadsPerPage the maximum number of threads per page
+     * @return the Page indexed by pageNum consisting of up to threadsPerPage TopicThreadViewDtoLights representing
+     * TopicThreads on the given forum.
+     */
+    @Override
+    public Page<TopicThreadViewDtoLight> getTopicThreadViewDtosLightByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage) {
+        Page<TopicThread> threads = getTopicThreadsByForumPaginated(forum, pageNum, threadsPerPage);
+
+        if (threads == null) {
+            return null;
+        }
+
+        return convertThreadsToThreadViewDtos(threads, forum);
+    }
+
+    /**
      * Searches for all topic threads in a topic forum with the given forumName that have titles that contain all tokens
      * (delimited on double quotes and spaces, but not spaces within double quotes) of the given search text. Empty
      * search text or a search of "" returns all threads in the given forum
@@ -250,6 +370,32 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
 
         return threadDtos;
+    }
+
+    /**
+     * Helper method that converts a Page of TopicThreads from the given forum into a Page of TopicThreadViewDtoLights
+     * representing those TopicThreads
+     *
+     * @param threads the Page of TopicThreads to convert
+     * @param forum the forum the TopicThreads belong to
+     * @return the page of TopicThreadViewDtoLights representing threads
+     */
+    private Page<TopicThreadViewDtoLight> convertThreadsToThreadViewDtos(Page<TopicThread> threads, TopicForum forum) {
+        TopicForumViewDtoLight forumViewDto = forumHierarchyConverter.convertForumLight(forum);
+
+        List<TopicThreadViewDtoLight> threadDtos = new ArrayList<>();
+
+        for (TopicThread thread : threads) {
+            TopicThreadViewDtoLight threadDto = forumHierarchyConverter.convertThreadLight(thread, forumViewDto);
+            threadDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadDto));
+            threadDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadDto));
+
+            threadDtos.add(threadDto);
+        }
+
+        Page<TopicThreadViewDtoLight> threadDtoPage = new PageImpl<TopicThreadViewDtoLight>(threadDtos, threads.getPageable(), threads.getTotalElements());
+
+        return threadDtoPage;
     }
 
     /**

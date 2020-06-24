@@ -22,4 +22,8 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Long> {
     Page<Post> findAllByThread(TopicThread thread, Pageable pageable);
 
     Page<Post> findAllByUser(User user, Pageable pageable);
+
+    Post findFirstByThreadOrderByPostedAtDesc(TopicThread thread);
+
+    Post findFirstByThreadOrderByPostedAtAsc(TopicThread thread);
 }

@@ -46,7 +46,7 @@ public class Bootstrap implements CommandLineRunner {
     }
 
     private void createTopicForums() {
-        TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing. 123");
+        TopicForum testForum1 = new TopicForum("Test_Forum_1", "First forum for testing. 23");
         topicForumRepository.save(testForum1);
 
         TopicForum testForum2 = new TopicForum("DemoForum2", "Second forum for testing! This is a very " +
@@ -60,9 +60,11 @@ public class Bootstrap implements CommandLineRunner {
         topicForumRepository.save(testForum3);
 
         TopicThread forum2Thread1 = new TopicThread("Thread1 this is a very long thread name, this is a very long thread name, this is a very long thread name, this is a very long thread name", testForum2);
-        topicThreadRepository.save(forum2Thread1);
+        forum2Thread1.setCreatedAt(Date.from(Instant.now()));
+        forum2Thread1 = topicThreadRepository.save(forum2Thread1);
 
         TopicThread forum2Thread2 = new TopicThread("Thread 2", testForum2);
+        forum2Thread2.setCreatedAt(Date.from(Instant.now()));
         topicThreadRepository.save(forum2Thread2);
 
         final long secondsIn8Hours = (60 * 60 * 8);
@@ -71,18 +73,28 @@ public class Bootstrap implements CommandLineRunner {
         post1.setThread(forum2Thread1);
         post1 = postRepository.save(post1);
 
-        Post post2 = new Post("Test content 2", Date.from(Instant.now().minusSeconds(10)));
+        Date f2t1RecentUpdate = Date.from(Instant.now().minusSeconds(10));
+        Post post2 = new Post("Test content 2", f2t1RecentUpdate);
         post2.setUser(userRepository.findByUsername("user"));
         post2.setThread(forum2Thread1);
         post2 = postRepository.save(post2);
 
+        forum2Thread1.setUpdatedAt(f2t1RecentUpdate);
+
+        forum2Thread1 = topicThreadRepository.save(forum2Thread1);
+
         final long secondsIn12Mins = (60 * 12);
-        Post post5 = new Post("Test content 2", Date.from(Instant.now().minusSeconds(secondsIn12Mins)));
+        Date f2t2RecentUpdate = Date.from(Instant.now().minusSeconds(secondsIn12Mins));
+        Post post5 = new Post("Test content 2", f2t2RecentUpdate);
         post5.setUser(userRepository.findByUsername("admin2"));
         post5.setThread(forum2Thread2);
         post5 = postRepository.save(post5);
 
+        forum2Thread2.setUpdatedAt(f2t2RecentUpdate);
+        forum2Thread2 = topicThreadRepository.save(forum2Thread2);
+
         TopicThread forum1Thread1 = new TopicThread("Thread2", testForum1);
+        forum1Thread1.setCreatedAt(Date.from(Instant.now()));
         topicThreadRepository.save(forum1Thread1);
 
         final long secondsIn3Years20Days = (60 * 60 * 24 * 365 * 3) + (60 * 60 * 24 * 20);
@@ -98,10 +110,14 @@ public class Bootstrap implements CommandLineRunner {
         post4 = postRepository.save(post4);
 
         final long secondsIn16Days = (60 * 60 * 24 * 16);
-        Post post6 = new Post("Test content 6", Date.from(Instant.now().minusSeconds(secondsIn16Days)));
+        Date f1t1RecentUpdate = Date.from(Instant.now().minusSeconds(secondsIn16Days));
+        Post post6 = new Post("Test content 6", f1t1RecentUpdate);
         post6.setUser(userRepository.findByUsername("moderator2"));
         post6.setThread(forum1Thread1);
         post6 = postRepository.save(post6);
+
+        forum1Thread1.setUpdatedAt(f1t1RecentUpdate);
+        forum1Thread1 = topicThreadRepository.save(forum1Thread1);
 
         User admin = userRepository.findByUsername("admin");
         String lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut " +

@@ -1,9 +1,6 @@
 package com.kentcarmine.multitopicforum.controllers;
 
-import com.kentcarmine.multitopicforum.dtos.PostCreationDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadSearchDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.ForumNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.TopicThreadNotFoundException;
@@ -86,7 +83,8 @@ public class TopicThreadController {
     @GetMapping("/searchForumThreads/{name}")
     public String searchForumThreads(ServletRequest request, Model model, @PathVariable String name,
                                      @RequestParam(required = false) String search,
-                                     @RequestParam(required = false) String searchError)
+                                     @RequestParam(required = false) String searchError,
+                                     @RequestParam(required = false, defaultValue = "1") int page)
             throws UnsupportedEncodingException {
 
         if (!forumService.isForumWithNameExists(name)) {
@@ -94,10 +92,20 @@ public class TopicThreadController {
             throw new ForumNotFoundException();
         }
 
+        if ((search == null || search.isBlank()) && !request.getParameterMap().containsKey("searchError")) {
+            return "redirect:/forum/" + name;
+        }
+
         if (request.getParameterMap().containsKey("search")) {
             String searchText = URLEncoderDecoderHelper.decode(search);
 
-            SortedSet<TopicThreadViewDto> threads = topicThreadService.searchTopicThreads(name, search);
+//            SortedSet<TopicThreadViewDto> threads = topicThreadService.searchTopicThreads(name, search);
+            Page<TopicThreadViewDtoLight> threads = topicThreadService.searchTopicThreadsAsViewDtos(name, searchText,
+                    page, POSTS_PER_PAGE);
+
+            if (threads == null) {
+                throw new PageNotFoundException();
+            }
 
             model.addAttribute("threads", threads);
             model.addAttribute("forumName", name);

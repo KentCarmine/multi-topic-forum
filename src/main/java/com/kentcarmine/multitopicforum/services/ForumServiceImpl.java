@@ -2,13 +2,11 @@ package com.kentcarmine.multitopicforum.services;
 
 import com.kentcarmine.multitopicforum.converters.ForumHierarchyConverter;
 import com.kentcarmine.multitopicforum.converters.TopicForumDtoToTopicForumConverter;
-import com.kentcarmine.multitopicforum.dtos.PostViewDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumDto;
-import com.kentcarmine.multitopicforum.dtos.TopicForumViewDto;
-import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.dtos.*;
 import com.kentcarmine.multitopicforum.exceptions.DuplicateForumNameException;
 import com.kentcarmine.multitopicforum.helpers.SearchParserHelper;
 import com.kentcarmine.multitopicforum.model.TopicForum;
+import com.kentcarmine.multitopicforum.model.TopicThread;
 import com.kentcarmine.multitopicforum.repositories.TopicForumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,8 +24,8 @@ import java.util.stream.Collectors;
 @Service
 public class ForumServiceImpl implements ForumService {
 
-    @Value("${spring.data.web.pageable.default-page-size}") // TODO: Replace this
-    private int forumsPerPage;
+//    @Value("${spring.data.web.pageable.default-page-size}")
+//    private int forumsPerPage;
 
     private final TopicForumRepository topicForumRepository;
     private final TopicForumDtoToTopicForumConverter topicForumDtoToTopicForumConverter;
@@ -82,47 +80,47 @@ public class ForumServiceImpl implements ForumService {
        return topicForumRepository.save(topicForum);
     }
 
-    /**
-     * Return a SortedSet of all forums sorted in alphabetical order by name
-     *
-     * @return a SortedSet of all forums sorted in alphabetical order by name
-     */
-    @Override
-    public SortedSet<TopicForum> getAllForums() {
-        SortedSet<TopicForum> forums = new TreeSet<>(new Comparator<TopicForum>() {
-            @Override
-            public int compare(TopicForum o1, TopicForum o2) {
-                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
-            }
-        });
-        topicForumRepository.findAll().forEach(forums::add);
+//    /**
+//     * Return a SortedSet of all forums sorted in alphabetical order by name
+//     *
+//     * @return a SortedSet of all forums sorted in alphabetical order by name
+//     */
+//    @Override
+//    public SortedSet<TopicForum> getAllForums() {
+//        SortedSet<TopicForum> forums = new TreeSet<>(new Comparator<TopicForum>() {
+//            @Override
+//            public int compare(TopicForum o1, TopicForum o2) {
+//                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+//            }
+//        });
+//        topicForumRepository.findAll().forEach(forums::add);
+//
+//        return forums;
+//    }
 
-        return forums;
-    }
-
-    /**
-     * Return a SortedSet of all forums as ForumViewDtos sorted in alphabetical order by name
-     *
-     * @return a SortedSet of all forums  as ForumViewDtos sorted in alphabetical order by name
-     */
-    @Override
-    public SortedSet<TopicForumViewDto> getAllForumsAsViewDtos() {
-        SortedSet<TopicForumViewDto> dtos = new TreeSet<>(new Comparator<TopicForumViewDto>() {
-            @Override
-            public int compare(TopicForumViewDto o1, TopicForumViewDto o2) {
-                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
-            }
-        });
-
-        for (TopicForum forum : getAllForums()) {
-            TopicForumViewDto forumDto = forumHierarchyConverter.convertForum(forum);
-            String mostRecentUpdateMsg = timeCalculatorService.getTimeSinceForumUpdatedMessage(forumDto);
-            forumDto.setUpdateTimeDifferenceMessage(mostRecentUpdateMsg);
-            dtos.add(forumDto);
-        }
-
-        return dtos;
-    }
+//    /**
+//     * Return a SortedSet of all forums as ForumViewDtos sorted in alphabetical order by name
+//     *
+//     * @return a SortedSet of all forums  as ForumViewDtos sorted in alphabetical order by name
+//     */
+//    @Override
+//    public SortedSet<TopicForumViewDto> getAllForumsAsViewDtos() {
+//        SortedSet<TopicForumViewDto> dtos = new TreeSet<>(new Comparator<TopicForumViewDto>() {
+//            @Override
+//            public int compare(TopicForumViewDto o1, TopicForumViewDto o2) {
+//                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+//            }
+//        });
+//
+//        for (TopicForum forum : getAllForums()) {
+//            TopicForumViewDto forumDto = forumHierarchyConverter.convertForum(forum);
+//            String mostRecentUpdateMsg = timeCalculatorService.getTimeSinceForumUpdatedMessage(forumDto);
+//            forumDto.setUpdateTimeDifferenceMessage(mostRecentUpdateMsg);
+//            dtos.add(forumDto);
+//        }
+//
+//        return dtos;
+//    }
 
     /**
      * Return a Page that is a slice of all forums as ForumViewDtos sorted in alphabetical order by name (ignoring case)
@@ -131,12 +129,12 @@ public class ForumServiceImpl implements ForumService {
      * @return a Page that is a slice of all forums as ForumViewDtos sorted in alphabetical order by name (ignoring case)
      */
     @Override
-    public Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum) {
+    public Page<TopicForumViewDto> getForumsAsViewDtosPaginated(int pageNum, int resultsPerPage) {
         if (pageNum - 1 < 0) {
             return null;
         }
 
-        Pageable pageReq = PageRequest.of(pageNum - 1, forumsPerPage,
+        Pageable pageReq = PageRequest.of(pageNum - 1, resultsPerPage,
                 Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
         Page<TopicForum> forumPage = topicForumRepository.findAll(pageReq);
 
@@ -159,122 +157,214 @@ public class ForumServiceImpl implements ForumService {
         return forumViewDtoPage;
     }
 
+//    /**
+//     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
+//     * double quotes and spaces, but not spaces within double quotes) of the given search text.
+//     *
+//     * @param searchText The text to search for
+//     * @return the set of TopicForums (ordered alphabetically) that match the search terms
+//     * @throws UnsupportedEncodingException
+//     */
+//    @Override
+//    public SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException {
+//        SortedSet<TopicForum> forums = new TreeSet<>(new Comparator<TopicForum>() {
+//            @Override
+//            public int compare(TopicForum o1, TopicForum o2) {
+//                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+//            }
+//        });
+//
+//        List<String> searchTerms = parseSearchText(searchText);
+//        List<List<TopicForum>> searchTermResults = new ArrayList<>();
+//        for (int i = 0; i < searchTerms.size(); i++) {
+//            searchTermResults.add(new ArrayList<TopicForum>());
+//        }
+//
+//        for(int i = 0; i < searchTerms.size(); i++) {
+//            String st = searchTerms.get(i);
+//            searchTermResults.set(i, topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase("%" + st + "%", "%" + st + "%"));
+//        }
+//
+//        if (!searchTermResults.isEmpty()) {
+//            forums.addAll(searchTermResults.get(0));
+//            searchTermResults.remove(0);
+//            for (List<TopicForum> str : searchTermResults) {
+//                forums.retainAll(str);
+//            }
+//        }
+//
+//        return forums;
+//    }
+
     /**
-     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
-     * double quotes and spaces, but not spaces within double quotes) of the given search text.
+     * Get the Page of TopicForumViewDtos representing TopicForums that match the given searchText with the given page
+     * number, or null if no such page exists.
      *
-     * @param searchText The text to search for
-     * @return the set of TopicForums (ordered alphabetically) that match the search terms
-     * @throws UnsupportedEncodingException
+     * @param searchText the text to search for
+     * @param page the number of the page to get
+     * @return the Page of TopicForumViewDtos representing TopicForums that match the given searchText with the given
+     * page number, or null if no such page exists.
      */
     @Override
-    public SortedSet<TopicForum> searchTopicForums(String searchText) throws UnsupportedEncodingException {
-        SortedSet<TopicForum> forums = new TreeSet<>(new Comparator<TopicForum>() {
-            @Override
-            public int compare(TopicForum o1, TopicForum o2) {
-                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
-            }
-        });
+    public Page<TopicForumViewDto> searchTopicForumsForViewDtosWithCustomQuery(String searchText, int page, int resultsPerPage) {
+        Page<TopicForum> entityResults = searchTopicForumsWithCustomQuery(searchText, page, resultsPerPage);
 
-        List<String> searchTerms = parseSearchText(searchText);
-        List<List<TopicForum>> searchTermResults = new ArrayList<>();
-        for (int i = 0; i < searchTerms.size(); i++) {
-            searchTermResults.add(new ArrayList<TopicForum>());
+        if (entityResults == null) {
+            return null;
         }
 
-        for(int i = 0; i < searchTerms.size(); i++) {
-            String st = searchTerms.get(i);
-            searchTermResults.set(i, topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase("%" + st + "%", "%" + st + "%"));
+        List<TopicForumViewDto> topicForumViewDtoList = new ArrayList<>();
+
+        for (TopicForum forum : entityResults) {
+            TopicForumViewDto dto = forumHierarchyConverter.convertForum(forum);
+            String mostRecentUpdateMsg = timeCalculatorService.getTimeSinceForumUpdatedMessage(dto);
+            dto.setUpdateTimeDifferenceMessage(mostRecentUpdateMsg);
+            topicForumViewDtoList.add(dto);
         }
 
-        if (!searchTermResults.isEmpty()) {
-            forums.addAll(searchTermResults.get(0));
-            searchTermResults.remove(0);
-            for (List<TopicForum> str : searchTermResults) {
-                forums.retainAll(str);
-            }
-        }
+        Page<TopicForumViewDto> dtoResults = new PageImpl<TopicForumViewDto>(topicForumViewDtoList, entityResults.getPageable(), entityResults.getTotalElements());
 
-        return forums;
+        return dtoResults;
     }
 
     /**
-     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
-     * double quotes and spaces, but not spaces within double quotes) of the given search text. Returns the page
-     * (with the given page number) of those results as TopicForumViewDtos.
+     * Get the Page of TopicForums that match the given searchText with the given page number, or null if no such page
+     * exists.
      *
-     * @param searchText The text to search for
-     * @return the Page of TopicForumViewDto (ordered alphabetically) that match the search terms and page number
-     * @throws UnsupportedEncodingException
+     * @param searchText the text to search for
+     * @param page the number of the page to get
+     * @return the Page of TopicForums that match the given searchText with the given page number, or null if no such
+     * page exists.
      */
     @Override
-    public Page<TopicForumViewDto> searchTopicForumsForViewDtosPaginated(String searchText, int page) throws UnsupportedEncodingException {
+    public Page<TopicForum> searchTopicForumsWithCustomQuery(String searchText, int page, int resultsPerPage) {
         if (page - 1 < 0) {
             return null;
         }
 
-        PageRequest pageReq = PageRequest.of(page - 1, forumsPerPage, Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+        PageRequest pageReq = PageRequest.of(page - 1, resultsPerPage, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
+        Page<TopicForum> pageResult = topicForumRepository.searchTopicForumsPaginated(searchText, pageReq);
 
-        List<TopicForumViewDto> allSearchMatches = searchTopicForumsForViewDtos(searchText).stream().collect(Collectors.toList());
-        if (allSearchMatches.isEmpty()) {
-            return new PageImpl<TopicForumViewDto>(new ArrayList<TopicForumViewDto>());
-        }
-
-        int sliceStart = (page - 1) * forumsPerPage;
-
-        if (sliceStart >= allSearchMatches.size()) {
+        if (pageResult.getTotalElements() > 0 && page > pageResult.getTotalPages()) {
             return null;
         }
 
-        int sliceEnd = Math.min(sliceStart + forumsPerPage, allSearchMatches.size());
-        List<TopicForumViewDto> pageSearchMatches = allSearchMatches.subList(sliceStart, sliceEnd);
-
-        return new PageImpl<TopicForumViewDto>(pageSearchMatches, pageReq, allSearchMatches.size());
+        return pageResult;
     }
 
-    /**
-     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
-     * double quotes and spaces, but not spaces within double quotes) of the given search text, then returns a SortedSet
-     * of TopicForumViewDtos representing those TopicForums
-     *
-     * @param searchText The text to search for
-     * @return the set of TopicForumViewDtos (ordered alphabetically by name) that match the search terms
-     * @throws UnsupportedEncodingException
-     */
+//    /**
+//     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
+//     * double quotes and spaces, but not spaces within double quotes) of the given search text. Returns the page
+//     * (with the given page number) of those results as TopicForumViewDtos.
+//     *
+//     * @param searchText The text to search for
+//     * @return the Page of TopicForumViewDto (ordered alphabetically) that match the search terms and page number
+//     * @throws UnsupportedEncodingException
+//     */
+//    @Override
+//    public Page<TopicForumViewDto> searchTopicForumsForViewDtosPaginated(String searchText, int page) throws UnsupportedEncodingException {
+//        if (page - 1 < 0) {
+//            return null;
+//        }
+//
+//        PageRequest pageReq = PageRequest.of(page - 1, forumsPerPage, Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+//
+//        List<TopicForumViewDto> allSearchMatches = searchTopicForumsForViewDtos(searchText).stream().collect(Collectors.toList());
+//        if (allSearchMatches.isEmpty()) {
+//            return new PageImpl<TopicForumViewDto>(new ArrayList<TopicForumViewDto>());
+//        }
+//
+//        int sliceStart = (page - 1) * forumsPerPage;
+//
+//        if (sliceStart >= allSearchMatches.size()) {
+//            return null;
+//        }
+//
+//        int sliceEnd = Math.min(sliceStart + forumsPerPage, allSearchMatches.size());
+//        List<TopicForumViewDto> pageSearchMatches = allSearchMatches.subList(sliceStart, sliceEnd);
+//
+//        return new PageImpl<TopicForumViewDto>(pageSearchMatches, pageReq, allSearchMatches.size());
+//    }
+//
+//    /**
+//     * Searches for all topic forums that have names and descriptions that (together) contain all tokens (delimited on
+//     * double quotes and spaces, but not spaces within double quotes) of the given search text, then returns a SortedSet
+//     * of TopicForumViewDtos representing those TopicForums
+//     *
+//     * @param searchText The text to search for
+//     * @return the set of TopicForumViewDtos (ordered alphabetically by name) that match the search terms
+//     * @throws UnsupportedEncodingException
+//     */
+//    @Override
+//    public SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException {
+//        SortedSet<TopicForum> forums = searchTopicForums(searchText);
+//
+//        SortedSet<TopicForumViewDto> forumDtos = new TreeSet<>(new Comparator<TopicForumViewDto>() {
+//            @Override
+//            public int compare(TopicForumViewDto o1, TopicForumViewDto o2) {
+//                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+//            }
+//        });
+//
+//        for (TopicForum forum : forums) {
+//            TopicForumViewDto dto = forumHierarchyConverter.convertForum(forum);
+//            String mostRecentUpdateMsg = timeCalculatorService.getTimeSinceForumUpdatedMessage(dto);
+//            dto.setUpdateTimeDifferenceMessage(mostRecentUpdateMsg);
+//            forumDtos.add(dto);
+//        }
+//
+//        return forumDtos;
+//    }
+
+//    @Override
+//    public TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum) {
+//        TopicForumViewDto forumViewDto = forumHierarchyConverter.convertForum(topicForum);
+////        System.out.println("### in getTopicForumViewDtoForTopicForum, starting forumViewDto = " + forumViewDto);
+//
+//        for (TopicThreadViewDto threadViewDto : forumViewDto.getThreads()) {
+//
+//            for (PostViewDto postViewDto : threadViewDto.getPosts()) {
+//                postViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(postViewDto));
+//            }
+//
+//            threadViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadViewDto));
+//            threadViewDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadViewDto));
+//        }
+//
+//        return forumViewDto;
+//    }
+
     @Override
-    public SortedSet<TopicForumViewDto> searchTopicForumsForViewDtos(String searchText) throws UnsupportedEncodingException {
-        SortedSet<TopicForum> forums = searchTopicForums(searchText);
+    public TopicForumViewDtoLight getTopicForumViewDtoLightForTopicForum(TopicForum topicForum) {
+//        System.out.println("### in getTopicForumViewDtoLightForTopicForum()");
+//        System.out.println("### topicForum = " + topicForum);
 
-        SortedSet<TopicForumViewDto> forumDtos = new TreeSet<>(new Comparator<TopicForumViewDto>() {
-            @Override
-            public int compare(TopicForumViewDto o1, TopicForumViewDto o2) {
-                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
-            }
-        });
+        TopicForumViewDtoLight forumViewDto = forumHierarchyConverter.convertForumLight(topicForum);
 
-        for (TopicForum forum : forums) {
-            TopicForumViewDto dto = forumHierarchyConverter.convertForum(forum);
-            String mostRecentUpdateMsg = timeCalculatorService.getTimeSinceForumUpdatedMessage(dto);
-            dto.setUpdateTimeDifferenceMessage(mostRecentUpdateMsg);
-            forumDtos.add(dto);
-        }
+//        System.out.println("### forumViewDto = " + forumViewDto);
 
-        return forumDtos;
-    }
+        PostViewDto mostRecentPost = forumViewDto.getMostRecentPost();
 
-    @Override
-    public TopicForumViewDto getTopicForumViewDtoForTopicForum(TopicForum topicForum) {
-        TopicForumViewDto forumViewDto = forumHierarchyConverter.convertForum(topicForum);
-//        System.out.println("### in getTopicForumViewDtoForTopicForum, starting forumViewDto = " + forumViewDto);
+//        System.out.println("### mostRecentPost = " + mostRecentPost);
 
-        for (TopicThreadViewDto threadViewDto : forumViewDto.getThreads()) {
+        AbstractTopicThreadViewDto threadViewDto = null;
 
-            for (PostViewDto postViewDto : threadViewDto.getPosts()) {
-                postViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(postViewDto));
-            }
+        if (mostRecentPost != null) {
+            threadViewDto = mostRecentPost.getThread();
 
             threadViewDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadViewDto));
             threadViewDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadViewDto));
+
+            PostViewDto firstPost = threadViewDto.getFirstPost();
+            PostViewDto lastPost = threadViewDto.getLastPost();
+
+            if (firstPost != null) {
+                firstPost.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(firstPost));
+            }
+
+            if (lastPost != null) {
+                lastPost.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSincePostCreationMessage(lastPost));
+            }
         }
 
         return forumViewDto;
@@ -291,4 +381,9 @@ public class ForumServiceImpl implements ForumService {
     private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
         return SearchParserHelper.parseSearchText(searchText);
     }
+
+//    @Override
+//    public int getForumsPerPage() {
+//        return forumsPerPage;
+//    }
 }

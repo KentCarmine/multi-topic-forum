@@ -1,7 +1,9 @@
 package com.kentcarmine.multitopicforum.services;
 
+import com.kentcarmine.multitopicforum.dtos.AbstractTopicThreadViewDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadCreationDto;
 import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDto;
+import com.kentcarmine.multitopicforum.dtos.TopicThreadViewDtoLight;
 import com.kentcarmine.multitopicforum.model.Post;
 import com.kentcarmine.multitopicforum.model.TopicForum;
 import com.kentcarmine.multitopicforum.model.TopicThread;
@@ -35,4 +37,12 @@ public interface TopicThreadService {
     Page<Post> getPostPageByUser(User user, int pageNum, int postsPerPage);
 
     int getPostPageNumberOnThreadByPostId(Long postId);
+
+    Page<TopicThread> searchTopicThreadsPaginated(String forumName, String searchText, int pageNum, int threadsPerPage);
+
+    Page<TopicThreadViewDtoLight> searchTopicThreadsAsViewDtos(String forumName, String searchText, int pageNum, int threadsPerPage);
+
+    Page<TopicThreadViewDtoLight> getTopicThreadViewDtosLightByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage);
+
+    Page<TopicThread> getTopicThreadsByForumPaginated(TopicForum forum, int pageNum, int threadsPerPage);
 }

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -94,6 +95,7 @@ class ForumServiceTest {
         testPost.setUser(testUser);
         testTopicThread.getPosts().add(testPost);
         testTopicForum.addThread(testTopicThread);
+        testPost.setThread(testTopicThread);
 
         testTopicForum2 = new TopicForum(TEST_TOPIC_FORUM_NAME_2, TEST_TOPIC_FORUM_DESC_2);
     }
@@ -176,43 +178,230 @@ class ForumServiceTest {
         verify(topicForumRepository, times(1)).save(any());
     }
 
+//    @Test
+//    void searchTopicForums_multipleResults() throws Exception {
+//        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(List.of(testTopicForum, testTopicForum2));
+//
+//        final String searchStr = "\"Description of test\"";
+//
+//        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+//
+//        assertEquals(2, results.size());
+//        assertEquals(testTopicForum, results.first());
+//        assertEquals(testTopicForum2, results.last());
+//
+//        verify(topicForumRepository, times(1)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
+//    }
+//
+//    @Test
+//    void searchTopicForums_noResults() throws Exception {
+//        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(new ArrayList<TopicForum>());
+//
+//        final String searchStr = "\"foo BAR baz\"";
+//
+//        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+//
+//        assertEquals(0, results.size());
+//
+//        verify(topicForumRepository, times(1)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
+//    }
+//
+//    @Test
+//    void searchTopicForums_emptySearch() throws Exception {
+//        final String searchStr = "";
+//
+//        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+//
+//        assertEquals(0, results.size());
+//
+//        verify(topicForumRepository, times(0)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
+//    }
+
+    // TODO: Add searching tests
+
     @Test
-    void searchTopicForums_multipleResults() throws Exception {
-        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(List.of(testTopicForum, testTopicForum2));
+    void searchTopicForumsWithCustomQuery_valid_withResults() throws Exception {
+        List<TopicForum> resultList = new ArrayList<>();
+        resultList.add(testTopicForum);
+        resultList.add(testTopicForum2);
+        resultList.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
 
-        final String searchStr = "\"Description of test\"";
+        PageRequest pageReq = PageRequest.of(0, 2, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
+        Page<TopicForum> expectedPage = new PageImpl<TopicForum>(resultList, pageReq, resultList.size());
 
-        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+//        System.out.println("### expectedPage total elems: " + expectedPage.getTotalElements());
+//        System.out.println("### expectedPage page elems: " + expectedPage.getNumberOfElements());
+//        System.out.println("### expectedPage total pages: " + expectedPage.getTotalPages());
+//        System.out.println("### expectedPage page number: " + expectedPage.getNumber());
+//        System.out.println("### content: ");
+//        System.out.println(expectedPage.getContent().toString());
+//        System.out.println();
 
-        assertEquals(2, results.size());
-        assertEquals(testTopicForum, results.first());
-        assertEquals(testTopicForum2, results.last());
+        when(topicForumRepository.searchTopicForumsPaginated(any(), any())).thenReturn(expectedPage);
 
-        verify(topicForumRepository, times(1)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
+        Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("test", 1, 2);
+
+//        System.out.println("### result total elems: " + result.getTotalElements());
+//        System.out.println("### result page elems: " + result.getNumberOfElements());
+//        System.out.println("### result total pages: " + result.getTotalPages());
+//        System.out.println("### result page number: " + result.getNumber());
+//        System.out.println("### content: ");
+//        System.out.println(result.getContent().toString());
+
+        assertEquals(expectedPage.getNumberOfElements(), result.getNumberOfElements());
+        assertEquals(expectedPage.getTotalElements(), result.getTotalElements());
+        assertEquals(expectedPage.getTotalPages(), result.getTotalPages());
+        assertEquals(expectedPage.getNumber(), result.getNumber());
+        assertEquals(testTopicForum, result.getContent().get(0));
+        assertEquals(testTopicForum2, result.getContent().get(1));
+
     }
 
     @Test
-    void searchTopicForums_noResults() throws Exception {
-        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(new ArrayList<TopicForum>());
+    void searchTopicForumsWithCustomQuery_valid_noResults() throws Exception {
+        List<TopicForum> resultList = new ArrayList<>();
 
-        final String searchStr = "\"foo BAR baz\"";
+        PageRequest pageReq = PageRequest.of(0, 2, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
+        Page<TopicForum> expectedPage = new PageImpl<TopicForum>(resultList, pageReq, resultList.size());
 
-        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+        when(topicForumRepository.searchTopicForumsPaginated(any(), any())).thenReturn(expectedPage);
 
-        assertEquals(0, results.size());
+        Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("test", 1, 2);
 
-        verify(topicForumRepository, times(1)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
+        assertEquals(0, result.getNumberOfElements());
+        assertEquals(0, result.getTotalElements());
+        assertEquals(0, result.getTotalPages());
+        assertEquals(0, result.getNumber());
+        assertEquals(0, result.getContent().size());
+
     }
 
     @Test
-    void searchTopicForums_emptySearch() throws Exception {
-        final String searchStr = "";
+    void searchTopicForumsWithCustomQuery_invalid_lowPageNum() throws Exception {
 
-        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
+        Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("poasgog", 0, 2);
 
-        assertEquals(0, results.size());
-
-        verify(topicForumRepository, times(0)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
+        assertNull(result);
     }
+
+    @Test
+    void searchTopicForumsWithCustomQuery_invalid_highPageNum() throws Exception {
+        List<TopicForum> resultList = new ArrayList<>();
+        resultList.add(testTopicForum);
+        resultList.add(testTopicForum2);
+        resultList.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+
+        PageRequest pageReq = PageRequest.of(0, 2, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
+        Page<TopicForum> expectedPage = new PageImpl<TopicForum>(resultList, pageReq, resultList.size());
+
+        when(topicForumRepository.searchTopicForumsPaginated(any(), any())).thenReturn(expectedPage);
+
+        Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("tesasghashgt", 17, 2);
+
+        assertNull(result);
+    }
+
+    @Test
+    void getForumsAsViewDtosPaginated_valid() throws Exception {
+        int resultsPerPage = 2;
+
+        Pageable pageReq = PageRequest.of(0, resultsPerPage,
+                Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+        List<TopicForum> forumList = new ArrayList<>();
+        forumList.add(testTopicForum);
+        Page<TopicForum> forumPageExpected = new PageImpl<TopicForum>(forumList, pageReq, forumList.size());
+
+        when(topicForumRepository.findAll(any(Pageable.class))).thenReturn(forumPageExpected);
+        when(timeCalculatorService.getTimeSinceForumUpdatedMessage(any())).thenReturn("testPlaceholderText");
+
+        Page<TopicForumViewDto> result = forumService.getForumsAsViewDtosPaginated(1, resultsPerPage);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(1, result.getNumberOfElements());
+        assertEquals(0, result.getNumber());
+
+        TopicForumViewDto resultContent = result.toList().get(0);
+
+        assertEquals(1, resultContent.getNumThreads());
+        assertEquals(testTopicThread.getId(), resultContent.getThreads().first().getId());
+        assertEquals(testTopicForum.getThreads().first().getPosts().first().getId(), resultContent.getMostRecentPost().getId());
+
+        verify(topicForumRepository, times(1)).findAll(any(Pageable.class));
+        verify(timeCalculatorService, times(1)).getTimeSinceForumUpdatedMessage(any());
+    }
+
+    @Test
+    void getForumsAsViewDtosPaginated_lowPageNumber() throws Exception {
+        int resultsPerPage = 25;
+
+        Pageable pageReq = PageRequest.of(0, resultsPerPage,
+                Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+        List<TopicForum> forumList = new ArrayList<>();
+        forumList.add(testTopicForum);
+        forumList.add(testTopicForum2);
+        Page<TopicForum> forumPageExpected = new PageImpl<TopicForum>(forumList, pageReq, 2);
+
+        when(topicForumRepository.findAll(pageReq)).thenReturn(forumPageExpected);
+
+        Page<TopicForumViewDto> result = forumService.getForumsAsViewDtosPaginated(0, resultsPerPage);
+
+        assertNull(result);
+    }
+
+    @Test
+    void getForumsAsViewDtosPaginated_highPageNumber() throws Exception {
+        int resultsPerPage = 25;
+
+        Pageable pageReq = PageRequest.of(0, resultsPerPage,
+                Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
+        List<TopicForum> forumList = new ArrayList<>();
+        forumList.add(testTopicForum);
+        forumList.add(testTopicForum2);
+        Page<TopicForum> forumPageExpected = new PageImpl<TopicForum>(forumList, pageReq, 2);
+
+        when(topicForumRepository.findAll(any(Pageable.class))).thenReturn(forumPageExpected);
+
+        Page<TopicForumViewDto> result = forumService.getForumsAsViewDtosPaginated(17, resultsPerPage);
+
+        assertNull(result);
+    }
+
+    @Test
+    void getTopicForumViewDtoLightForTopicForum_valid() throws Exception {
+        TopicForumViewDtoLight expected = forumHierarchyConverter.convertForumLight(testTopicForum);
+
+        when(timeCalculatorService.getTimeSinceThreadCreationMessage(any())).thenReturn("1 hour ago");
+        when(timeCalculatorService.getTimeSinceThreadUpdatedMessage(any())).thenReturn("1 hour ago");
+        when(timeCalculatorService.getTimeSincePostCreationMessage(any())).thenReturn("1 hour ago");
+
+        TopicForumViewDtoLight result = forumService.getTopicForumViewDtoLightForTopicForum(testTopicForum);
+
+        assertEquals(expected.getName(), result.getName());
+        assertEquals(expected.getDescription(), result.getDescription());
+        assertTrue(result.hasThreads());
+        assertEquals(1, result.getNumThreads());
+        assertEquals(expected.getMostRecentPost().getId(), result.getMostRecentPost().getId());
+
+    }
+
+    @Test
+    void getTopicForumViewDtoLightForTopicForum_noPosts() throws Exception {
+        TopicForumViewDtoLight expected = forumHierarchyConverter.convertForumLight(testTopicForum2);
+
+        TopicForumViewDtoLight result = forumService.getTopicForumViewDtoLightForTopicForum(testTopicForum2);
+
+        assertEquals(expected.getName(), result.getName());
+        assertEquals(expected.getDescription(), result.getDescription());
+        assertFalse(result.hasThreads());
+        assertNull(result.getMostRecentPost());
+
+        verify(timeCalculatorService, times(0)).getTimeSinceThreadCreationMessage(any());
+        verify(timeCalculatorService, times(0)).getTimeSinceThreadUpdatedMessage(any());
+        verify(timeCalculatorService, times(0)).getTimeSincePostCreationMessage(any());
+    }
+
+
+
 
 }

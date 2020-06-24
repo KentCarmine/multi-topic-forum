@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.model;
 
 import com.kentcarmine.multitopicforum.annotations.ValidCharacters;
 import com.kentcarmine.multitopicforum.helpers.ThreadUpdateTimeComparator;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.SortComparator;
 
 import javax.persistence.*;
