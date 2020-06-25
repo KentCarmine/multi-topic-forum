@@ -271,6 +271,26 @@ class DisciplineServiceTest {
     }
 
     @Test
+    void getInactiveDisciplineDtosForUserPaginated_valid() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getInactiveDisciplineDtosForUserPaginated_noResults() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getInactiveDisciplineDtosForUserPaginated_pageTooLow() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
+    void getInactiveDisciplineDtosForUserPaginated_pageTooHigh() throws Exception {
+        // TODO: Fill in
+    }
+
+    @Test
     void getDisciplineByIdAndUser_valid() throws Exception {
         Discipline disc = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
         disc.setId(1L);
