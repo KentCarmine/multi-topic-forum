@@ -10,10 +10,7 @@ import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.repositories.DisciplineRepository;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -165,7 +162,14 @@ public class DisciplineServiceImpl implements DisciplineService {
         }
 
         Pageable pageReq = PageRequest.of(pageNum - 1, elementsPerPage);
-        Page<Discipline> disciplinePage = disciplineRepository.findAllByDisciplinedUser(user, pageReq);
+        Page<Discipline> disciplinePage = disciplineRepository.findAllByDisciplinedUserAndInactive(user, pageReq);
+
+        System.out.println("### Discipline Page Stats");
+        System.out.println("### Page number: " + disciplinePage.getNumber());
+        System.out.println("### num elements on page: " + disciplinePage.getNumberOfElements());
+        System.out.println("### total elements: " + disciplinePage.getTotalElements());
+        System.out.println("### total pages: " + disciplinePage.getTotalPages());
+        System.out.println("### page content " + disciplinePage.getContent().toString());
 
         if (disciplinePage.getTotalElements() == 0) {
             return new PageImpl<DisciplineViewDto>(new ArrayList<DisciplineViewDto>());

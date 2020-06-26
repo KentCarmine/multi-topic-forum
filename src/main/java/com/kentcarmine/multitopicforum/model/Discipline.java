@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.Instant;
+import java.time.temporal.TemporalUnit;
 import java.util.Date;
 
 /**
@@ -37,8 +38,11 @@ public class Discipline {
 
     @NotNull
     private Date disciplinedAt;
+    private Date disciplineEnd;
 
     private Integer disciplineDurationHours;
+
+
 
     @NotBlank(message = "{Discipline.reason.notBlank}")
     @Size(min = 2, max = 500, message = "{Discipline.reason.length}")
@@ -56,6 +60,7 @@ public class Discipline {
         this.disciplineDurationHours = null;
         this.reason = reason;
         this.rescinded = false;
+        this.disciplineEnd = null;
     }
 
     public Discipline(@NotNull User disciplinedUser, @NotNull User discipliningUser, @NotNull DisciplineType disciplineType, @NotNull Date disciplinedAt, String reason) {
@@ -66,6 +71,7 @@ public class Discipline {
         this.disciplineDurationHours = null;
         this.reason = reason;
         this.rescinded = false;
+        this.disciplineEnd = null;
     }
 
     public Discipline(@NotNull User disciplinedUser, @NotNull User discipliningUser, @NotNull DisciplineType disciplineType, @NotNull Date disciplinedAt, Integer disciplineDuration, String reason) {
@@ -76,6 +82,10 @@ public class Discipline {
         this.disciplineDurationHours = disciplineDuration;
         this.reason = reason;
         this.rescinded = false;
+
+        long endTs = disciplinedAt.getTime() +  disciplineDurationHours * SECONDS_PER_HOUR * 1000;
+        Date endDate = Date.from(Instant.EPOCH.plusMillis(endTs));
+        this.disciplineEnd = endDate;
     }
 
     public Long getId() {
