@@ -15,11 +15,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 
@@ -272,23 +278,91 @@ class DisciplineServiceTest {
 
     @Test
     void getInactiveDisciplineDtosForUserPaginated_valid() throws Exception {
-        // TODO: Fill in
-        // TODO: NOTE: Ensure does not include active disciplines (both rescinded and timed out)
+        // Inactive (expired)
+        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
+        disc3.setId(3L);
+        testUser.addDiscipline(disc3);
+
+        // Inactive (rescinded)
+        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
+        disc4.setId(4L);
+        disc4.setRescinded(true);
+        testUser.addDiscipline(disc4);
+
+        // Inactive (rescinded)
+        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
+        disc5.setId(5L);
+        disc5.setRescinded(true);
+        testUser.addDiscipline(disc5);
+
+        List<Discipline> pageContent = List.of(disc3, disc4, disc5);
+        Pageable pageReq = PageRequest.of(0, 25);
+        Page<Discipline> expectedDiscPage = new PageImpl<Discipline>(pageContent, pageReq, pageContent.size());
+
+        when(disciplineRepository.findAllByDisciplinedUserAndInactive(any(), any())).thenReturn(expectedDiscPage);
+
+        Page<DisciplineViewDto> results = disciplineService.getInactiveDisciplineDtosForUserPaginated(testUser, 1, 25, testSuperAdmin);
+
+        assertEquals(3, results.getTotalElements());
+        assertEquals(1, results.getTotalPages());
+        assertEquals(3,results.getNumberOfElements());
+        assertEquals(0, results.getNumber());
     }
 
     @Test
     void getInactiveDisciplineDtosForUserPaginated_noResults() throws Exception {
-        // TODO: Fill in
+        List<Discipline> pageContent = List.of();
+        Pageable pageReq = PageRequest.of(0, 25);
+        Page<Discipline> expectedDiscPage = new PageImpl<Discipline>(pageContent, pageReq, pageContent.size());
+
+        when(disciplineRepository.findAllByDisciplinedUserAndInactive(any(), any())).thenReturn(expectedDiscPage);
+
+        Page<DisciplineViewDto> results = disciplineService.getInactiveDisciplineDtosForUserPaginated(testUser, 1, 25, testSuperAdmin);
+
+        assertEquals(0, results.getTotalElements());
+        assertEquals(1, results.getTotalPages());
+        assertEquals(0,results.getNumberOfElements());
+        assertEquals(0, results.getNumber());
     }
 
     @Test
     void getInactiveDisciplineDtosForUserPaginated_pageTooLow() throws Exception {
-        // TODO: Fill in
+        Page<DisciplineViewDto> results = disciplineService.getInactiveDisciplineDtosForUserPaginated(testUser, 0, 25, testSuperAdmin);
+
+        assertNull(results);
+
+        verify(disciplineRepository, times(0)).findAllByDisciplinedUserAndInactive(any(), any());
     }
 
     @Test
     void getInactiveDisciplineDtosForUserPaginated_pageTooHigh() throws Exception {
-        // TODO: Fill in
+        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
+        disc3.setId(3L);
+        testUser.addDiscipline(disc3);
+
+        // Inactive (rescinded)
+        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
+        disc4.setId(4L);
+        disc4.setRescinded(true);
+        testUser.addDiscipline(disc4);
+
+        // Inactive (rescinded)
+        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
+        disc5.setId(5L);
+        disc5.setRescinded(true);
+        testUser.addDiscipline(disc5);
+
+        List<Discipline> pageContent = List.of(disc3, disc4, disc5);
+        Pageable pageReq = PageRequest.of(0, 25);
+        Page<Discipline> expectedDiscPage = new PageImpl<Discipline>(pageContent, pageReq, pageContent.size());
+
+        when(disciplineRepository.findAllByDisciplinedUserAndInactive(any(), any())).thenReturn(expectedDiscPage);
+
+        Page<DisciplineViewDto> results = disciplineService.getInactiveDisciplineDtosForUserPaginated(testUser, 2, 25, testSuperAdmin);
+
+        assertNull(results);
+
+        verify(disciplineRepository, times(1)).findAllByDisciplinedUserAndInactive(any(), any());
     }
 
     @Test

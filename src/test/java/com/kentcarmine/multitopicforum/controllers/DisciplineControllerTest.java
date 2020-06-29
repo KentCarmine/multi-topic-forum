@@ -1,6 +1,7 @@
 package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.converters.UserToUserRankAdjustmentDtoConverter;
+import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.handlers.CustomResponseEntityExceptionHandler;
@@ -14,6 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +26,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -95,8 +103,13 @@ class DisciplineControllerTest {
 
     @Test
     void showManageUserDisciplinePage_validUser() throws Exception {
+        List<DisciplineViewDto> discs = new ArrayList<>();
+        Pageable pageReq = PageRequest.of(1, 1);
+        Page<DisciplineViewDto> inactiveDiscPage = new PageImpl<DisciplineViewDto>(discs, pageReq, discs.size());
         when(userService.getLoggedInUser()).thenReturn(testAdmin);
         when(userService.getUser(eq(testUser.getUsername()))).thenReturn(testUser);
+        when(disciplineService.getActiveDisciplinesForUser(any(), any())).thenReturn(new TreeSet<DisciplineViewDto>());
+        when(disciplineService.getInactiveDisciplineDtosForUserPaginated(any(), anyInt(), anyInt(), any())).thenReturn(inactiveDiscPage);
 
         mockMvc.perform(get("/manageUserDiscipline/" + testUser.getUsername()))
                 .andExpect(status().isOk())
