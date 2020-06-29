@@ -273,6 +273,7 @@ class DisciplineServiceTest {
     @Test
     void getInactiveDisciplineDtosForUserPaginated_valid() throws Exception {
         // TODO: Fill in
+        // TODO: NOTE: Ensure does not include active disciplines (both rescinded and timed out)
     }
 
     @Test

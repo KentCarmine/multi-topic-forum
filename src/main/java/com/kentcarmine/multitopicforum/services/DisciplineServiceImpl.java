@@ -164,20 +164,20 @@ public class DisciplineServiceImpl implements DisciplineService {
         Pageable pageReq = PageRequest.of(pageNum - 1, elementsPerPage);
         Page<Discipline> disciplinePage = disciplineRepository.findAllByDisciplinedUserAndInactive(user, pageReq);
 
-        System.out.println("### Discipline Page Stats");
-        System.out.println("### Page number: " + disciplinePage.getNumber());
-        System.out.println("### num elements on page: " + disciplinePage.getNumberOfElements());
-        System.out.println("### total elements: " + disciplinePage.getTotalElements());
-        System.out.println("### total pages: " + disciplinePage.getTotalPages());
-        System.out.println("### page content " + disciplinePage.getContent().toString());
+//        System.out.println("### Discipline Page Stats");
+//        System.out.println("### Page number: " + disciplinePage.getNumber());
+//        System.out.println("### num elements on page: " + disciplinePage.getNumberOfElements());
+//        System.out.println("### total elements: " + disciplinePage.getTotalElements());
+//        System.out.println("### total pages: " + disciplinePage.getTotalPages());
+//        System.out.println("### page content " + disciplinePage.getContent().toString());
+
+        if (pageNum > disciplinePage.getTotalPages() && pageNum != 1) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
 
         if (disciplinePage.getTotalElements() == 0) {
             return new PageImpl<DisciplineViewDto>(new ArrayList<DisciplineViewDto>());
-        }
-
-        if (pageNum > disciplinePage.getTotalPages()) {
-            System.out.println("### Invalid page number");
-            return null;
         }
 
         return convertToDisciplineViewDtosPage(disciplinePage, loggedInUser);

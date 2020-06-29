@@ -61,13 +61,10 @@ public class DisciplineController {
         User user = userService.getUser(username);
 
         if (user == null) {
-//            String msg = messageService.getMessage("Exception.user.notfound", username);
             throw new UserNotFoundException("Exception.user.notfound", username);
         }
 
         if (!loggedInUser.isHigherAuthority(user)) {
-//            throw new InsufficientAuthorityException(loggedInUser.getUsername() + " has insufficient authority to view "
-////                    + user.getUsername() + "'s disciplines.");
             throw new InsufficientAuthorityException();
         }
 
