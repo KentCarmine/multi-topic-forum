@@ -70,7 +70,7 @@
 
                             <!-- With results case-->
                             <div th:if="${!userSearchResults.isEmpty()}">
-                                <div th:each="userSearchResult,iterStat : ${userSearchResults}"
+                                <div th:each="userSearchResult,iterStat : ${userSearchResults.getContent()}"
                                      th:include="fragments/user-search-result.html :: user-search-result-fragment (${userSearchResult},${iterStat})">
                                 </div>
                             </div>

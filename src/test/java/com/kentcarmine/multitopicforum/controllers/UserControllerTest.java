@@ -19,7 +19,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,6 +37,7 @@ import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -173,8 +177,10 @@ class UserControllerTest {
                 .andExpect(model().attributeExists("userSearchDto"))
                 .andExpect(model().attributeDoesNotExist("usernames"));
 
-        verify(userService, times(0)).searchForUsers(anyString());
-        verify(userService, times(0)).searchForUsernames(anyString());
+//        verify(userService, times(0)).searchForUsers(anyString());
+//        verify(userService, times(0)).searchForUsernames(anyString());
+        verify(userService, times(0)).searchForUserDtosPaginated(anyString(), anyInt(), anyInt());
+//        verify(userService, times(0)).searchForUsernames(anyString());
     }
 
     @Test
@@ -182,22 +188,33 @@ class UserControllerTest {
         String searchText = "user";
         String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
 
-        SortedSet<UserSearchResultDto> searchResults = new TreeSet<>((o1, o2) -> o1.getUsername().toLowerCase().compareTo(o2.getUsername().toLowerCase()));
-        UserSearchResultDto dto1 = new UserSearchResultDto(testUser.getUsername(), null);
-        searchResults.add(dto1);
-        UserSearchResultDto dto2 = new UserSearchResultDto(testUser2.getUsername(), null);
-        searchResults.add(dto2);
+//        SortedSet<UserSearchResultDto> searchResults = new TreeSet<>((o1, o2) -> o1.getUsername().toLowerCase().compareTo(o2.getUsername().toLowerCase()));
+//        UserSearchResultDto dto1 = new UserSearchResultDto(testUser.getUsername(), null);
+//        searchResults.add(dto1);
+//        UserSearchResultDto dto2 = new UserSearchResultDto(testUser2.getUsername(), null);
+//        searchResults.add(dto2);
 
-        when(userService.searchForUsernames(anyString())).thenReturn(searchResults);
+        List<UserSearchResultDto> userDtoList = new ArrayList<UserSearchResultDto>();
+        UserSearchResultDto dto1 = new UserSearchResultDto(testUser.getUsername(), null);
+        userDtoList.add(dto1);
+        UserSearchResultDto dto2 = new UserSearchResultDto(testUser2.getUsername(), null);
+        userDtoList.add(dto2);
+
+        Pageable pageReq = PageRequest.of(1, 25);
+        Page<UserSearchResultDto> searchResults = new PageImpl<UserSearchResultDto>(userDtoList,pageReq, userDtoList.size());
+
+//        when(userService.searchForUsernames(anyString())).thenReturn(searchResults);
+        when(userService.searchForUserDtosPaginated(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
 
         mockMvc.perform(get("/users?search=" + urlSafeSearchText))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-search-page"))
                 .andExpect(model().attributeExists("userSearchDto"))
                 .andExpect(model().attributeExists("userSearchResults"))
-                .andExpect(model().attribute("userSearchResults", IsCollectionWithSize.hasSize(searchResults.size())));
+                .andExpect(model().attribute("userSearchResults", IsCollectionWithSize.hasSize(searchResults.getContent().size())));
 
-        verify(userService, times(1)).searchForUsernames(anyString());
+//        verify(userService, times(1)).searchForUsernames(anyString());
+        verify(userService, times(1)).searchForUserDtosPaginated(anyString(), anyInt(), anyInt());
     }
 
     @Test
@@ -208,7 +225,8 @@ class UserControllerTest {
                 .andExpect(model().attributeExists("userSearchDto"))
                 .andExpect(model().attributeDoesNotExist("userSearchResults"));
 
-        verify(userService, times(0)).searchForUsernames(anyString());
+//        verify(userService, times(0)).searchForUsernames(anyString());
+        verify(userService, times(0)).searchForUserDtosPaginated(anyString(), anyInt(), anyInt());
     }
 
     @Test
@@ -225,7 +243,8 @@ class UserControllerTest {
                 .andExpect(model().attributeExists("userSearchResults"))
                 .andExpect(model().attribute("userSearchResults", IsCollectionWithSize.hasSize(usernamesResult.size())));
 
-        verify(userService, times(1)).searchForUsernames(anyString());
+//        verify(userService, times(1)).searchForUsernames(anyString());
+        verify(userService, times(1)).searchForUserDtosPaginated(anyString(), anyInt(), anyInt());
     }
 
     @Test

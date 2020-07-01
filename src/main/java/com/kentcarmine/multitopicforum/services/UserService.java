@@ -6,6 +6,7 @@ import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
 import com.kentcarmine.multitopicforum.dtos.UserSearchResultDto;
 import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.model.UserRole;
+import org.springframework.data.domain.Page;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,9 +32,13 @@ public interface UserService {
 //
 //    SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException;
 
-    SortedSet<UserSearchResultDto> searchForUsernames(String searchText) throws UnsupportedEncodingException;
+//    SortedSet<UserSearchResultDto> searchForUsernames(String searchText) throws UnsupportedEncodingException;
+//
+//    SortedSet<UserSearchResultDto> searchForUsers(String searchText) throws UnsupportedEncodingException;
 
-    SortedSet<UserSearchResultDto> searchForUsers(String searchText) throws UnsupportedEncodingException;
+    Page<User> searchForUsersPaginated(String searchText, int pageNum, int usersPerPage);
+
+    Page<UserSearchResultDto> searchForUserDtosPaginated(String searchText, int pageNum, int usersPerPage);
 
     boolean isValidPromotionRequest(User loggedInUser, User userToPromote, UserRole promotedRank);
 
