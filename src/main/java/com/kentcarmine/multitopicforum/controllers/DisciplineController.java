@@ -4,6 +4,7 @@ import com.kentcarmine.multitopicforum.dtos.DisciplineViewDto;
 import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplineNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.InsufficientAuthorityException;
+import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.model.Discipline;
 import com.kentcarmine.multitopicforum.model.User;
@@ -11,6 +12,8 @@ import com.kentcarmine.multitopicforum.services.DisciplineService;
 import com.kentcarmine.multitopicforum.services.MessageService;
 import com.kentcarmine.multitopicforum.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +21,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +34,10 @@ import java.util.SortedSet;
  */
 @Controller
 public class DisciplineController {
+
+    @Value("${spring.data.web.pageable.default-page-size}")
+    private int resultsPerPage;
+
     private final UserService userService;
     private final DisciplineService disciplineService;
 
@@ -45,25 +53,30 @@ public class DisciplineController {
      * disciplinary history
      */
     @GetMapping("/manageUserDiscipline/{username}")
-    public String showManageUserDisciplinePage(@PathVariable String username, Model model) {
+    public String showManageUserDisciplinePage(@PathVariable String username, Model model,
+                                               @RequestParam(required = false, defaultValue = "1") int page) {
         User loggedInUser = userService.getLoggedInUser();
         disciplineService.handleDisciplinedUser(loggedInUser);
 
         User user = userService.getUser(username);
 
         if (user == null) {
-//            String msg = messageService.getMessage("Exception.user.notfound", username);
             throw new UserNotFoundException("Exception.user.notfound", username);
         }
 
         if (!loggedInUser.isHigherAuthority(user)) {
-//            throw new InsufficientAuthorityException(loggedInUser.getUsername() + " has insufficient authority to view "
-////                    + user.getUsername() + "'s disciplines.");
             throw new InsufficientAuthorityException();
         }
 
         SortedSet<DisciplineViewDto> activeDisciplines = disciplineService.getActiveDisciplinesForUser(user, loggedInUser);
-        SortedSet<DisciplineViewDto> inactiveDisciplines = disciplineService.getInactiveDisciplinesForUser(user);
+//        SortedSet<DisciplineViewDto> inactiveDisciplines = disciplineService.getInactiveDisciplinesForUser(user);
+        Page<DisciplineViewDto> inactiveDisciplines = disciplineService.getInactiveDisciplineDtosForUserPaginated(user,
+                page, resultsPerPage, loggedInUser);
+
+        if (inactiveDisciplines == null) {
+            throw new PageNotFoundException();
+        }
+
         UserDisciplineSubmissionDto userDisciplineSubmissionDto = new UserDisciplineSubmissionDto();
         userDisciplineSubmissionDto.setDisciplinedUsername(username);
 

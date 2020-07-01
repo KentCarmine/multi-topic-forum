@@ -5,6 +5,7 @@ import com.kentcarmine.multitopicforum.dtos.UserDisciplineSubmissionDto;
 import com.kentcarmine.multitopicforum.exceptions.DisciplinedUserException;
 import com.kentcarmine.multitopicforum.model.Discipline;
 import com.kentcarmine.multitopicforum.model.User;
+import org.springframework.data.domain.Page;
 
 import java.util.SortedSet;
 
@@ -17,6 +18,9 @@ public interface DisciplineService {
     SortedSet<DisciplineViewDto> getActiveDisciplinesForUser(User user, User loggedInUser);
 
     SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user);
+
+    Page<DisciplineViewDto> getInactiveDisciplineDtosForUserPaginated(User user, int pageNum, int elementsPerPage,
+                                                                      User loggedInUser);
 
     Discipline getDisciplineByIdAndUser(Long id, User user);
 

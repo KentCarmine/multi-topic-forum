@@ -10,6 +10,7 @@ import com.kentcarmine.multitopicforum.model.User;
 import com.kentcarmine.multitopicforum.repositories.DisciplineRepository;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -145,6 +146,44 @@ public class DisciplineServiceImpl implements DisciplineService {
     }
 
     /**
+     * Get the Page with number pageNum of DisciplineViewDtos representing Disciplines for all the given user's inactive disciplines. Has a maximum of elementsPerPage
+     *
+     * @param user the user to get inactive disciplines for
+     * @param pageNum The number of the page to get
+     * @param elementsPerPage the maximum number elements per page
+     * @param loggedInUser the logged in user
+     * @return  SortedSet of DisciplineViewDtos for all the given user's inactive disciplines
+     */
+    @Override
+    public Page<DisciplineViewDto> getInactiveDisciplineDtosForUserPaginated(User user, int pageNum, int elementsPerPage, User loggedInUser) {
+        if (pageNum - 1 < 0) {
+            System.out.println("### Negative page number");
+            return null;
+        }
+
+        Pageable pageReq = PageRequest.of(pageNum - 1, elementsPerPage);
+        Page<Discipline> disciplinePage = disciplineRepository.findAllByDisciplinedUserAndInactive(user, pageReq);
+
+//        System.out.println("### Discipline Page Stats");
+//        System.out.println("### Page number: " + disciplinePage.getNumber());
+//        System.out.println("### num elements on page: " + disciplinePage.getNumberOfElements());
+//        System.out.println("### total elements: " + disciplinePage.getTotalElements());
+//        System.out.println("### total pages: " + disciplinePage.getTotalPages());
+//        System.out.println("### page content " + disciplinePage.getContent().toString());
+
+        if (pageNum > disciplinePage.getTotalPages() && pageNum != 1) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
+
+        if (disciplinePage.getTotalElements() == 0) {
+            return new PageImpl<DisciplineViewDto>(new ArrayList<DisciplineViewDto>());
+        }
+
+        return convertToDisciplineViewDtosPage(disciplinePage, loggedInUser);
+    }
+
+    /**
      * Find the discipline object with the given ID and associated with the given user. Returns null if no such object
      * exists.
      *
@@ -215,6 +254,7 @@ public class DisciplineServiceImpl implements DisciplineService {
      * Helper method that converts a Set of Disciplines into a SortedSet of DisciplineViewDtos sorted by duration.
      *
      * @param disciplines the set of Disciplines to convert
+     * @param loggedInUser the logged in user
      * @return a SortedSet of DisciplineViewDtos sorted by duration
      */
     private SortedSet<DisciplineViewDto> getSortedDisciplineViewDtos(Set<Discipline> disciplines, Comparator<DisciplineViewDto> comparator, User loggedInUser) {
@@ -234,5 +274,34 @@ public class DisciplineServiceImpl implements DisciplineService {
         }
 
         return dtoSet;
+    }
+
+    /**
+     * Helper method that converts a Page of Disciplines into a Page of DisciplineViewDtos.
+     *
+     * @param disciplines the Page of Disciplines to convert
+     * @param loggedInUser the logged in user
+     * @return a Page of DisciplineViewDtos representing those Disciplines
+     */
+    private Page<DisciplineViewDto> convertToDisciplineViewDtosPage(Page<Discipline> disciplines, User loggedInUser) {
+        List<DisciplineViewDto> dtoList = new ArrayList<>();
+
+        for (Discipline disc : disciplines) {
+            DisciplineViewDto discDto = disciplineToDisciplineViewDtoConverter.convert(disc);
+
+            discDto.setCanRescind(loggedInUser != null && (loggedInUser.equals(disc.getDiscipliningUser())
+                    || loggedInUser.isHigherAuthority(disc.getDiscipliningUser())));
+
+            if (disc.isBan()) {
+                discDto.setDisciplinedUntilString(messageService.getMessage("Discipline.disciplinedUntil.ban"));
+            }
+
+            dtoList.add(discDto);
+        }
+
+        Page<DisciplineViewDto> dtoPage = new PageImpl<DisciplineViewDto>(dtoList,
+                disciplines.getPageable(), disciplines.getTotalElements());
+
+        return dtoPage;
     }
 }
