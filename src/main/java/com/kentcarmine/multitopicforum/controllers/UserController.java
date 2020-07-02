@@ -88,7 +88,8 @@ public class UserController {
      */
     @GetMapping("/users")
     public String showUsersListPage(ServletRequest request, Model model, @RequestParam(required = false) String search,
-                                    @RequestParam(required = false) String searchError, @RequestParam(required = false, defaultValue = "1") int page)
+                                    @RequestParam(required = false) String searchError,
+                                    @RequestParam(required = false, defaultValue = "1") int page)
             throws UnsupportedEncodingException {
 
         if (request.getParameterMap().containsKey("search")) {

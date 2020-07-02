@@ -78,6 +78,10 @@
                     </div>
                 </div>
             </div>
+
+            <div id="pagination-container" class="mt-3" th:if="${userSearchResults != null && userSearchResults.getTotalPages() > 1}">
+                <nav th:replace="fragments/pagination.html :: pagination-fragment (${userSearchResults},@{'/users?search=' + ${search}}, '&')"></nav>
+            </div>
         </main>
     </body>
 </html>
