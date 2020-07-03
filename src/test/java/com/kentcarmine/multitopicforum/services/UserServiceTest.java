@@ -19,6 +19,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -30,6 +31,7 @@ import javax.annotation.security.RunAs;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -257,18 +259,67 @@ class UserServiceTest {
 
     @Test
     void searchForUserDtosPaginated_multipleResults() throws Exception {
-        // TODO: Fill in
+        List<User> userList = List.of(testAdmin, testModerator, testSuperAdmin, testUser);
+
+        Pageable pageReq = PageRequest.of(0, 25, Sort.by(Sort.Order.desc("username")));
+
+        Page<User> userPage = new PageImpl<User>(userList, pageReq, userList.size());
+        when(userRepository.findAllUsersByUsernamesLikeIgnoreCaseCustom(anyString(), any())).thenReturn(userPage);
+
+        Page<UserSearchResultDto> results = userService.searchForUserDtosPaginated("user", 1, 25);
+
+        assertEquals(1, results.getTotalPages());
+        assertEquals(0, results.getNumber());
+        assertEquals(4, results.getNumberOfElements());
+        assertEquals(4, results.getTotalElements());
+        assertEquals(testAdmin.getUsername(), results.getContent().get(0).getUsername());
+
+        verify(userRepository, times(1)).findAllUsersByUsernamesLikeIgnoreCaseCustom(anyString(), any());
     }
 
     @Test
     void searchForUserDtosPaginated_noResults() throws Exception {
-        // TODO: Fill in
+        List<User> userList = List.of();
+
+        Pageable pageReq = PageRequest.of(0, 25);
+
+        Page<User> userPage = new PageImpl<User>(userList, pageReq, userList.size());
+        when(userRepository.findAllUsersByUsernamesLikeIgnoreCaseCustom(anyString(), any())).thenReturn(userPage);
+
+        Page<UserSearchResultDto> results = userService.searchForUserDtosPaginated("0q24h0gbnh0", 1, 25);
+
+        assertEquals(1, results.getTotalPages());
+        assertEquals(0, results.getNumber());
+        assertEquals(0, results.getNumberOfElements());
+        assertEquals(0, results.getTotalElements());
+
+        verify(userRepository, times(1)).findAllUsersByUsernamesLikeIgnoreCaseCustom(anyString(), any());
     }
 
 
     @Test
-    void searchForUserDtosPaginated_emptySearchText() throws Exception {
-        // TODO: Fill in
+    void searchForUserDtosPaginated_pageNumTooLow() throws Exception {
+        Page<UserSearchResultDto> results = userService.searchForUserDtosPaginated("0q24h0gbnh0", 0, 25);
+
+        assertNull(results);
+
+        verify(userRepository, times(0)).findAllUsersByUsernamesLikeIgnoreCaseCustom(anyString(), any());
+    }
+
+    @Test
+    void searchForUserDtosPaginated_pageNumTooHigh() throws Exception {
+        List<User> userList = List.of(testAdmin, testModerator, testSuperAdmin, testUser);
+
+        Pageable pageReq = PageRequest.of(0, 25, Sort.by(Sort.Order.desc("username")));
+
+        Page<User> userPage = new PageImpl<User>(userList, pageReq, userList.size());
+        when(userRepository.findAllUsersByUsernamesLikeIgnoreCaseCustom(anyString(), any())).thenReturn(userPage);
+
+        Page<UserSearchResultDto> results = userService.searchForUserDtosPaginated("user", 2, 25);
+
+        assertNull(results);
+
+        verify(userRepository, times(1)).findAllUsersByUsernamesLikeIgnoreCaseCustom(anyString(), any());
     }
 
     @Test
