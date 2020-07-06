@@ -2,6 +2,7 @@ package com.kentcarmine.multitopicforum.controllers;
 
 import com.kentcarmine.multitopicforum.dtos.UserRankAdjustmentDto;
 import com.kentcarmine.multitopicforum.dtos.UserSearchDto;
+import com.kentcarmine.multitopicforum.dtos.UserSearchResultDto;
 import com.kentcarmine.multitopicforum.exceptions.PageNotFoundException;
 import com.kentcarmine.multitopicforum.exceptions.UserNotFoundException;
 import com.kentcarmine.multitopicforum.helpers.URLEncoderDecoderHelper;
@@ -32,6 +33,9 @@ import java.util.SortedSet;
  */
 @Controller
 public class UserController {
+
+    @Value("${spring.data.web.pageable.default-page-size}")
+    private int USERS_PER_PAGE;
 
     @Value("${spring.data.web.pageable.default-page-size}")
     private int POSTS_PER_PAGE;
@@ -84,14 +88,22 @@ public class UserController {
      */
     @GetMapping("/users")
     public String showUsersListPage(ServletRequest request, Model model, @RequestParam(required = false) String search,
-                                    @RequestParam(required = false) String searchError)
+                                    @RequestParam(required = false) String searchError,
+                                    @RequestParam(required = false, defaultValue = "1") int page)
             throws UnsupportedEncodingException {
 
         if (request.getParameterMap().containsKey("search")) {
 //            SortedSet<String> usernames = userService.searchForUsernames(search);
 //            model.addAttribute("usernames", usernames);
             model.addAttribute("search", search);
-            model.addAttribute("userSearchResults", userService.searchForUsernames(search));
+//            model.addAttribute("userSearchResults", userService.searchForUsernames(search));
+
+            Page<UserSearchResultDto> userSearchResults = userService.searchForUserDtosPaginated(search, page, USERS_PER_PAGE);
+            if (userSearchResults == null) {
+                throw new PageNotFoundException();
+            }
+
+            model.addAttribute("userSearchResults", userSearchResults);
         }
 
         model.addAttribute("userSearchDto", new UserSearchDto());

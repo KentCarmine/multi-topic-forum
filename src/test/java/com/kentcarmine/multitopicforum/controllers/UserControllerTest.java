@@ -19,12 +19,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 
@@ -34,10 +38,13 @@ import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -173,8 +180,10 @@ class UserControllerTest {
                 .andExpect(model().attributeExists("userSearchDto"))
                 .andExpect(model().attributeDoesNotExist("usernames"));
 
-        verify(userService, times(0)).searchForUsers(anyString());
-        verify(userService, times(0)).searchForUsernames(anyString());
+//        verify(userService, times(0)).searchForUsers(anyString());
+//        verify(userService, times(0)).searchForUsernames(anyString());
+        verify(userService, times(0)).searchForUserDtosPaginated(anyString(), anyInt(), anyInt());
+//        verify(userService, times(0)).searchForUsernames(anyString());
     }
 
     @Test
@@ -182,22 +191,33 @@ class UserControllerTest {
         String searchText = "user";
         String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
 
-        SortedSet<UserSearchResultDto> searchResults = new TreeSet<>((o1, o2) -> o1.getUsername().toLowerCase().compareTo(o2.getUsername().toLowerCase()));
+        List<UserSearchResultDto> userDtoList = new ArrayList<UserSearchResultDto>();
         UserSearchResultDto dto1 = new UserSearchResultDto(testUser.getUsername(), null);
-        searchResults.add(dto1);
+        userDtoList.add(dto1);
         UserSearchResultDto dto2 = new UserSearchResultDto(testUser2.getUsername(), null);
-        searchResults.add(dto2);
+        userDtoList.add(dto2);
 
-        when(userService.searchForUsernames(anyString())).thenReturn(searchResults);
+        Pageable pageReq = PageRequest.of(0, 25);
+        Page<UserSearchResultDto> searchResults = new PageImpl<UserSearchResultDto>(userDtoList,pageReq, userDtoList.size());
 
-        mockMvc.perform(get("/users?search=" + urlSafeSearchText))
-                .andExpect(status().isOk())
-                .andExpect(view().name("user-search-page"))
-                .andExpect(model().attributeExists("userSearchDto"))
-                .andExpect(model().attributeExists("userSearchResults"))
-                .andExpect(model().attribute("userSearchResults", IsCollectionWithSize.hasSize(searchResults.size())));
+        when(userService.searchForUserDtosPaginated(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
 
-        verify(userService, times(1)).searchForUsernames(anyString());
+        MvcResult res = mockMvc.perform(get("/users?search=" + urlSafeSearchText))
+                .andExpect(status().isOk()).andReturn();
+
+        assertEquals("user-search-page",  res.getModelAndView().getViewName());
+        assertTrue(res.getModelAndView().getModel().containsKey("userSearchDto"));
+        assertTrue(res.getModelAndView().getModel().containsKey("userSearchResults"));
+        assertTrue(res.getModelAndView().getModel().get("userSearchResults") instanceof Page);
+        Page<UserSearchResultDto> searchResultDtos = (Page<UserSearchResultDto>)res.getModelAndView().getModel().get("userSearchResults");
+        assertEquals(0, searchResultDtos.getNumber());
+        assertEquals(1, searchResultDtos.getTotalPages());
+        assertEquals(2, searchResultDtos.getNumberOfElements());
+        assertEquals(2, searchResultDtos.getTotalElements());
+        assertEquals(testUser.getUsername(), searchResultDtos.getContent().get(0).getUsername());
+        assertEquals(testUser2.getUsername(), searchResultDtos.getContent().get(1).getUsername());
+
+        verify(userService, times(1)).searchForUserDtosPaginated(anyString(), anyInt(), anyInt());
     }
 
     @Test
@@ -208,7 +228,8 @@ class UserControllerTest {
                 .andExpect(model().attributeExists("userSearchDto"))
                 .andExpect(model().attributeDoesNotExist("userSearchResults"));
 
-        verify(userService, times(0)).searchForUsernames(anyString());
+//        verify(userService, times(0)).searchForUsernames(anyString());
+        verify(userService, times(0)).searchForUserDtosPaginated(anyString(), anyInt(), anyInt());
     }
 
     @Test
@@ -216,16 +237,39 @@ class UserControllerTest {
         String searchText = "";
         String urlSafeSearchText = URLEncoderDecoderHelper.encode(searchText);
 
-        SortedSet<String> usernamesResult = new TreeSet<>((o1, o2) -> o1.toLowerCase().compareTo(o2.toLowerCase()));
+//        SortedSet<String> usernamesResult = new TreeSet<>((o1, o2) -> o1.toLowerCase().compareTo(o2.toLowerCase()));
 
-        mockMvc.perform(get("/users?search=" + urlSafeSearchText))
-                .andExpect(status().isOk())
-                .andExpect(view().name("user-search-page"))
-                .andExpect(model().attributeExists("userSearchDto"))
-                .andExpect(model().attributeExists("userSearchResults"))
-                .andExpect(model().attribute("userSearchResults", IsCollectionWithSize.hasSize(usernamesResult.size())));
+        List<UserSearchResultDto> userDtoList = new ArrayList<UserSearchResultDto>();
+        UserSearchResultDto dto1 = new UserSearchResultDto(testUser.getUsername(), null);
+        userDtoList.add(dto1);
+        UserSearchResultDto dto2 = new UserSearchResultDto(testUser2.getUsername(), null);
+        userDtoList.add(dto2);
+        UserSearchResultDto dto3 = new UserSearchResultDto(testAdmin.getUsername(), null);
+        userDtoList.add(dto3);
+        UserSearchResultDto dto4 = new UserSearchResultDto(testSuperAdmin.getUsername(), null);
+        userDtoList.add(dto4);
 
-        verify(userService, times(1)).searchForUsernames(anyString());
+        Pageable pageReq = PageRequest.of(0, 25);
+        Page<UserSearchResultDto> expectedPage = new PageImpl<UserSearchResultDto>(userDtoList, pageReq, userDtoList.size());
+
+        when(userService.searchForUserDtosPaginated(anyString(), anyInt(), anyInt())).thenReturn(expectedPage);
+
+        MvcResult res = mockMvc.perform(get("/users?search=" + urlSafeSearchText))
+                .andExpect(status().isOk()).andReturn();
+
+        assertEquals("user-search-page",  res.getModelAndView().getViewName());
+        assertTrue(res.getModelAndView().getModel().containsKey("userSearchDto"));
+        assertTrue(res.getModelAndView().getModel().containsKey("userSearchResults"));
+        assertTrue(res.getModelAndView().getModel().get("userSearchResults") instanceof Page);
+        Page<UserSearchResultDto> searchResultDtos = (Page<UserSearchResultDto>)res.getModelAndView().getModel().get("userSearchResults");
+        assertEquals(0, searchResultDtos.getNumber());
+        assertEquals(1, searchResultDtos.getTotalPages());
+        assertEquals(4, searchResultDtos.getNumberOfElements());
+        assertEquals(4, searchResultDtos.getTotalElements());
+        assertEquals(testUser.getUsername(), searchResultDtos.getContent().get(0).getUsername());
+        assertEquals(testSuperAdmin.getUsername(), searchResultDtos.getContent().get(3).getUsername());
+
+        verify(userService, times(1)).searchForUserDtosPaginated(anyString(), anyInt(), anyInt());
     }
 
     @Test

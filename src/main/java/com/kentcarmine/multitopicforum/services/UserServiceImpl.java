@@ -11,6 +11,10 @@ import com.kentcarmine.multitopicforum.model.UserRole;
 import com.kentcarmine.multitopicforum.repositories.AuthorityRepository;
 import com.kentcarmine.multitopicforum.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -131,49 +135,93 @@ public class UserServiceImpl implements UserService {
 //        return usernames;
 //    }
 
+
     @Override
-    public SortedSet<UserSearchResultDto> searchForUsernames(String searchText) throws UnsupportedEncodingException {
-        SortedSet<UserSearchResultDto> users = searchForUsers(searchText);
-
-        return users;
-    }
-
-    /**
-     * Searches for all Users that have names that contain all tokens (delimited on double quotes and spaces, but not
-     * spaces within double quotes) of the given search text.
-     *
-     * @param searchText The text to search for
-     * @return the set of Users (ordered alphabetically) that match the search terms
-     * @throws UnsupportedEncodingException
-     */
-    @Override
-    public SortedSet<UserSearchResultDto> searchForUsers(String searchText) throws UnsupportedEncodingException {
-        SortedSet<UserSearchResultDto> users = new TreeSet<>();
-
-        List<String> searchTerms = parseSearchText(searchText);
-        List<List<UserSearchResultDto>> searchTermResults = new ArrayList<>();
-        for (int i = 0; i < searchTerms.size(); i++) {
-            searchTermResults.add(new ArrayList<UserSearchResultDto>());
+    public Page<User> searchForUsersPaginated(String searchText, int pageNum, int usersPerPage) {
+        if (pageNum - 1 < 0) {
+            System.out.println("### Negative page number");
+            return null;
         }
 
-        for(int i = 0; i < searchTerms.size(); i++) {
-            String st = searchTerms.get(i);
+        Pageable pageReq = PageRequest.of(pageNum - 1, usersPerPage);
+        Page<User> usersPage = userRepository.findAllUsersByUsernamesLikeIgnoreCaseCustom(searchText, pageReq);
 
-            List<User> usrRes = userRepository.findByUsernameLikeIgnoreCase("%" + st + "%");
-            searchTermResults.set(i, convertUserListToUserSearchResultDto(usrRes));
-        }
-
-        if (!searchTermResults.isEmpty()) {
-            users.addAll(searchTermResults.get(0));
-            searchTermResults.remove(0);
-
-            for (List<UserSearchResultDto> str : searchTermResults) {
-                users.retainAll(str);
+        if (usersPage.getTotalElements() == 0) {
+            if (pageNum > usersPage.getTotalPages() && pageNum != 1) {
+                System.out.println("### Invalid page number");
+                return null;
             }
+
+            return new PageImpl<User>(new ArrayList<>());
         }
 
-        return users;
+        if (pageNum > usersPage.getTotalPages()) {
+            System.out.println("### Invalid page number");
+            return null;
+        }
+
+        return usersPage;
     }
+
+    @Override
+    public Page<UserSearchResultDto> searchForUserDtosPaginated(String searchText, int pageNum, int usersPerPage) {
+        Page<User> usersPage = searchForUsersPaginated(searchText, pageNum, usersPerPage);
+
+        if (usersPage == null) {
+            return null;
+        }
+
+        List<UserSearchResultDto> userDtos = convertUserListToUserSearchResultDto(usersPage.getContent());
+        Page<UserSearchResultDto> usersDtoPage = new PageImpl<UserSearchResultDto>(userDtos, usersPage.getPageable(),
+                usersPage.getTotalElements());
+
+
+        return usersDtoPage;
+    }
+
+//    @Override
+//    public SortedSet<UserSearchResultDto> searchForUsernames(String searchText) throws UnsupportedEncodingException {
+//        SortedSet<UserSearchResultDto> users = searchForUsers(searchText);
+//
+//        return users;
+//    }
+//
+//    /**
+//     * Searches for all Users that have names that contain all tokens (delimited on double quotes and spaces, but not
+//     * spaces within double quotes) of the given search text.
+//     *
+//     * @param searchText The text to search for
+//     * @return the set of Users (ordered alphabetically) that match the search terms
+//     * @throws UnsupportedEncodingException
+//     */
+//    @Override
+//    public SortedSet<UserSearchResultDto> searchForUsers(String searchText) throws UnsupportedEncodingException {
+//        SortedSet<UserSearchResultDto> users = new TreeSet<>();
+//
+//        List<String> searchTerms = parseSearchText(searchText);
+//        List<List<UserSearchResultDto>> searchTermResults = new ArrayList<>();
+//        for (int i = 0; i < searchTerms.size(); i++) {
+//            searchTermResults.add(new ArrayList<UserSearchResultDto>());
+//        }
+//
+//        for(int i = 0; i < searchTerms.size(); i++) {
+//            String st = searchTerms.get(i);
+//
+//            List<User> usrRes = userRepository.findByUsernameLikeIgnoreCase("%" + st + "%");
+//            searchTermResults.set(i, convertUserListToUserSearchResultDto(usrRes));
+//        }
+//
+//        if (!searchTermResults.isEmpty()) {
+//            users.addAll(searchTermResults.get(0));
+//            searchTermResults.remove(0);
+//
+//            for (List<UserSearchResultDto> str : searchTermResults) {
+//                users.retainAll(str);
+//            }
+//        }
+//
+//        return users;
+//    }
 
 
 
