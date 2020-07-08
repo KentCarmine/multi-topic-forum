@@ -101,8 +101,10 @@
                             </div>
                             <div th:if="${post.isDeleted()}">
                                 <div th:text="#{Post.deleted.success.notification}" class="text-warning">Post has been deleted.</div>
-                                <hr>
-                                <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')" th:text="#{Label.post.originalContent} + ${post.getContent()}" class="text-muted" >
+                                <div sec:authorize="hasAnyAuthority('MODERATOR', 'ADMINISTRATOR', 'SUPER_ADMINISTRATOR')">
+                                    <hr>
+                                    <div th:text="#{Label.post.originalContent} + ${post.getContent()}" class="text-muted" >
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -122,8 +124,14 @@
                 </div>
 
                 <!-- Abbreviated post content section-->
-                <div class="col-md-7 pl-2 d-none d-md-block text-ellipsis-overflow" th:text="${post.getContent()}">
+                <div th:if="${!post.isDeleted()}" class="col-md-7 pl-2 d-none d-md-block text-ellipsis-overflow"
+                     th:text="${post.getContent()}">
                     Post content goes here
+                </div>
+                <div th:if="${post.isDeleted()}"
+                     class="col-md-7 pl-2 d-none d-md-block text-ellipsis-overflow text-warning"
+                     th:text="#{Post.deleted.success.notification}">
+                    Post has been deleted.
                 </div>
 
                 <div class="col-md-2 pl-2 pr-2 d-none d-md-block text-muted" th:text="${post.getDisplayablePostedAt()}">

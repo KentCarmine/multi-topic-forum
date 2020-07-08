@@ -77,6 +77,9 @@ public class Bootstrap implements CommandLineRunner {
         Post post2 = new Post("Test content 2", f2t1RecentUpdate);
         post2.setUser(userRepository.findByUsername("user"));
         post2.setThread(forum2Thread1);
+        post2.setDeleted(true);
+        post2.setDeletedAt(Date.from(Instant.now().minusSeconds(5)));
+        post2.setDeletedBy(userRepository.findByUsername("admin2"));
         post2 = postRepository.save(post2);
 
         forum2Thread1.setUpdatedAt(f2t1RecentUpdate);

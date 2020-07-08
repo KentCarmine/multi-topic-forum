@@ -107,7 +107,7 @@
                             <!-- Posts exist case-->
                             <div th:if="${!user.getPosts().isEmpty()}">
                                 <div th:each="post,iterStat : ${posts.getContent()}"
-                                     th:include="fragments/post-display.html :: post-summary-fragment (${post},${iterStat})"> <!--TODO: Paginate?-->
+                                     th:include="fragments/post-display.html :: post-summary-fragment (${post},${iterStat})">
                                 </div>
                             </div>
                         </div>
