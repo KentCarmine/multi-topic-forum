@@ -19,9 +19,6 @@ public interface TopicThreadService {
 
     TopicThread getThreadByForumNameAndId(String forumName, Long threadId);
 
-//    SortedSet<TopicThread> searchTopicThreads(String forumName, String searchText) throws UnsupportedEncodingException;
-    SortedSet<TopicThreadViewDto> searchTopicThreads(String forumName, String searchText) throws UnsupportedEncodingException;
-
     boolean canUserLockThread(User user, TopicThread thread);
 
     boolean canUserUnlockThread(User user, TopicThread thread);

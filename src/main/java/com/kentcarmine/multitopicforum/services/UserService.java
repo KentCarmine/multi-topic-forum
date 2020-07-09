@@ -28,14 +28,6 @@ public interface UserService {
 
     boolean usernameExists(String username);
 
-//    SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException;
-//
-//    SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException;
-
-//    SortedSet<UserSearchResultDto> searchForUsernames(String searchText) throws UnsupportedEncodingException;
-//
-//    SortedSet<UserSearchResultDto> searchForUsers(String searchText) throws UnsupportedEncodingException;
-
     Page<User> searchForUsersPaginated(String searchText, int pageNum, int usersPerPage);
 
     Page<UserSearchResultDto> searchForUserDtosPaginated(String searchText, int pageNum, int usersPerPage);

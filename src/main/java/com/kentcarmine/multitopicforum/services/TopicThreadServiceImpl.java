@@ -251,14 +251,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         Pageable pageReq = PageRequest.of(pageNum - 1, threadsPerPage);
         Page<TopicThread> threadsPage = topicThreadRepository.getAllTopicThreadsPaginated(forum.getName(), pageReq);
 
-//        System.out.println("### in getTopicThreadsByForumPaginated");
-//        System.out.println("### threads page = " + threadsPage);
-//        System.out.println("### content = " + threadsPage.getContent());
-//        System.out.println("### page number = " + threadsPage.getNumber());
-//        System.out.println("### count pages = " + threadsPage.getTotalPages());
-//        System.out.println("### count elements on page = " + threadsPage.getNumberOfElements());
-//        System.out.println("### count total elements = " + threadsPage.getTotalElements());
-
         if (threadsPage.getTotalElements() == 0) {
             return new PageImpl<TopicThread>(new ArrayList<TopicThread>());
         }
@@ -290,86 +282,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
 
         return convertThreadsToThreadViewDtos(threads, forum);
-    }
-
-    /**
-     * Searches for all topic threads in a topic forum with the given forumName that have titles that contain all tokens
-     * (delimited on double quotes and spaces, but not spaces within double quotes) of the given search text. Empty
-     * search text or a search of "" returns all threads in the given forum
-     *
-     * @param forumName the name of the forum to search
-     * @param searchText The text to search for
-     * @return the set of TopicThreadViewDtos (ordered reverse chronologically by creation date of the first post) that match
-     * the search terms
-     * @throws UnsupportedEncodingException
-     */
-    @Override
-    public SortedSet<TopicThreadViewDto> searchTopicThreads(String forumName, String searchText)
-            throws UnsupportedEncodingException {
-        SortedSet<TopicThread> threads = new TreeSet<>(new Comparator<TopicThread>() {
-            @Override
-            public int compare(TopicThread o1, TopicThread o2) {
-                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt()); // Newest threads first
-            }
-        });
-
-        TopicForum forum = topicForumRepository.findByName(forumName);
-        if (searchText.equals("") || searchText.equals("\"\"")) {
-            if (forum != null) {
-                threads.addAll(forum.getThreads());
-            }
-
-            return convertThreadsToThreadViewDtos(threads, forum);
-        }
-
-        List<String> searchTerms = parseSearchText(searchText);
-        List<List<TopicThread>> searchTermResults = new ArrayList<>();
-        for (int i = 0; i < searchTerms.size(); i++) {
-            searchTermResults.add(new ArrayList<TopicThread>());
-        }
-
-        for(int i = 0; i < searchTerms.size(); i++) {
-            String st = searchTerms.get(i);
-            searchTermResults.set(i, topicThreadRepository
-                    .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase("%" + st + "%", forumName));
-        }
-
-        if (!searchTermResults.isEmpty()) {
-            threads.addAll(searchTermResults.get(0));
-            searchTermResults.remove(0);
-            for (List<TopicThread> str : searchTermResults) {
-                threads.retainAll(str);
-            }
-        }
-
-        return convertThreadsToThreadViewDtos(threads, forum);
-    }
-
-    /**
-     * Helper method that converts the given threads in the given forum from threads to ThreadViewDtos.
-     *
-     * @param threads the threads to convert
-     * @param forum the forum the threads belong to
-     * @return a SortedSet of ThreadViewDtos for the given threads
-     */
-    private SortedSet<TopicThreadViewDto> convertThreadsToThreadViewDtos(SortedSet<TopicThread> threads, TopicForum forum) {
-        SortedSet<TopicThreadViewDto> threadDtos = new TreeSet<>(new Comparator<TopicThreadViewDto>() {
-            @Override
-            public int compare(TopicThreadViewDto o1, TopicThreadViewDto o2) {
-                return o2.getFirstPost().getPostedAt().compareTo(o1.getFirstPost().getPostedAt()); // Newest threads first
-            }
-        });
-
-        TopicForumViewDto forumViewDto = forumHierarchyConverter.convertForum(forum);
-        for (TopicThread thread : threads) {
-            TopicThreadViewDto threadDto = forumHierarchyConverter.convertThread(thread, forumViewDto);
-            threadDto.setCreationTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadCreationMessage(threadDto));
-            threadDto.setUpdateTimeDifferenceMessage(timeCalculatorService.getTimeSinceThreadUpdatedMessage(threadDto));
-
-            threadDtos.add(threadDto);
-        }
-
-        return threadDtos;
     }
 
     /**
@@ -485,17 +397,6 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Helper method that parses search text.
-     *
-     * @param searchText the text to be parsed.
-     * @return the list of tokens
-     * @throws UnsupportedEncodingException
-     */
-    private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
-        return SearchParserHelper.parseSearchText(searchText);
     }
 
     /**

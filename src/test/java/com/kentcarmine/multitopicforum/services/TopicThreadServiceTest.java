@@ -177,54 +177,6 @@ class TopicThreadServiceTest {
     }
 
     @Test
-    void searchTopicThreads_existingResults() throws Exception {
-        when(topicForumRepository.findByName(eq(TEST_TOPIC_FORUM_NAME))).thenReturn(testTopicForum);
-        when(topicThreadRepository.findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString()))
-                .thenReturn(List.of(testTopicThread));
-
-        final String searchStr = "test";
-
-        SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
-
-        assertEquals(1, results.size());
-        assertEquals(testTopicThread.getTitle(), results.first().getTitle());
-
-        verify(topicThreadRepository, times(1))
-                .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
-    }
-
-    @Test
-    void searchTopicThreads_noResults() throws Exception {
-        when(topicForumRepository.findByName(eq(TEST_TOPIC_FORUM_NAME))).thenReturn(testTopicForum);
-        when(topicThreadRepository.findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString()))
-                .thenReturn(List.of());
-
-        final String searchStr = "test";
-
-        SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
-
-        assertEquals(0, results.size());
-
-        verify(topicThreadRepository, times(1))
-                .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
-    }
-
-    @Test
-    void searchTopicThreads_emptySearch() throws Exception {
-        when(topicForumRepository.findByName(anyString())).thenReturn(testTopicForum);
-
-        final String searchStr = "";
-
-        SortedSet<TopicThreadViewDto> results = topicThreadService.searchTopicThreads(TEST_TOPIC_FORUM_NAME, searchStr);
-
-        assertEquals(1, results.size());
-
-        verify(topicForumRepository, times(1)).findByName(anyString());
-        verify(topicThreadRepository, times(0))
-                .findByTitleLikeIgnoreCaseAndForumNameIsIgnoreCase(anyString(), anyString());
-    }
-
-    @Test
     void canUserLockThread_valid() throws Exception {
         boolean result = topicThreadService.canUserLockThread(testModerator, testTopicThread);
 
@@ -604,21 +556,9 @@ class TopicThreadServiceTest {
 
     @Test
     void searchTopicThreadsAsViewDtos_invalid_lowPageNumber() throws Exception {
-//        Page<TopicThread> expectedThreads = new PageImpl<>(List.of());
-
-//        when(topicThreadRepository.searchForTopicThreadsInForum(anyString(), anyString(), any())).thenReturn(expectedThreads);
-//        when(forumService.getForumByName(anyString())).thenReturn(testTopicForum);
-//        when(timeCalculatorService.getTimeSinceThreadCreationMessage(any())).thenReturn("3 days");
-//        when(timeCalculatorService.getTimeSinceThreadUpdatedMessage(any())).thenReturn("3 days");
-
         Page<TopicThreadViewDtoLight> resultThreads =
                 topicThreadService.searchTopicThreadsAsViewDtos(testTopicForum.getName(),
                         "Thread", 0, 25);
-
-//        assertEquals(1, resultThreads.getTotalPages());
-//        assertEquals(0, resultThreads.getTotalElements());
-//        assertEquals(0, resultThreads.getNumber());
-//        assertEquals(0, resultThreads.getNumberOfElements());
         assertNull(resultThreads);
 
         verify(topicThreadRepository, times(0)).searchForTopicThreadsInForum(anyString(), anyString(), any());

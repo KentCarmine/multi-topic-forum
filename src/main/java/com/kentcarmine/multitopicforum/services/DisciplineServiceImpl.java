@@ -51,9 +51,6 @@ public class DisciplineServiceImpl implements DisciplineService {
 
         DisciplineType disciplineType = userDisciplineSubmissionDto.isBan() ? DisciplineType.BAN : DisciplineType.SUSPENSION;
 
-//        System.out.println("### in disciplineUser(). disciplinedUser.isBanned() = " + disciplinedUser.isBanned());
-//        System.out.println("### in disciplineUser(). disciplineType = " + disciplineType);
-
         if (disciplineType.equals(DisciplineType.BAN) && disciplinedUser.isBanned()) {
             return false;
         }
@@ -83,7 +80,6 @@ public class DisciplineServiceImpl implements DisciplineService {
     @Override
     public void handleDisciplinedUser(User user) throws DisciplinedUserException {
         if (user != null && user.isBannedOrSuspended()) {
-//            System.out.println("### in handleDisciplinedUser() fire exception case for " + user);
             throw new DisciplinedUserException(user);
         }
     }
@@ -122,30 +118,6 @@ public class DisciplineServiceImpl implements DisciplineService {
     }
 
     /**
-     * Get a SortedSet of DisciplineViewDtos for all the given user's inactive disciplines.
-     *
-     * @param user the user to get inactive disciplines for
-     * @return  SortedSet of DisciplineViewDtos for all the given user's inactive disciplines
-     */
-    @Override
-    public SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user) {
-        Comparator<DisciplineViewDto> comparator = new Comparator<DisciplineViewDto>() {
-            @Override
-            public int compare(DisciplineViewDto o1, DisciplineViewDto o2) {
-                if (o1.getDisciplinedAt().equals(o2.getDisciplinedAt())) {
-                    return o1.getId().compareTo(o2.getId()); // Prevent set exclusion due to identical discipline times
-                }
-                return o1.getDisciplinedAt().compareTo(o2.getDisciplinedAt());
-            }
-        };
-
-        comparator = comparator.reversed();
-
-        SortedSet<DisciplineViewDto> dtoSet = getSortedDisciplineViewDtos(user.getInactiveDisciplines(), comparator, null);
-        return dtoSet;
-    }
-
-    /**
      * Get the Page with number pageNum of DisciplineViewDtos representing Disciplines for all the given user's inactive disciplines. Has a maximum of elementsPerPage
      *
      * @param user the user to get inactive disciplines for
@@ -163,13 +135,6 @@ public class DisciplineServiceImpl implements DisciplineService {
 
         Pageable pageReq = PageRequest.of(pageNum - 1, elementsPerPage);
         Page<Discipline> disciplinePage = disciplineRepository.findAllByDisciplinedUserAndInactive(user, pageReq);
-
-//        System.out.println("### Discipline Page Stats");
-//        System.out.println("### Page number: " + disciplinePage.getNumber());
-//        System.out.println("### num elements on page: " + disciplinePage.getNumberOfElements());
-//        System.out.println("### total elements: " + disciplinePage.getTotalElements());
-//        System.out.println("### total pages: " + disciplinePage.getTotalPages());
-//        System.out.println("### page content " + disciplinePage.getContent().toString());
 
         if (pageNum > disciplinePage.getTotalPages() && pageNum != 1) {
             System.out.println("### Invalid page number");

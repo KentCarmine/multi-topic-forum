@@ -111,7 +111,11 @@ public class DisciplineController {
         if (bindingResult.hasErrors()) {
 //            System.out.println("### in processUserDisciplineSubmission(). bindingResult.hasErrors() case");
             SortedSet<DisciplineViewDto> activeDisciplines = disciplineService.getActiveDisciplinesForUser(disciplinedUser, loggedInUser);
-            SortedSet<DisciplineViewDto> inactiveDisciplines = disciplineService.getInactiveDisciplinesForUser(disciplinedUser);
+
+//            SortedSet<DisciplineViewDto> inactiveDisciplines = disciplineService.getInactiveDisciplinesForUser(disciplinedUser);
+            Page<DisciplineViewDto> inactiveDisciplines =
+                    disciplineService.getInactiveDisciplineDtosForUserPaginated(disciplinedUser, 1, resultsPerPage,
+                            loggedInUser);
 
             mv = new ModelAndView("user-discipline-page", "userDisciplineSubmissionDto", userDisciplineSubmissionDto);
             mv.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);

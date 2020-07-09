@@ -243,40 +243,6 @@ class DisciplineServiceTest {
     }
 
     @Test
-    void getInactiveDisciplinesForUser() throws Exception {
-        // Active
-        Discipline disc1 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(60)), "ban for testing");
-        disc1.setId(1L);
-        testUser.addDiscipline(disc1);
-
-        // Active
-        Discipline disc2 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(120)), 3,"active suspension for testing");
-        disc2.setId(2L);
-        testUser.addDiscipline(disc2);
-
-        // Inactive (expired)
-        Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");
-        disc3.setId(3L);
-        testUser.addDiscipline(disc3);
-
-        // Inactive (rescinded)
-        Discipline disc4 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(180)), 5,"rescinded suspension for testing");
-        disc4.setId(4L);
-        disc4.setRescinded(true);
-        testUser.addDiscipline(disc4);
-
-        // Inactive (rescinded)
-        Discipline disc5 = new Discipline(testUser, testAdmin, DisciplineType.BAN, Date.from(Instant.now().minusSeconds(180)), "rescinded ban for testing");
-        disc5.setId(5L);
-        disc5.setRescinded(true);
-        testUser.addDiscipline(disc5);
-
-        SortedSet<DisciplineViewDto> inactiveDiscDtos = disciplineService.getInactiveDisciplinesForUser(testUser);
-
-        assertEquals(3, inactiveDiscDtos.size());
-    }
-
-    @Test
     void getInactiveDisciplineDtosForUserPaginated_valid() throws Exception {
         // Inactive (expired)
         Discipline disc3 = new Discipline(testUser, testAdmin, DisciplineType.SUSPENSION, Date.from(Instant.now().minusSeconds(7200)), 1,"expired suspension for testing");

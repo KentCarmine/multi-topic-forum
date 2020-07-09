@@ -17,8 +17,6 @@ public interface DisciplineService {
 
     SortedSet<DisciplineViewDto> getActiveDisciplinesForUser(User user, User loggedInUser);
 
-    SortedSet<DisciplineViewDto> getInactiveDisciplinesForUser(User user);
-
     Page<DisciplineViewDto> getInactiveDisciplineDtosForUserPaginated(User user, int pageNum, int elementsPerPage,
                                                                       User loggedInUser);
 

@@ -97,15 +97,6 @@ public class TopicThread implements ThreadUpdatedTimeable {
         return getPosts().last();
     }
 
-//    public Date getCreatedAt() {
-//        return getFirstPost().getPostedAt();
-//    }
-//
-//    public User getCreator() {
-//        return getFirstPost().getUser();
-//    }
-
-
     public Date getCreatedAt() {
         return createdAt;
     }

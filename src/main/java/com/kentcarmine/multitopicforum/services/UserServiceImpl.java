@@ -121,20 +121,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username) != null;
     }
 
-//    /**
-//     * Searches for the names of all Users that have names that contain all tokens (delimited on double quotes and
-//     * spaces, but not spaces within double quotes) of the given search text.
-//     *
-//     * @param searchText The text to search for
-//     * @return the set of usernames of Users (ordered alphabetically) that match the search terms
-//     * @throws UnsupportedEncodingException
-//     */
-//    public SortedSet<String> searchForUsernames(String searchText) throws UnsupportedEncodingException {
-//        SortedSet<User> users = searchForUsers(searchText);
-//        SortedSet<String> usernames = new TreeSet<>(users.stream().map(User::getUsername).collect(Collectors.toList()));
-//        return usernames;
-//    }
-
 
     @Override
     public Page<User> searchForUsersPaginated(String searchText, int pageNum, int usersPerPage) {
@@ -178,86 +164,6 @@ public class UserServiceImpl implements UserService {
 
         return usersDtoPage;
     }
-
-//    @Override
-//    public SortedSet<UserSearchResultDto> searchForUsernames(String searchText) throws UnsupportedEncodingException {
-//        SortedSet<UserSearchResultDto> users = searchForUsers(searchText);
-//
-//        return users;
-//    }
-//
-//    /**
-//     * Searches for all Users that have names that contain all tokens (delimited on double quotes and spaces, but not
-//     * spaces within double quotes) of the given search text.
-//     *
-//     * @param searchText The text to search for
-//     * @return the set of Users (ordered alphabetically) that match the search terms
-//     * @throws UnsupportedEncodingException
-//     */
-//    @Override
-//    public SortedSet<UserSearchResultDto> searchForUsers(String searchText) throws UnsupportedEncodingException {
-//        SortedSet<UserSearchResultDto> users = new TreeSet<>();
-//
-//        List<String> searchTerms = parseSearchText(searchText);
-//        List<List<UserSearchResultDto>> searchTermResults = new ArrayList<>();
-//        for (int i = 0; i < searchTerms.size(); i++) {
-//            searchTermResults.add(new ArrayList<UserSearchResultDto>());
-//        }
-//
-//        for(int i = 0; i < searchTerms.size(); i++) {
-//            String st = searchTerms.get(i);
-//
-//            List<User> usrRes = userRepository.findByUsernameLikeIgnoreCase("%" + st + "%");
-//            searchTermResults.set(i, convertUserListToUserSearchResultDto(usrRes));
-//        }
-//
-//        if (!searchTermResults.isEmpty()) {
-//            users.addAll(searchTermResults.get(0));
-//            searchTermResults.remove(0);
-//
-//            for (List<UserSearchResultDto> str : searchTermResults) {
-//                users.retainAll(str);
-//            }
-//        }
-//
-//        return users;
-//    }
-
-
-
-//    /**
-//     * Searches for all Users that have names that contain all tokens (delimited on double quotes and spaces, but not
-//     * spaces within double quotes) of the given search text.
-//     *
-//     * @param searchText The text to search for
-//     * @return the set of Users (ordered alphabetically) that match the search terms
-//     * @throws UnsupportedEncodingException
-//     */
-//    @Override
-//    public SortedSet<User> searchForUsers(String searchText) throws UnsupportedEncodingException {
-//        SortedSet<User> users = new TreeSet<>((o1, o2) -> o1.getUsername().toLowerCase().compareTo(o2.getUsername().toLowerCase()));
-//
-//        List<String> searchTerms = parseSearchText(searchText);
-//        List<List<User>> searchTermResults = new ArrayList<>();
-//        for (int i = 0; i < searchTerms.size(); i++) {
-//            searchTermResults.add(new ArrayList<User>());
-//        }
-//
-//        for(int i = 0; i < searchTerms.size(); i++) {
-//            String st = searchTerms.get(i);
-//            searchTermResults.set(i, userRepository.findByUsernameLikeIgnoreCase("%" + st + "%"));
-//        }
-//
-//        if (!searchTermResults.isEmpty()) {
-//            users.addAll(searchTermResults.get(0));
-//            searchTermResults.remove(0);
-//            for (List<User> str : searchTermResults) {
-//                users.retainAll(str);
-//            }
-//        }
-//
-//        return users;
-//    }
 
     /**
      * Promotes the given user by one rank, then saves and returns that user.
@@ -438,30 +344,6 @@ public class UserServiceImpl implements UserService {
         }
 
         return loggedInUser;
-    }
-
-    /**
-     * Helper method that adds a given userRole to a given user and then saves that user.
-     *
-     * @param user the user to add the role to.
-     * @param userRole the role to add to the user
-     */
-    private void addAuthorityToUser(User user, UserRole userRole) {
-        if (!user.hasAuthority(userRole)) {
-            user.addAuthority(userRole);
-            userRepository.save(user);
-        }
-    }
-
-    /**
-     * Helper method that parses search text.
-     *
-     * @param searchText the text to be parsed.
-     * @return the list of tokens
-     * @throws UnsupportedEncodingException
-     */
-    private List<String> parseSearchText(String searchText) throws UnsupportedEncodingException {
-        return SearchParserHelper.parseSearchText(searchText);
     }
 
     /**

@@ -178,47 +178,6 @@ class ForumServiceTest {
         verify(topicForumRepository, times(1)).save(any());
     }
 
-//    @Test
-//    void searchTopicForums_multipleResults() throws Exception {
-//        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(List.of(testTopicForum, testTopicForum2));
-//
-//        final String searchStr = "\"Description of test\"";
-//
-//        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
-//
-//        assertEquals(2, results.size());
-//        assertEquals(testTopicForum, results.first());
-//        assertEquals(testTopicForum2, results.last());
-//
-//        verify(topicForumRepository, times(1)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
-//    }
-//
-//    @Test
-//    void searchTopicForums_noResults() throws Exception {
-//        when(topicForumRepository.findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString())).thenReturn(new ArrayList<TopicForum>());
-//
-//        final String searchStr = "\"foo BAR baz\"";
-//
-//        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
-//
-//        assertEquals(0, results.size());
-//
-//        verify(topicForumRepository, times(1)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
-//    }
-//
-//    @Test
-//    void searchTopicForums_emptySearch() throws Exception {
-//        final String searchStr = "";
-//
-//        SortedSet<TopicForum> results = forumService.searchTopicForums(searchStr);
-//
-//        assertEquals(0, results.size());
-//
-//        verify(topicForumRepository, times(0)).findByNameLikeIgnoreCaseOrDescriptionLikeIgnoreCase(anyString(), anyString());
-//    }
-
-    // TODO: Add searching tests
-
     @Test
     void searchTopicForumsWithCustomQuery_valid_withResults() throws Exception {
         List<TopicForum> resultList = new ArrayList<>();
@@ -229,24 +188,9 @@ class ForumServiceTest {
         PageRequest pageReq = PageRequest.of(0, 2, Sort.by(Sort.Order.by("name").ignoreCase()).descending());
         Page<TopicForum> expectedPage = new PageImpl<TopicForum>(resultList, pageReq, resultList.size());
 
-//        System.out.println("### expectedPage total elems: " + expectedPage.getTotalElements());
-//        System.out.println("### expectedPage page elems: " + expectedPage.getNumberOfElements());
-//        System.out.println("### expectedPage total pages: " + expectedPage.getTotalPages());
-//        System.out.println("### expectedPage page number: " + expectedPage.getNumber());
-//        System.out.println("### content: ");
-//        System.out.println(expectedPage.getContent().toString());
-//        System.out.println();
-
         when(topicForumRepository.searchTopicForumsPaginated(any(), any())).thenReturn(expectedPage);
 
         Page<TopicForum> result = forumService.searchTopicForumsWithCustomQuery("test", 1, 2);
-
-//        System.out.println("### result total elems: " + result.getTotalElements());
-//        System.out.println("### result page elems: " + result.getNumberOfElements());
-//        System.out.println("### result total pages: " + result.getTotalPages());
-//        System.out.println("### result page number: " + result.getNumber());
-//        System.out.println("### content: ");
-//        System.out.println(result.getContent().toString());
 
         assertEquals(expectedPage.getNumberOfElements(), result.getNumberOfElements());
         assertEquals(expectedPage.getTotalElements(), result.getTotalElements());
