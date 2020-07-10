@@ -48,7 +48,7 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
     @JoinColumn(name = "deleted_by_username")
     private User deletedBy;
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<PostVote> postVotes;
 
     public Post() {

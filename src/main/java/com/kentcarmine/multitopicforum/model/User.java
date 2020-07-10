@@ -41,7 +41,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     private SortedSet<Post> posts;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<PostVote> postVotes;
 
     @OneToMany(mappedBy = "disciplinedUser", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
