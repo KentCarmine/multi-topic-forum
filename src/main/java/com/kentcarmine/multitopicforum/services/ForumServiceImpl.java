@@ -93,7 +93,11 @@ public class ForumServiceImpl implements ForumService {
                 Sort.by(Sort.Order.by("name").ignoreCase()).ascending());
         Page<TopicForum> forumPage = topicForumRepository.findAll(pageReq);
 
-        if (pageNum > forumPage.getTotalPages()) {
+//        if (pageNum > forumPage.getTotalPages()) {
+//            return null;
+//        }
+
+        if (pageNum > 1 && pageNum > forumPage.getTotalPages()) {
             return null;
         }
 
