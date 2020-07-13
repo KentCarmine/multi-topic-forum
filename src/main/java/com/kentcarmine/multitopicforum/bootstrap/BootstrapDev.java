@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
  */
 @Component
 @Profile({"dev", "test"})
-public class Bootstrap implements CommandLineRunner {
+public class BootstrapDev implements Bootstrap {
 
     private UserRepository userRepository;
     private TopicForumRepository topicForumRepository;
@@ -28,9 +28,9 @@ public class Bootstrap implements CommandLineRunner {
     private DisciplineRepository disciplineRepository;
 
     @Autowired
-    public Bootstrap(UserRepository userRepository, TopicForumRepository topicForumRepository,
-                     TopicThreadRepository topicThreadRepository, PostRepository postRepository,
-                     PostVoteRepository postVoteRepository, DisciplineRepository disciplineRepository) {
+    public BootstrapDev(UserRepository userRepository, TopicForumRepository topicForumRepository,
+                        TopicThreadRepository topicThreadRepository, PostRepository postRepository,
+                        PostVoteRepository postVoteRepository, DisciplineRepository disciplineRepository) {
         this.userRepository = userRepository;
         this.topicForumRepository = topicForumRepository;
         this.topicThreadRepository = topicThreadRepository;
