@@ -77,8 +77,6 @@
                                 <div th:each="forum,iterStat : ${forums.getContent()}"
                                      th:include="fragments/forum-list-elements.html :: forum-list-element (${forum},${iterStat})">
                                 </div>
-
-                                <!--TODO: Add pagination1?-->
                             </div>
                         </div>
                     </div>

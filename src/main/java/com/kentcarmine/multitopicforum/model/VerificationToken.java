@@ -12,7 +12,7 @@ import java.util.Date;
 @Entity
 public class VerificationToken {
     private static final int EXPIRATION = 24 * 60; // 24 hrs
-//    private static final int EXPIRATION = 1; // For testing only
+//    private static final int EXPIRATION = 1; // TODO: For testing only
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

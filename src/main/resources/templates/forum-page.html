@@ -69,7 +69,7 @@
                 </div>
 
                 <!-- Thread list main body-->
-                <div th:if="${!threads.isEmpty()}" th:each="thread,iterStat : ${threads.getContent()}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread},${iterStat})"> <!--TODO: Add Pagination?-->
+                <div th:if="${!threads.isEmpty()}" th:each="thread,iterStat : ${threads.getContent()}" th:include="fragments/thread-list-elements.html :: thread-list-element-fragment (${thread},${iterStat})">
                 </div>
                 <div th:if="${threads.isEmpty()}" class="text-info text-center mt-1 mb-2 h5">
                     <span class="font-weight-bold text-muted" th:text="#{Label.forum.empty}">There are no threads in this forum.</span>

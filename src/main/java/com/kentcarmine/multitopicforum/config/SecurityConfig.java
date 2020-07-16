@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.sql.DataSource;
 
@@ -51,8 +52,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeRequests()
-                .antMatchers("/h2-console**").permitAll() // TODO: For debug only
+//                .antMatchers("/h2-console**").permitAll() // TODO: For debug only
                 .antMatchers("/login").permitAll()
+                .antMatchers("/logout").permitAll()
                 .antMatchers("/users/*").permitAll()
                 .antMatchers("/users", "/users?*", "/processSearchUsers").permitAll()
                 .antMatchers("/registerUser", "/processUserRegistration", "/registrationConfirm").permitAll()
@@ -80,12 +82,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler(loginHandler)
                 .permitAll()
                 .and()
-                .logout().invalidateHttpSession(true).deleteCookies("JSESSIONID").permitAll() // Clear session on logout
+                .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET")).invalidateHttpSession(true).deleteCookies("JSESSIONID").permitAll() // Clear session on logout
                 .and()
                 .rememberMe().key(rememberMeKey)
                 .and()
-                .exceptionHandling().accessDeniedPage("/forbidden")
-                .and().csrf().disable().headers().frameOptions().disable(); // TODO: For debug only
+                .exceptionHandling().accessDeniedPage("/forbidden");
+//                .and().csrf().disable().headers().frameOptions().disable(); // TODO: For debug only
+
     }
 
     @Bean

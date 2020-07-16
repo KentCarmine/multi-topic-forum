@@ -22,10 +22,4 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
 
         return (UserDetails)getAuthentication().getPrincipal();
     }
-
-//    public void printAuthorities() {
-//        System.out.println("### AUTH ###");
-//        System.out.println(getAuthentication().getAuthorities());
-//        System.out.println("### END AUTH ###");
-//    }
 }

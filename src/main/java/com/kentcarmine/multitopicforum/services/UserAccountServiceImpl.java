@@ -159,6 +159,13 @@ public class UserAccountServiceImpl implements UserAccountService {
         User user = verificationToken.getUser();
         Calendar calendar = Calendar.getInstance();
 
+//        System.out.println("### in UserAccountServiceImpl.isVerificationTokenExpired");
+//        System.out.println("### verificationToken.getExpiryDate().getTime() = " + verificationToken.getExpiryDate().getTime());
+//        System.out.println("### calendar.getTime().getTime() = " + calendar.getTime().getTime());
+//        System.out.println("### verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() = " + (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime()));
+//        System.out.println("### user != null = " + user != null);
+//        System.out.println("### !user.isEnabled() = " + !user.isEnabled());
+//        System.out.println("### returning = " + (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0 && user != null && !user.isEnabled()));
         return verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0
                 && user != null && !user.isEnabled();
     }

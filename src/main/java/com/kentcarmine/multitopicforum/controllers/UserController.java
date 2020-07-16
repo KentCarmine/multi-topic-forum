@@ -28,7 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.SortedSet;
 
 /**
- * Controller for handling all user-related tasks (ie. login/logout, display of a user's information, lists of users,
+ * Controller for handling all user-related tasks (ie. display of a user's information, lists of users,
  * etc)
  */
 @Controller

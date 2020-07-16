@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class PostViewDto implements Comparable<PostViewDto>, PostUpdatedTimable {
-    private static final int ABBREVIATED_CONTENT_LENGTH = 50; // TODO: Move into properties file
+//    private static final int ABBREVIATED_CONTENT_LENGTH = 50;
 
     private Long id;
 
@@ -133,9 +133,9 @@ public class PostViewDto implements Comparable<PostViewDto>, PostUpdatedTimable 
         return sum;
     }
 
-    public String getAbbreviatedContent() {
-        return getAbbreviatedContent(ABBREVIATED_CONTENT_LENGTH);
-    }
+//    public String getAbbreviatedContent() {
+//        return getAbbreviatedContent(ABBREVIATED_CONTENT_LENGTH);
+//    }
 
     /**
      * Get the first length characters of the content, and append ... if more characters are available.

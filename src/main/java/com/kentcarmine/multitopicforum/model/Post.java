@@ -19,7 +19,7 @@ import java.util.*;
 @Entity
 public class Post implements Comparable<Post>, PostUpdatedTimable {
     private static final String DATE_TIME_FORMAT_STRING = "MM-dd-yyyy, HH:mm";
-    private static final int ABBREVIATED_CONTENT_LENGTH = 50; // TODO: Move into properties file
+//    private static final int ABBREVIATED_CONTENT_LENGTH = 50;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -159,9 +159,9 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
         return sum;
     }
 
-    public String getAbbreviatedContent() {
-        return getAbbreviatedContent(ABBREVIATED_CONTENT_LENGTH);
-    }
+//    public String getAbbreviatedContent() {
+//        return getAbbreviatedContent(ABBREVIATED_CONTENT_LENGTH);
+//    }
 
     /**
      * Get the first length characters of the content, and append ... if more characters are available.
