@@ -35,25 +35,14 @@ public class TopicForum {
     @OneToMany(mappedBy = "forum", cascade = CascadeType.ALL)
     private SortedSet<TopicThread> threads;
 
-//    public TopicForum() {
-//        this.threads = new ArrayList<>();
-//    }
 
     public TopicForum() {
-//        this.threads = new TreeSet<>(THREAD_COMPARATOR);
         this.threads = new TreeSet<>(new ThreadUpdateTimeComparator());
     }
-
-//    public TopicForum(@Size(min=4, message="{Forum.name.minSize}") String name, String description) {
-//        this.name = name;
-//        this.description = description;
-//        this.threads = new ArrayList<>();
-//    }
 
     public TopicForum(@Size(min=4, message="{Forum.name.minSize}") String name, String description) {
         this.name = name;
         this.description = description;
-//        this.threads = new TreeSet<>(THREAD_COMPARATOR);
         this.threads = new TreeSet<>(new ThreadUpdateTimeComparator());
 
     }
@@ -73,14 +62,6 @@ public class TopicForum {
     public void setDescription(String description) {
         this.description = description;
     }
-
-//    public List<TopicThread> getThreads() {
-//        return threads;
-//    }
-//
-//    public void setThreads(List<TopicThread> threads) {
-//        this.threads = threads;
-//    }
 
     public SortedSet<TopicThread> getThreads() {
         return threads;
