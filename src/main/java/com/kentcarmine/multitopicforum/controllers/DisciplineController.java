@@ -56,6 +56,7 @@ public class DisciplineController {
     public String showManageUserDisciplinePage(@PathVariable String username, Model model,
                                                @RequestParam(required = false, defaultValue = "1") int page) {
         User loggedInUser = userService.getLoggedInUser();
+
         disciplineService.handleDisciplinedUser(loggedInUser);
 
         User user = userService.getUser(username);
@@ -64,7 +65,7 @@ public class DisciplineController {
             throw new UserNotFoundException("Exception.user.notfound", username);
         }
 
-        if (!loggedInUser.isHigherAuthority(user)) {
+        if (loggedInUser == null || !loggedInUser.isHigherAuthority(user)) {
             throw new InsufficientAuthorityException();
         }
 
@@ -92,7 +93,7 @@ public class DisciplineController {
      */
     @PostMapping("/processCreateUserDiscipline")
     public ModelAndView processUserDisciplineSubmission(@Valid UserDisciplineSubmissionDto userDisciplineSubmissionDto, BindingResult bindingResult) {
-        System.out.println("### in processUserDisciplineSubmission().");
+//        System.out.println("### in processUserDisciplineSubmission().");
         ModelAndView mv;
 
         User loggedInUser = userService.getLoggedInUser();

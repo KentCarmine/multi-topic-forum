@@ -121,7 +121,8 @@ public class UserAccountController {
      * the user.
      */
     @GetMapping("/registrationConfirm")
-    public ModelAndView confirmRegistration(WebRequest request, @RequestParam("token") String token) {
+    public ModelAndView confirmRegistration(WebRequest request,
+                                            @RequestParam(value = "token", required = false) String token) {
 //        System.out.println("### in confirmRegistration()");
         Locale locale = request.getLocale();
         VerificationToken verificationToken = userAccountService.getVerificationToken(token);
@@ -164,7 +165,8 @@ public class UserAccountController {
      * If the user already exsists and is enabled, sends them to the login page.
      */
     @GetMapping("/resendRegistrationEmail")
-    public String resendRegistrationEmail(HttpServletRequest request, @RequestParam("token") String existingToken) {
+    public String resendRegistrationEmail(HttpServletRequest request,
+                                          @RequestParam(value = "token", required = false) String existingToken) {
         VerificationToken newToken = userAccountService.generateNewVerificationToken(existingToken);
 
         User user = userAccountService.getUserByVerificationToken(newToken.getToken());
@@ -220,8 +222,8 @@ public class UserAccountController {
      * If the user and token are valid, it displays the form, otherwise, it displays an error and redirects to /login.
      */
     @GetMapping("/changePassword")
-    public String showChangePasswordForm(Model model, @RequestParam("username") String username,
-                                         @RequestParam("token") String token) {
+    public String showChangePasswordForm(Model model, @RequestParam(value = "username", required = false) String username,
+                                         @RequestParam(value = "token", required = false) String token) {
         User user = userService.getUser(username);
         boolean isValidResetToken = userAccountService.validatePasswordResetToken(user, token);
 

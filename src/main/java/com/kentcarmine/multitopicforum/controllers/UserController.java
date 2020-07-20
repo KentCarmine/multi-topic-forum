@@ -55,7 +55,8 @@ public class UserController {
      * Show the profile page of the user with the given name, or throw a UserNotFoundException if no such user exists
      */
     @GetMapping("/users/{username}")
-    public String showUserPage(Model model, @PathVariable String username, @RequestParam(required = false, defaultValue = "1") int page) {
+    public String showUserPage(Model model, @PathVariable String username,
+                               @RequestParam(required = false, defaultValue = "1") int page) {
         if (userService.usernameExists(username)) {
             User user = userService.getUser(username);
             User loggedInUser = userService.getLoggedInUser();
@@ -71,7 +72,8 @@ public class UserController {
             model.addAttribute("posts", posts);
 
             if (loggedInUser != null) {
-                UserRankAdjustmentDto userRankAdjustmentDto = userService.getUserRankAdjustmentDtoForUser(user, loggedInUser);
+                UserRankAdjustmentDto userRankAdjustmentDto =
+                        userService.getUserRankAdjustmentDtoForUser(user, loggedInUser);
                 model.addAttribute("userRankAdjustmentDto", userRankAdjustmentDto);
             }
 
@@ -98,7 +100,8 @@ public class UserController {
             model.addAttribute("search", search);
 //            model.addAttribute("userSearchResults", userService.searchForUsernames(search));
 
-            Page<UserSearchResultDto> userSearchResults = userService.searchForUserDtosPaginated(search, page, USERS_PER_PAGE);
+            Page<UserSearchResultDto> userSearchResults =
+                    userService.searchForUserDtosPaginated(search, page, USERS_PER_PAGE);
             if (userSearchResults == null) {
                 throw new PageNotFoundException();
             }
