@@ -272,24 +272,29 @@ public class UserAccountController {
         User userToPromote = userService.getUser(promoteUserSubmissionDto.getUsername());
         User loggedInUser = userService.getLoggedInUserIfNotDisciplined();
         UserRole promotableRank = promoteUserSubmissionDto.getPromotableRank();
+//        System.out.println("### in /promoteUserAjax");
 
         if (userToPromote == null) {
             String msg = messageService.getMessage("Exception.user.notfound", promoteUserSubmissionDto.getUsername());
+//            System.out.println("### in /promoteUserAjax, userToPromote == null case. Msg = " + msg);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new PromoteUserResponseDto(msg));
         }
 
         if (loggedInUser == null) {
             String msg = messageService.getMessage("Exception.authority.insufficient");
+//            System.out.println("### in /promoteUserAjax, loggedInUser == null case. Msg = " + msg);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto(msg));
         }
 
         if (userService.isValidPromotionRequest(loggedInUser, userToPromote, promotableRank)) {
             userToPromote = userService.promoteUser(userToPromote);
+//            System.out.println("### in /promoteUserAjax, valid case");
             PromoteUserResponseDto purDto = userService.getPromoteUserResponseDtoForUser(userToPromote);
 
             return ResponseEntity.status(HttpStatus.OK).body(purDto);
         } else {
             String msg = messageService.getMessage("Exception.authority.insufficient");
+//            System.out.println("### in /promoteUserAjax, invalid case. Msg = " + msg);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new PromoteUserResponseDto(msg));
         }
     }
@@ -329,6 +334,7 @@ public class UserAccountController {
      */
     @GetMapping(value = "/demoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView demoteUserButton(@PathVariable String username) {
+//        System.out.println("### in /demoteUserButton/" + username);
         User loggedInUser = userService.getLoggedInUserIfNotDisciplined();
         User user = userService.getUser(username);
 
@@ -346,6 +352,7 @@ public class UserAccountController {
         mv = new ModelAndView("fragments/promote-demote-buttons :: demote-button-fragment");
         mv.setStatus(HttpStatus.OK);
         mv.addObject("userRankAdjustmentDto", userRankAdjustmentDto);
+//        System.out.println("### returning");
         return mv;
     }
 
@@ -354,6 +361,7 @@ public class UserAccountController {
      */
     @GetMapping(value = "/promoteUserButton/{username}", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView promoteUserButton(@PathVariable String username) {
+//        System.out.println("### in /promoteUserButton/" + username);
         User loggedInUser = userService.getLoggedInUserIfNotDisciplined();
         User user = userService.getUser(username);
 
@@ -371,6 +379,7 @@ public class UserAccountController {
         mv = new ModelAndView("fragments/promote-demote-buttons :: promote-button-fragment");
         mv.setStatus(HttpStatus.OK);
         mv.addObject("userRankAdjustmentDto", userRankAdjustmentDto);
+//        System.out.println("### returning");
         return mv;
     }
 
