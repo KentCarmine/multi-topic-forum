@@ -343,7 +343,7 @@ public class TopicThreadServiceImpl implements TopicThreadService {
         }
 
         boolean userHasAdministrativeRights = user.isModerator() || user.isAdmin() || user.isSuperadmin();
-        boolean userOutranksThreadLocker = thread.getLockingUser() != null && (user.equals(thread.getLockingUser()) ||user.isHigherAuthority(thread.getLockingUser()));
+        boolean userOutranksThreadLocker = thread.getLockingUser() != null && (user.equals(thread.getLockingUser()) || user.isHigherAuthority(thread.getLockingUser()));
 
         return thread.isLocked() && userHasAdministrativeRights && userOutranksThreadLocker;
     }
