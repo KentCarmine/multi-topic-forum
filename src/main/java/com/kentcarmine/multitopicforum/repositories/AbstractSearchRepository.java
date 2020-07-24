@@ -1,7 +1,7 @@
 package com.kentcarmine.multitopicforum.repositories;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class containing helper methods for searching for text in a SQL database.
@@ -27,7 +27,7 @@ public class AbstractSearchRepository {
      */
     protected Set<String> splitSearchTerms(String searchTerms) {
         String[] stArr = searchTerms.split(" ");
-        return Set.of(stArr);
+        return List.of(stArr).stream().collect(Collectors.toSet());
     }
 
     /**

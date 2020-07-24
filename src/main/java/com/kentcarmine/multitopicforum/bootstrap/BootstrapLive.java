@@ -44,13 +44,13 @@ public class BootstrapLive implements Bootstrap {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("### SuperadminUsername = " + superadminUsername);
-        System.out.println("### SuperadminEmail = " + superadminEmail);
-        System.out.println("### SuperadminBcryptPasswordHash = " + superadminBcryptPasswordHash);
-        System.out.println();
-        System.out.println("### ForumRequestForumDescription = " + forumRequestForumDescription);
-        System.out.println("### ForumRequestForumName = " + forumRequestForumName);
-        System.out.println();
+//        System.out.println("### SuperadminUsername = " + superadminUsername);
+//        System.out.println("### SuperadminEmail = " + superadminEmail);
+//        System.out.println("### SuperadminBcryptPasswordHash = " + superadminBcryptPasswordHash);
+//        System.out.println();
+//        System.out.println("### ForumRequestForumDescription = " + forumRequestForumDescription);
+//        System.out.println("### ForumRequestForumName = " + forumRequestForumName);
+//        System.out.println();
 
         setUpSuperadmin();
         setUpTopicForumRequestForum();
