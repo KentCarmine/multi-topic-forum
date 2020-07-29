@@ -19,11 +19,12 @@
             <div class="h-100 row align-items-center justify-content-center text-center">
                 <div class="col">
                     <h1 class="display-3 font-weight-bold" th:text="#{Label.home.header}">Multi-Topic Forum Home Page</h1>
-
-                    <p class="home-page-main-text-content" th:text="#{Label.home.welcome.content}">Welcome to the Multi-Topic
-                        Forum! Feel free to browse the various topic forums. If you wish to create a Topic Forum for a new
-                        topic that does not yet exist, please create a thread in the New Forum Requests forum, and a moderator
-                        will respond.</p>
+                    
+                    <p class="home-page-main-text-content">
+                        <span th:text="#{Label.home.welcome.content.beforeLink}">prefix</span>
+                        <a href="#" th:href="@{'#'}" th:text="#{Label.home.welcome.content.linkText}">Link</a>  <!-- TODO: Construct Link-->
+                        <span th:text="#{Label.home.welcome.content.afterLink}">suffix</span>
+                    </p>
                 </div>
             </div>
 
