@@ -98,6 +98,7 @@ public class TopicForumController {
         }
 
         TopicForum createdForum = forumService.createForumByDto(topicForumDto);
+//        System.out.println("### " + createdForum.toString());
         mv = new ModelAndView("redirect:/forum/" + createdForum.getName());
         return mv;
     }

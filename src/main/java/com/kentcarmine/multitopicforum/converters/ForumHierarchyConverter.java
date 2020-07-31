@@ -96,18 +96,6 @@ public class ForumHierarchyConverter {
         dto.setLastPost(convertPost(thread.getLastPost(), dto));
 
         return dto;
-//
-//        dto.setId(thread.getId());
-//        dto.setLockingUser(thread.getLockingUser());
-//        dto.setLocked(thread.isLocked());
-//
-//        Set<Post> posts = thread.getPosts();
-//
-//        for (Post p : posts) {
-//            dto.addPost(convertPost(p, dto));
-//        }
-//
-//        return dto;
     }
 
 

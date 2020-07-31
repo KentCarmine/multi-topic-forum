@@ -203,7 +203,7 @@ public class TopicThreadController {
      * ID
      */
     @GetMapping("/forum/{forumName}/thread/{threadId}/post/{postId}")
-    public String showThread(@PathVariable String forumName, @PathVariable Long threadId, @PathVariable Long postId) { // TODO: Test route
+    public String showThread(@PathVariable String forumName, @PathVariable Long threadId, @PathVariable Long postId) {
         if (!forumService.isForumWithNameExists(forumName)) {
             throw new ForumNotFoundException();
         }

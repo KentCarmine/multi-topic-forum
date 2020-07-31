@@ -76,9 +76,9 @@ public class PostController {
 
         int userLastViewingPageNum = postCreationDto.getPostPageNum();
 
-        if (bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors() || thread.isLocked()) {
 //            System.out.println("### in addPostToThread(). hasErrors() case");
-            bindingResult.getAllErrors().stream().forEach(System.out::println);
+//            bindingResult.getAllErrors().stream().forEach(System.out::println);
 
             Page<Post> posts = topicThreadService.getPostPageByThread(thread, userLastViewingPageNum, POSTS_PER_PAGE);
             if (posts == null) {

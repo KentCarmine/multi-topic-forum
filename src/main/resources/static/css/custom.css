@@ -1,20 +1,6 @@
 html, body {
-    /*height: 100%;*/
     height: calc(100% - 4rem);
 }
-
-/*body {*/
-/*    !*background-color: #f5f5f5;*!*/
-/*    background-color: white;*/
-/*    !*padding-bottom: 20px;*!*/
-/*    z-index: 2;*/
-/*}*/
-
-/*.navbar {*/
-/*    margin-bottom: 20px;*/
-/*    height: 4rem;*/
-/*    z-index: 3;*/
-/*}*/
 
 .form-error-list {
     margin-bottom: 12px;
@@ -56,59 +42,6 @@ html, body {
 .color-downvote-red {
     color: darkred;
 }
-
-/*.upvote-button {*/
-/*    background-color: lime;*/
-/*    border: none;*/
-/*    color: white;*/
-/*    padding: 16px 16px;*/
-/*    font-size: 1.5rem;*/
-/*    cursor: pointer;*/
-/*}*/
-
-/*.upvote-button:hover {*/
-/*    background-color: limegreen;*/
-/*}*/
-
-/*.upvote*/
-
-
-/*.btn-circle {*/
-/*    width: 64px;*/
-/*    height: 64px;*/
-/*    line-height: 64px;*/
-/*    text-align: center;*/
-/*    padding: 0;*/
-/*    border-radius: 50%;*/
-/*    !*cursor: pointer;*!*/
-/*}*/
-
-/*.btn-circle i {*/
-/*    position: relative;*/
-/*    top: -1px;*/
-/*}*/
-
-/*.btn-circle {*/
-/*    !*width: 64px;*!*/
-/*    !*height: 64px;*!*/
-/*    !*line-height: 64px;*!*/
-/*    text-align: center;*/
-/*    color: lime;*/
-/*    border-radius: 50%;*/
-/*    border: none;*/
-/*    background: transparent;*/
-/*    cursor: pointer;*/
-/*}*/
-
-/*.btn-circle:active {*/
-/*    color: limegreen;*/
-/*}*/
-
-/*.btn-circle i {*/
-/*    position: relative;*/
-/*    top: -1px;*/
-/*}*/
-
 .btn-vote {
     width: auto;
     height: auto;

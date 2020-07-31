@@ -78,8 +78,10 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public String handleInsufficientAuthority(InsufficientAuthorityException e) {
         logger.error(e);
+        System.out.println("### in handleInsufficientAuthority");
 
-        return "redirect:/forbidden";
+//        return "redirect:/forbidden";
+        return "access-denied-page";
     }
 
     @ExceptionHandler({DisciplineNotFoundException.class})

@@ -19,7 +19,6 @@ import java.util.*;
 @Entity
 public class Post implements Comparable<Post>, PostUpdatedTimable {
     private static final String DATE_TIME_FORMAT_STRING = "MM-dd-yyyy, HH:mm";
-    private static final int ABBREVIATED_CONTENT_LENGTH = 50; // TODO: Move into properties file
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -157,10 +156,6 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
         }
 
         return sum;
-    }
-
-    public String getAbbreviatedContent() {
-        return getAbbreviatedContent(ABBREVIATED_CONTENT_LENGTH);
     }
 
     /**

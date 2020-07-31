@@ -147,12 +147,12 @@ class DisciplineControllerTest {
 
     @Test
     void showManageUserDisciplinePage_insufficientAuthority() throws Exception {
-        when(userService.getLoggedInUser()).thenReturn(testAdmin);
+        when(userService.getLoggedInUser()).thenReturn(null);
         when(userService.getUser(eq(testAdmin.getUsername()))).thenReturn(testAdmin);
 
         mockMvc.perform(get("/manageUserDiscipline/" + testAdmin.getUsername()))
                 .andExpect(status().isUnauthorized())
-                .andExpect(view().name("redirect:/forbidden"))
+                .andExpect(view().name("access-denied-page"))
                 .andExpect(model().attributeDoesNotExist("userDisciplineSubmissionDto", "activeDisciplines",
                         "inactiveDisciplines"));
     }
@@ -489,7 +489,7 @@ class DisciplineControllerTest {
 
         mockMvc.perform(post("/rescindDiscipline/" + testUser.getUsername() + "/" + discipline.getId()))
                 .andExpect(status().isUnauthorized())
-                .andExpect(view().name("redirect:/forbidden"));
+                .andExpect(view().name("access-denied-page"));
 
         verify(disciplineService, times(0)).rescindDiscipline(any());
     }
