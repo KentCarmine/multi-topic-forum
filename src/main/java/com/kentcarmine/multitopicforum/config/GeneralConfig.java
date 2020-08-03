@@ -14,7 +14,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
  * Class that handles general-purpose configurations.
  */
 @Configuration
-@PropertySources({@PropertySource("classpath:application.properties"), @PropertySource("classpath:system.properties")})
+@PropertySource("classpath:application.properties")
 public class GeneralConfig {
 
     @Bean
