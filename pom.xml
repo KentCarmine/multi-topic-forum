@@ -113,7 +113,7 @@
                 <configuration>
                     <source>12</source>
                     <target>12</target>
-                    <release>12</release>
+<!--                    <release>12</release>-->
                 </configuration>
             </plugin>
             <plugin>
