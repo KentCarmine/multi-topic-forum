@@ -1,0 +1,1 @@
+web: mvn -B -DskipTests clean dependency:list install
