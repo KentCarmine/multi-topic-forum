@@ -10,7 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @Configuration
-@PropertySources({@PropertySource("classpath:application.properties"),@PropertySource("classpath:application-dev.properties"),@PropertySource("classpath:application-test.properties"),@PropertySource("classpath:application-prod.properties"), @PropertySource("classpath:system.properties")})
+@PropertySources({@PropertySource("classpath:application.properties"),@PropertySource("classpath:application-dev.properties"),@PropertySource("classpath:application-test.properties"),@PropertySource("classpath:application-prod.properties")})
 //@ConfigurationProperties("spring.datasource")
 @Profile({"prod"})
 public class DBConfig {
