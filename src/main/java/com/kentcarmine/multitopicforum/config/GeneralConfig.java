@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
  * Class that handles general-purpose configurations.
  */
 @Configuration
+@PropertySources({@PropertySource("classpath:application.properties"), @PropertySource("classpath:system.properties")})
 public class GeneralConfig {
 
     @Bean
