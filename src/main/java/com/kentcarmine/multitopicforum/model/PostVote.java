@@ -8,7 +8,7 @@ import java.util.Objects;
  * Entity for modeling upvotes and downvotes on posts.
  */
 @Entity
-@Table(name = "Post_Vote", uniqueConstraints = @UniqueConstraint(columnNames = {"username", "post_id"}))
+@Table(name = "post_vote", uniqueConstraints = @UniqueConstraint(columnNames = {"username", "post_id"}))
 public class PostVote {
 
     @Id
