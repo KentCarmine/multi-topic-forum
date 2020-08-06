@@ -29,8 +29,9 @@ public class Post implements Comparable<Post>, PostUpdatedTimable {
     @NotNull
     private TopicThread thread;
 
+//    @Lob
+    @Column(columnDefinition = "text")
     @NotBlank(message = "{Post.content.notBlank}")
-    @Lob
     private String content;
 
     @ManyToOne
