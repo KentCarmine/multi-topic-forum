@@ -48,7 +48,7 @@ public class BootstrapLive implements Bootstrap {
 
     @Override
     public void run(String... args) throws Exception {
-//        setUpSuperadmin();
+        setUpSuperadmin();
         setUpTopicForumRequestForum();
     }
 
