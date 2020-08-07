@@ -23,7 +23,8 @@ public class TopicForum {
     @ValidCharacters(message = "{Forum.name.validChars}")
     private String name;
 
-    @Lob
+//    @Lob
+    @Column(columnDefinition = "text")
     @NotBlank(message = "{Forum.description.notBlank}")
     @Size(min = 1, max = 500, message = "{Forum.description.length}")
     private String description;
