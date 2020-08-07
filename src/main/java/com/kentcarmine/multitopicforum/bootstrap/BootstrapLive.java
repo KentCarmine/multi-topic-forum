@@ -16,9 +16,6 @@ public class BootstrapLive implements Bootstrap {
 
     private UserRepository userRepository;
     private TopicForumRepository topicForumRepository;
-    private TopicThreadRepository topicThreadRepository;
-    private PostRepository postRepository;
-    private MessageService messageService;
 
     @Value("${com.kentcarmine.multitopicforum.superadmin.username}")
     private String superadminUsername;
@@ -35,13 +32,9 @@ public class BootstrapLive implements Bootstrap {
 
     @Autowired
     public BootstrapLive(UserRepository userRepository, TopicForumRepository topicForumRepository,
-                        TopicThreadRepository topicThreadRepository, PostRepository postRepository,
                          MessageService messageService) {
         this.userRepository = userRepository;
         this.topicForumRepository = topicForumRepository;
-        this.topicThreadRepository = topicThreadRepository;
-        this.postRepository = postRepository;
-        this.messageService = messageService;
         this.forumRequestForumName = messageService.getMessage("com.kentcarmine.multitopicforum.requestTopicForumCreationForum.name");
         this.forumRequestForumDescription = messageService.getMessage("com.kentcarmine.multitopicforum.requestTopicForumCreationForum.description");
     }
@@ -53,16 +46,20 @@ public class BootstrapLive implements Bootstrap {
     }
 
     private void setUpSuperadmin() {
-        UserRole[] superAdminRoles = {UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR, UserRole.SUPER_ADMINISTRATOR};
-        User superAdmin = new User(superadminUsername, superadminBcryptPasswordHash, superadminEmail);
-        superAdmin.setEnabled(true);
-        superAdmin.addAuthorities(superAdminRoles);
-        userRepository.save(superAdmin);
+        if (userRepository.findByUsername(superadminUsername) == null) {
+            UserRole[] superAdminRoles = {UserRole.USER, UserRole.MODERATOR, UserRole.ADMINISTRATOR, UserRole.SUPER_ADMINISTRATOR};
+            User superAdmin = new User(superadminUsername, superadminBcryptPasswordHash, superadminEmail);
+            superAdmin.setEnabled(true);
+            superAdmin.addAuthorities(superAdminRoles);
+            userRepository.save(superAdmin);
+        }
     }
 
     private void setUpTopicForumRequestForum() {
-        TopicForum forumRequestForum = new TopicForum(forumRequestForumName, forumRequestForumDescription);
-        forumRequestForum = topicForumRepository.save(forumRequestForum);
+        if (topicForumRepository.findByName(forumRequestForumName) == null) {
+            TopicForum forumRequestForum = new TopicForum(forumRequestForumName, forumRequestForumDescription);
+            forumRequestForum = topicForumRepository.save(forumRequestForum);
+        }
     }
 
 }
